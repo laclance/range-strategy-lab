@@ -1,4 +1,4 @@
-# Next Codex Brief: Detector Sweep Audit
+# Next Codex Brief: First Entry Template Prep
 
 ```text
 We are in a standalone Go project named range-strategy-lab.
@@ -13,7 +13,7 @@ Continue building a BTCUSDT 5m offline range-strategy research system from the g
 
 Current state:
 - CSV loader, one-position backtest engine, costs, sizing, split metrics, and tests exist.
-- Strategy is still lab.EmptyStrategy and must remain no-trade for this milestone.
+- Strategy is still lab.EmptyStrategy and currently produces zero trades.
 - Detector-only diagnostics exist:
   - ATR14 normalized
   - Donchian20 width
@@ -22,11 +22,33 @@ Current state:
   - CompressionRangeDetector
   - detector_duty_cycle.csv/json
   - range_episodes.csv/json
-- Latest smoke run on ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv:
-  - full_2021_2026 duty cycle: 13.5624%
-  - full active bars: 77,231 / 569,451
-  - full episodes: 2,996
-  - strategy=empty trades=0
+- Detector sweep/audit mode exists:
+  - CLI flag: -detector-sweep
+  - outputs: detector_sweep.csv and detector_sweep.json
+  - grid: percentile 0.20/0.30/0.40, min consecutive bars 6/12/24, Bollinger on/off
+  - ADX is off for the grid, plus one balanced ADX-on comparison
+- Balanced baseline:
+  - profile_id: p30_c12_bollinger_on_adx_off
+  - percentile: 0.30
+  - min consecutive bars: 12
+  - Bollinger: on
+  - ADX: off
+
+Latest detector sweep run:
+
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+  -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv \
+  -out-dir results/detector-sweep \
+  -detector-sweep
+
+Observed detector sweep facts:
+- Output rows: 76 (19 profiles x 4 splits)
+- Balanced baseline full split: 77,231 active bars / 569,451 total bars, 13.5624% duty cycle, 2,996 episodes
+- All profiles had nonzero episodes in every period split.
+- First-pass usable profiles are the ADX-off profiles with full duty roughly 5%-25%, except p20_c24_bollinger_on_adx_off is too sparse and p40_c06_bollinger_on_adx_off / p40_c06_bollinger_off_adx_off are too broad.
+- p40_c12_bollinger_off_adx_off is near the upper edge.
+- The balanced ADX-on comparison is too restrictive for the first-pass screen: p30_c12_bollinger_on_adx_on full duty cycle 4.36%.
+- strategy=empty trades=0.
 
 Non-negotiables:
 - Offline research only.
@@ -39,37 +61,18 @@ Non-negotiables:
 - Stop-first ambiguity.
 - Keep every result explainable and reproducible.
 
-Next implementation milestone:
-Add detector sweep/audit mode before adding trade entries.
+Next recommended milestone:
+Choose one detector profile and one simple first entry template before implementing trades.
 
-Implement:
-1. CLI flag -detector-sweep.
-2. Sweep a compact grid:
-   - percentile: 0.20, 0.30, 0.40
-   - min consecutive bars: 6, 12, 24
-   - Bollinger on/off
-   - ADX off by default, plus one ADX-on comparison using the balanced profile.
-3. Write under the selected -out-dir:
-   - detector_sweep.csv
-   - detector_sweep.json
-4. Include per-split metrics already used by detector diagnostics:
-   - active bars
-   - total bars
-   - duty cycle
-   - episodes
-   - average episode length
-   - median episode length
-   - longest episode length
-5. Mark or clearly identify the balanced baseline:
-   - percentile 0.30
-   - min consecutive bars 12
-   - Bollinger on
-   - ADX off
+Recommended default:
+- Use the balanced baseline p30_c12_bollinger_on_adx_off unless there is a clear reason to test a broader/narrower detector first.
+- Start with exactly one explainable entry template.
+- Do not combine multiple entry styles, grids, averaging down, martingale, or multi-exchange ideas.
 
-Acceptance criteria:
+Acceptance criteria for the next coding milestone:
+- Strategy changes are isolated and still use confirmed closed candles with next-bar-open entries.
+- Only one entry template is added.
+- Results include the existing split metrics and preserve zero-lookahead behavior.
 - /usr/local/go/bin/go test ./... passes with GOCACHE=/tmp/range-strategy-lab-go-build if needed.
-- Smoke command writes detector_sweep.csv/json on the BTCUSDT 5m CSV.
-- Existing -detector output still works.
-- Strategy remains empty and trades remain 0.
-- Summarize which detector profiles look usable: prefer nonzero episodes in every split, full duty cycle roughly 5%-25%, and no wildly unstable split behavior.
+- Generated outputs stay under results/.
 ```

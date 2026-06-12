@@ -30,6 +30,7 @@ func run() error {
 	slippagePct := flag.Float64("slippage-pct", 0.000116, "slippage fraction per side")
 	maxHoldBars := flag.Int("max-hold-bars", 24, "default max hold bars stamped on placeholder signals")
 	detector := flag.Bool("detector", false, "write detector-only range diagnostics")
+	detectorSweep := flag.Bool("detector-sweep", false, "write detector sweep/audit diagnostics")
 	detectorLookbackDays := flag.Int("detector-lookback-days", 20, "range detector trailing lookback in days")
 	detectorPercentile := flag.Float64("detector-percentile", 0.30, "range detector low-compression percentile threshold")
 	detectorMinConsecutiveBars := flag.Int("detector-min-consecutive-bars", 12, "range detector confirmed raw-active bars before active")
@@ -70,10 +71,12 @@ func run() error {
 	if err := writeSummaryCSV(filepath.Join(*outDir, "summary.csv"), summaries); err != nil {
 		return err
 	}
-	if *detector {
+	if *detector || *detectorSweep {
 		if *detectorLookbackDays <= 0 {
 			return fmt.Errorf("detector lookback days must be positive")
 		}
+	}
+	if *detector {
 		if *detectorPercentile <= 0 || *detectorPercentile >= 1 {
 			return fmt.Errorf("detector percentile must be between 0 and 1")
 		}
@@ -110,6 +113,34 @@ func run() error {
 			if row.Split == "full_2021_2026" {
 				fmt.Printf("detector=%s active_bars=%d total_bars=%d duty_cycle=%.4f episodes=%d\n",
 					rangeDetector.Name(), row.ActiveBars, row.TotalBars, row.DutyCycle, row.Episodes)
+				break
+			}
+		}
+	}
+	if *detectorSweep {
+		cfg := lab.DefaultCompressionRangeDetectorConfig()
+		cfg.LookbackDays = *detectorLookbackDays
+
+		sweepRows, err := lab.RunDetectorSweep(candles, cfg, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "detector_sweep.json"), sweepRows); err != nil {
+			return err
+		}
+		if err := writeDetectorSweepCSV(filepath.Join(*outDir, "detector_sweep.csv"), sweepRows); err != nil {
+			return err
+		}
+		for _, row := range sweepRows {
+			if row.IsBalancedBaseline && row.Split == "full_2021_2026" {
+				fmt.Printf("detector_sweep profiles=%d rows=%d baseline_active_bars=%d baseline_total_bars=%d baseline_duty_cycle=%.4f baseline_episodes=%d\n",
+					len(lab.DefaultDetectorSweepProfiles(*detectorLookbackDays)),
+					len(sweepRows),
+					row.ActiveBars,
+					row.TotalBars,
+					row.DutyCycle,
+					row.Episodes,
+				)
 				break
 			}
 		}
@@ -245,6 +276,60 @@ func writeRangeEpisodesCSV(path string, episodes []lab.RangeEpisode) error {
 			episode.StartTime,
 			episode.EndTime,
 			strconv.Itoa(episode.LengthBars),
+		}); err != nil {
+			return err
+		}
+	}
+	return w.Error()
+}
+
+func writeDetectorSweepCSV(path string, rows []lab.DetectorSweepRow) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	w := csv.NewWriter(f)
+	defer w.Flush()
+
+	if err := w.Write([]string{
+		"profile_id",
+		"is_balanced_baseline",
+		"is_adx_comparison",
+		"percentile",
+		"min_consecutive_bars",
+		"use_bollinger",
+		"use_adx",
+		"lookback_days",
+		"split",
+		"active_bars",
+		"total_bars",
+		"duty_cycle",
+		"episodes",
+		"avg_episode_length",
+		"median_episode_length",
+		"longest_episode_length",
+	}); err != nil {
+		return err
+	}
+	for _, row := range rows {
+		if err := w.Write([]string{
+			row.ProfileID,
+			strconv.FormatBool(row.IsBalancedBaseline),
+			strconv.FormatBool(row.IsADXComparison),
+			formatFloat(row.Percentile),
+			strconv.Itoa(row.MinConsecutiveBars),
+			strconv.FormatBool(row.UseBollinger),
+			strconv.FormatBool(row.UseADX),
+			strconv.Itoa(row.LookbackDays),
+			row.Split,
+			strconv.Itoa(row.ActiveBars),
+			strconv.Itoa(row.TotalBars),
+			formatFloat(row.DutyCycle),
+			strconv.Itoa(row.Episodes),
+			formatFloat(row.AvgEpisodeLength),
+			formatFloat(row.MedianEpisodeLength),
+			strconv.Itoa(row.LongestEpisodeLength),
 		}); err != nil {
 			return err
 		}
