@@ -24,8 +24,9 @@ Read the docs in this order:
 1. [docs/PURPOSE.md](docs/PURPOSE.md)
 2. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 3. [docs/STRATEGY_WORKFLOW.md](docs/STRATEGY_WORKFLOW.md)
-4. [docs/VERIFICATION.md](docs/VERIFICATION.md)
-5. [CODEX_BRIEF.md](CODEX_BRIEF.md)
+4. [docs/RESEARCH_HELPERS.md](docs/RESEARCH_HELPERS.md)
+5. [docs/VERIFICATION.md](docs/VERIFICATION.md)
+6. [CODEX_BRIEF.md](CODEX_BRIEF.md)
 
 ## Quick Start
 

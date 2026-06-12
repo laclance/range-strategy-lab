@@ -1,0 +1,6 @@
+github.com/laclance/go-sr v1.0.0 h1:W+weMdxmrV0l8RLQfHHgo6se30njgIzzrS63F1LPs3E=
+github.com/laclance/go-sr v1.0.0/go.mod h1:vwBOe/35EJmzimmdguYH5gsaECmd0RFUMy35ZUfuAhw=
+github.com/markcheno/go-talib v0.0.0-20250114000313-ec55a20c902f h1:iKq//xEUUaeRoXNcAshpK4W8eSm7HtgI0aNznWtX7lk=
+github.com/markcheno/go-talib v0.0.0-20250114000313-ec55a20c902f/go.mod h1:3YUtoVrKWu2ql+iAeRyepSz3fy6a+19hJzGS88+u4u0=
+nproject.io/gitlab/libraries/talib-cdl-go v0.0.0-20211217160304-2ed8176448cc h1:SbpwpC1mojHyC67GwN4VG0eBA/hnsZ+b7WMj1jF01J4=
+nproject.io/gitlab/libraries/talib-cdl-go v0.0.0-20211217160304-2ed8176448cc/go.mod h1:6Yzu1wCjUMsOcAvVIiKrJc5vlALVply3xZw0m4OqSco=

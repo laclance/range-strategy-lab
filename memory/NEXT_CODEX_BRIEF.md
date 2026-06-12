@@ -1,4 +1,4 @@
-# Next Codex Brief: First Entry Template Prep
+# Next Codex Brief: Support/Resistance Audit Mode
 
 ```text
 We are in a standalone Go project named range-strategy-lab.
@@ -6,49 +6,23 @@ We are in a standalone Go project named range-strategy-lab.
 Before work:
 - Read AGENTS.md.
 - Read memory/README.md, memory/PROGRESS.md, and memory/DECISIONS.md.
-- Read README.md and docs/*.md as needed.
+- Read README.md and docs/*.md as needed, especially docs/RESEARCH_HELPERS.md.
 
 Goal:
 Continue building a BTCUSDT 5m offline range-strategy research system from the ground up. Do not reuse strategy/scoring/live-execution logic from the old binance-bot project.
 
 Current state:
-- CSV loader, one-position backtest engine, costs, sizing, split metrics, and tests exist.
+- CSV loader, one-position backtest engine, costs, sizing, split metrics, detector diagnostics, and detector sweep mode exist.
 - Strategy is still lab.EmptyStrategy and currently produces zero trades.
-- Detector-only diagnostics exist:
-  - ATR14 normalized
-  - Donchian20 width
-  - Bollinger20 width
-  - optional ADX14
-  - CompressionRangeDetector
-  - detector_duty_cycle.csv/json
-  - range_episodes.csv/json
 - Detector sweep/audit mode exists:
   - CLI flag: -detector-sweep
   - outputs: detector_sweep.csv and detector_sweep.json
-  - grid: percentile 0.20/0.30/0.40, min consecutive bars 6/12/24, Bollinger on/off
-  - ADX is off for the grid, plus one balanced ADX-on comparison
-- Balanced baseline:
-  - profile_id: p30_c12_bollinger_on_adx_off
-  - percentile: 0.30
-  - min consecutive bars: 12
-  - Bollinger: on
-  - ADX: off
-
-Latest detector sweep run:
-
-env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
-  -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv \
-  -out-dir results/detector-sweep \
-  -detector-sweep
-
-Observed detector sweep facts:
-- Output rows: 76 (19 profiles x 4 splits)
-- Balanced baseline full split: 77,231 active bars / 569,451 total bars, 13.5624% duty cycle, 2,996 episodes
-- All profiles had nonzero episodes in every period split.
-- First-pass usable profiles are the ADX-off profiles with full duty roughly 5%-25%, except p20_c24_bollinger_on_adx_off is too sparse and p40_c06_bollinger_on_adx_off / p40_c06_bollinger_off_adx_off are too broad.
-- p40_c12_bollinger_off_adx_off is near the upper edge.
-- The balanced ADX-on comparison is too restrictive for the first-pass screen: p30_c12_bollinger_on_adx_on full duty cycle 4.36%.
-- strategy=empty trades=0.
+  - balanced baseline: p30_c12_bollinger_on_adx_off
+  - balanced baseline full split: 77,231 active bars / 569,451 total bars, 13.5624% duty cycle, 2,996 episodes
+- Pinned research helper modules exist in go.mod:
+  - github.com/laclance/go-sr v1.0.0
+  - github.com/markcheno/go-talib v0.0.0-20250114000313-ec55a20c902f
+  - nproject.io/gitlab/libraries/talib-cdl-go v0.0.0-20211217160304-2ed8176448cc
 
 Non-negotiables:
 - Offline research only.
@@ -60,19 +34,23 @@ Non-negotiables:
 - One open position max.
 - Stop-first ambiguity.
 - Keep every result explainable and reproducible.
+- Helper modules may provide feature extraction/audit outputs only; strategy hypotheses, entries, exits, scoring, sizing, and backtest behavior stay inside this lab.
 
 Next recommended milestone:
-Choose one detector profile and one simple first entry template before implementing trades.
+Add a go-sr support/resistance audit mode before implementing trades.
 
 Recommended default:
-- Use the balanced baseline p30_c12_bollinger_on_adx_off unless there is a clear reason to test a broader/narrower detector first.
-- Start with exactly one explainable entry template.
-- Do not combine multiple entry styles, grids, averaging down, martingale, or multi-exchange ideas.
+- Add a CLI flag such as -sr-audit.
+- Use github.com/laclance/go-sr v1.0.0 through a small adapter from lab.Candle to sr.Candle.
+- Start with 5m zone mode and an explainable fixed lookback.
+- Write generated outputs under -out-dir, for example sr_zones.csv/json or sr_touch_audit.csv/json.
+- Include enough fields to inspect boundary quality: nearest support/resistance, distance to close, near flags, zone strength/score, and split/time context.
+- Do not add entry/exit trading rules in this audit milestone.
 
-Acceptance criteria for the next coding milestone:
-- Strategy changes are isolated and still use confirmed closed candles with next-bar-open entries.
-- Only one entry template is added.
-- Results include the existing split metrics and preserve zero-lookahead behavior.
+Acceptance criteria:
 - /usr/local/go/bin/go test ./... passes with GOCACHE=/tmp/range-strategy-lab-go-build if needed.
-- Generated outputs stay under results/.
+- Smoke run on ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv writes SR audit CSV/JSON under results/.
+- Existing detector and detector-sweep outputs still work.
+- Strategy remains empty and trades remain 0.
+- Update memory/PROGRESS.md with commands, result paths, and short factual outcomes.
 ```

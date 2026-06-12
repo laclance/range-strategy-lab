@@ -130,7 +130,40 @@ env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
 
 Result: passed.
 
+Research helper dependency milestone:
+
+- Added pinned pure-Go helper modules:
+  - `github.com/laclance/go-sr v1.0.0`
+  - `github.com/markcheno/go-talib v0.0.0-20250114000313-ec55a20c902f`
+  - `nproject.io/gitlab/libraries/talib-cdl-go v0.0.0-20211217160304-2ed8176448cc`
+- Added `docs/RESEARCH_HELPERS.md`.
+- Updated docs to keep helper modules behind adapters and audit outputs.
+- No strategy entries, exits, scoring, live code, or generated result artifacts
+  were added.
+
+Dependency add command:
+
+```bash
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go get \
+  github.com/laclance/go-sr@v1.0.0 \
+  github.com/markcheno/go-talib@v0.0.0-20250114000313-ec55a20c902f \
+  nproject.io/gitlab/libraries/talib-cdl-go@v0.0.0-20211217160304-2ed8176448cc
+```
+
+Verification:
+
+```bash
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+git diff --check
+```
+
+Result: passed.
+
 Next implementation:
 
-- Choose one detector profile and one simple first entry template before adding trade entries.
+- Add a `go-sr` support/resistance audit mode before adding trade entries.
+- Use the balanced detector profile as the default context unless a sweep result
+  gives a better reason.
+- After SR audit outputs are inspectable, choose one detector profile and one
+  simple first entry template.
 - Use `memory/NEXT_CODEX_BRIEF.md` as the next-session prompt.

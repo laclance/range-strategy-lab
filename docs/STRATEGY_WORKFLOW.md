@@ -17,6 +17,12 @@ The detector should answer: "When do we believe BTCUSDT is in a range?"
 
 ## 2. Add One Entry Template
 
+Before implementing entries, use helper modules only to create inspectable
+features or audit outputs. For example, support/resistance zones can define the
+boundary under test, while indicators or candle patterns can be recorded as
+diagnostic columns. Do not let helper modules turn the first entry into a bundle
+of unrelated filters.
+
 Start with one entry type only. Examples:
 
 - boundary rejection

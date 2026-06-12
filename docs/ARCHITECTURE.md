@@ -52,6 +52,8 @@ Good first additions:
 
 - Indicator helpers, such as ATR, Donchian width, Bollinger width, or ADX.
 - Detector-only outputs, such as duty cycle and regime duration.
+- Research-helper adapters for pinned pure-Go modules listed in
+  [RESEARCH_HELPERS.md](RESEARCH_HELPERS.md).
 - A simple range detector strategy that returns no trades but writes diagnostics.
 - Candidate strategy structs under `internal/lab/strategies/`.
 - CLI flags to select strategy and strategy parameters.
