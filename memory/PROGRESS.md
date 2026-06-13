@@ -174,8 +174,7 @@ SR audit milestone:
   - `detector_profile_id=p30_c12_bollinger_on_adx_off`
   - `detector_raw_active`
   - `detector_active`
-- Refreshed `CODEX_BRIEF.md` and `memory/NEXT_CODEX_BRIEF.md` for the next
-  SR boundary-inspection step.
+- Refreshed the next Codex brief for the next SR boundary-inspection step.
 - Strategy remains `lab.EmptyStrategy`.
 - Trades remain `0`.
 
@@ -459,7 +458,7 @@ Result: passed.
 Next implementation:
 
 - Start with an entry-readiness review before adding trades.
-- Use `CODEX_BRIEF.md` / `memory/NEXT_CODEX_BRIEF.md` as the next prompt.
+- Use `memory/NEXT_CODEX_BRIEF.md` as the next prompt.
 - Review code correctness, lookahead safety, coverage gaps, docs, and memory
   before the first entry implementation.
 - After the review is clean, consider one more compact timing audit that asks
@@ -470,14 +469,13 @@ Entry-readiness handoff:
 
 - Committed SR boundary inspection mode:
   - commit: `1e26695 Add SR boundary inspection mode`
-- Refreshed `CODEX_BRIEF.md` and `memory/NEXT_CODEX_BRIEF.md` with a
-  paste-ready prompt for:
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` with a paste-ready prompt for:
   - whole-project review before entries
   - test coverage gap investigation
   - docs/memory readiness
   - next non-trading boundary-rejection timing audit
-- Kept `CODEX_BRIEF.md` and `memory/NEXT_CODEX_BRIEF.md` byte-for-byte
-  identical.
+- Removed duplicate root `CODEX_BRIEF.md`; `memory/NEXT_CODEX_BRIEF.md` is the
+  canonical next-session prompt.
 - Coverage check:
   - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test -cover ./internal/lab`
   - result: `84.5%` statement coverage

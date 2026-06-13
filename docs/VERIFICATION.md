@@ -11,7 +11,7 @@ The folder contains everything needed to compile and run the lab code:
 - `cmd/rangelab/main.go`
 - `internal/lab/*.go`
 - `docs/*.md`
-- `CODEX_BRIEF.md`
+- `memory/NEXT_CODEX_BRIEF.md`
 
 The only external input needed for a real run is a candle CSV passed with
 `-csv`.

@@ -18,6 +18,8 @@
 - Generated outputs belong under `results/`, which remains ignored by Git.
 - Project memory is tracked under `memory/`.
 - Future Codex sessions should read `AGENTS.md` and `memory/` before nontrivial work.
+- The canonical next-session prompt is `memory/NEXT_CODEX_BRIEF.md`; do not
+  keep a duplicate root `CODEX_BRIEF.md`.
 - Detector diagnostics are detector-only and must not create trade signals.
 - The initial balanced detector baseline is:
   - percentile: `0.30`
