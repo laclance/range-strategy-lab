@@ -104,6 +104,9 @@ func (d CompressionRangeDetector) Classify(candles []Candle) ([]RangeClassificat
 
 func (cfg RangeDetectorConfig) withDefaults() RangeDetectorConfig {
 	defaults := DefaultCompressionRangeDetectorConfig()
+	if cfg == (RangeDetectorConfig{}) {
+		return defaults
+	}
 	if cfg.ATRPeriod == 0 {
 		cfg.ATRPeriod = defaults.ATRPeriod
 	}

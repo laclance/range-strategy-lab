@@ -59,6 +59,19 @@ func TestDefaultDetectorSweepProfiles(t *testing.T) {
 	}
 }
 
+func TestDefaultDetectorSweepProfilesUsesDefaultLookback(t *testing.T) {
+	profiles := DefaultDetectorSweepProfiles(0)
+	if len(profiles) == 0 {
+		t.Fatalf("expected default profiles")
+	}
+	want := DefaultCompressionRangeDetectorConfig().LookbackDays
+	for _, profile := range profiles {
+		if profile.LookbackDays != want {
+			t.Fatalf("profile lookback=%d, want %d", profile.LookbackDays, want)
+		}
+	}
+}
+
 func TestRunDetectorSweepIncludesEverySplitForEachProfile(t *testing.T) {
 	candles := make([]Candle, 64)
 	for i := range candles {
@@ -112,6 +125,36 @@ func TestRunDetectorSweepIncludesEverySplitForEachProfile(t *testing.T) {
 				t.Fatalf("profile %s missing split %s", profileID, split.Name)
 			}
 		}
+	}
+}
+
+func TestRunDetectorSweepDefaultsSplitsAndRejectsInvalidConfig(t *testing.T) {
+	candles := make([]Candle, 32)
+	for i := range candles {
+		base := 100 + float64(i%3)
+		candles[i] = testCandle(i, base, base+1, base-1, base+0.5)
+	}
+	cfg := RangeDetectorConfig{
+		ATRPeriod:          2,
+		DonchianPeriod:     2,
+		BollingerPeriod:    2,
+		ADXPeriod:          2,
+		LookbackDays:       1,
+		BarsPerDay:         1,
+		MinConsecutiveBars: 1,
+	}
+
+	rows, err := RunDetectorSweep(candles, cfg, nil)
+	if err != nil {
+		t.Fatalf("RunDetectorSweep error: %v", err)
+	}
+	if len(rows) != 19*len(DefaultSplits()) {
+		t.Fatalf("rows=%d, want %d", len(rows), 19*len(DefaultSplits()))
+	}
+
+	cfg.ATRPeriod = -1
+	if _, err := RunDetectorSweep(candles, cfg, nil); err == nil {
+		t.Fatalf("expected invalid detector sweep config error")
 	}
 }
 

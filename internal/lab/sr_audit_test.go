@@ -48,11 +48,11 @@ func TestRunSRAuditStartsAfterWarmupAndEmitsDeterministicMetadata(t *testing.T) 
 		MinStrength:  1,
 	}
 
-	rows, err := RunSRAudit(candles, cfg, DefaultSplits())
+	rows, err := RunSRAudit(candles, cfg, nil)
 	if err != nil {
 		t.Fatalf("RunSRAudit error: %v", err)
 	}
-	again, err := RunSRAudit(candles, cfg, DefaultSplits())
+	again, err := RunSRAudit(candles, cfg, nil)
 	if err != nil {
 		t.Fatalf("second RunSRAudit error: %v", err)
 	}
@@ -79,6 +79,14 @@ func TestRunSRAuditStartsAfterWarmupAndEmitsDeterministicMetadata(t *testing.T) 
 	}
 	if first.NearestSupportSourcePivots == nil || first.NearestResistanceSourcePivots == nil {
 		t.Fatalf("source pivot slices should be empty slices, not nil: %+v", first)
+	}
+}
+
+func TestSRAuditConfigDefaults(t *testing.T) {
+	cfg := SRAuditConfig{}.withDefaults()
+	want := DefaultSRAuditConfig()
+	if cfg != want {
+		t.Fatalf("defaults=%+v, want %+v", cfg, want)
 	}
 }
 
@@ -148,6 +156,39 @@ func TestSRAuditNearestMetadataMirrorsGoSRSideRules(t *testing.T) {
 	}
 }
 
+func TestSRAuditRowHandlesMissingZonesAndFallbacks(t *testing.T) {
+	c := testCandle(0, 100, 102, 98, 100)
+	row := newSRAuditRow(c, 3, SRAuditConfig{}.withDefaults(), 1, sr.Levels{}, RangeClassification{}, []Split{})
+	if row.HasSupport || row.HasResistance || row.Split != "" {
+		t.Fatalf("unexpected support/resistance or split: %+v", row)
+	}
+	if row.NearestSupportDistance != 0 || row.NearestResistanceDistance != 0 {
+		t.Fatalf("missing zone distance should be zero: %+v", row)
+	}
+
+	if got := classificationAt([]RangeClassification{{Index: 0, Active: true}}, -1); got != (RangeClassification{}) {
+		t.Fatalf("negative classification=%+v, want zero", got)
+	}
+	if got := classificationAt([]RangeClassification{{Index: 0, Active: true}}, 2); got != (RangeClassification{}) {
+		t.Fatalf("out-of-range classification=%+v, want zero", got)
+	}
+	if got := splitNameForCloseTime(c.CloseTime, []Split{{Name: "full_2021_2026"}}); got != "full_2021_2026" {
+		t.Fatalf("split=%q, want full", got)
+	}
+	if got := splitNameForCloseTime(c.CloseTime, nil); got != "" {
+		t.Fatalf("split=%q, want empty", got)
+	}
+	if got := distancePct(1, 0); got != 0 {
+		t.Fatalf("distance pct=%v, want 0", got)
+	}
+	if got := maxInt(2, 5); got != 5 {
+		t.Fatalf("maxInt=%d, want 5", got)
+	}
+	if got := maxInt(7, 5); got != 7 {
+		t.Fatalf("maxInt=%d, want 7", got)
+	}
+}
+
 func TestRunSRAuditRejectsInvalidConfig(t *testing.T) {
 	candles := []Candle{testCandle(0, 100, 101, 99, 100)}
 
@@ -167,5 +208,11 @@ func TestRunSRAuditRejectsInvalidConfig(t *testing.T) {
 	badTimeframe.Timeframe = "15m"
 	if _, err := RunSRAudit(candles, badTimeframe, nil); err == nil {
 		t.Fatalf("expected invalid timeframe error")
+	}
+
+	badStrength := DefaultSRAuditConfig()
+	badStrength.MinStrength = -1
+	if _, err := RunSRAudit(candles, badStrength, nil); err == nil {
+		t.Fatalf("expected invalid min strength error")
 	}
 }

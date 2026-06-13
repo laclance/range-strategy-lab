@@ -130,6 +130,9 @@ func RunSRBoundaryAudit(candles []Candle, srRows []SRAuditRow, cfg SRBoundaryAud
 
 func (cfg SRBoundaryAuditConfig) withDefaults() SRBoundaryAuditConfig {
 	defaults := DefaultSRBoundaryAuditConfig()
+	if len(cfg.HorizonsBars) == 0 && !cfg.DetectorActiveOnly {
+		return defaults
+	}
 	if len(cfg.HorizonsBars) == 0 {
 		cfg.HorizonsBars = append([]int(nil), defaults.HorizonsBars...)
 	}

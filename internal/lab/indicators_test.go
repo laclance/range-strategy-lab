@@ -21,6 +21,36 @@ func TestATR14ReturnsNormalizedWilderATR(t *testing.T) {
 	}
 }
 
+func TestIndicatorWarmupAndInvalidPeriodPaths(t *testing.T) {
+	candles := []Candle{testCandle(0, 100, 101, 99, 100)}
+	checkNaN := func(name string, values []float64) {
+		if len(values) != len(candles) {
+			t.Fatalf("%s len=%d, want %d", name, len(values), len(candles))
+		}
+		if !math.IsNaN(values[0]) {
+			t.Fatalf("%s[0]=%v, want NaN", name, values[0])
+		}
+	}
+	checkNaN("ATR invalid", ATR(candles, 0))
+	checkNaN("ATR warmup", ATR(candles, 2))
+	checkNaN("Donchian invalid", DonchianWidth(candles, 0))
+	checkNaN("Donchian warmup", DonchianWidth(candles, 2))
+	checkNaN("Bollinger invalid", BollingerWidth(candles, 0))
+	checkNaN("Bollinger warmup", BollingerWidth(candles, 2))
+	checkNaN("ADX invalid", ADX(candles, 0))
+	checkNaN("ADX warmup", ADX(candles, 2))
+}
+
+func TestNormalizedATRSkipsNonPositiveClose(t *testing.T) {
+	candles := make([]Candle, 2)
+	candles[0] = testCandle(0, 0, 1, -1, 0)
+	candles[1] = testCandle(1, 0, 1, -1, 0)
+	got := NormalizedATR(candles, 1)
+	if !math.IsNaN(got[0]) || !math.IsNaN(got[1]) {
+		t.Fatalf("normalized ATR with non-positive close=%v, want NaNs", got)
+	}
+}
+
 func TestDonchian20Width(t *testing.T) {
 	candles := make([]Candle, 20)
 	for i := range candles {
@@ -45,6 +75,17 @@ func TestBollinger20Width(t *testing.T) {
 	}
 }
 
+func TestBollingerWidthSkipsNonPositiveMean(t *testing.T) {
+	candles := []Candle{
+		testCandle(0, -1, -1, -1, -1),
+		testCandle(1, 1, 1, 1, 1),
+	}
+	got := BollingerWidth(candles, 2)
+	if !math.IsNaN(got[1]) {
+		t.Fatalf("BollingerWidth[1]=%v, want NaN for zero mean", got[1])
+	}
+}
+
 func TestADX14ProducesTrendStrengthWithoutDependency(t *testing.T) {
 	candles := make([]Candle, 30)
 	for i := range candles {
@@ -54,6 +95,26 @@ func TestADX14ProducesTrendStrengthWithoutDependency(t *testing.T) {
 	got := ADX14(candles)
 	if !validNumber(got[27]) || got[27] < 90 {
 		t.Fatalf("ADX14[27]=%v, want strong valid trend", got[27])
+	}
+}
+
+func TestADXHandlesFlatAndGaplessSeries(t *testing.T) {
+	flat := make([]Candle, 6)
+	for i := range flat {
+		flat[i] = testCandle(i, 100, 100, 100, 100)
+	}
+	got := ADX(flat, 2)
+	if got[3] != 0 {
+		t.Fatalf("flat ADX=%v, want 0", got[3])
+	}
+
+	rangeOnly := make([]Candle, 6)
+	for i := range rangeOnly {
+		rangeOnly[i] = testCandle(i, 100, 101, 99, 100)
+	}
+	got = ADX(rangeOnly, 2)
+	if got[3] != 0 {
+		t.Fatalf("range-only ADX=%v, want 0 when DI denominator is zero", got[3])
 	}
 }
 

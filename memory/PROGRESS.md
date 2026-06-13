@@ -2,6 +2,56 @@
 
 ## 2026-06-13
 
+Entry-readiness review gate:
+
+- Added durable review report:
+  - `docs/ENTRY_READINESS_REVIEW.md`
+- Added focused tests across CSV loading, detector/default behavior, detector
+  sweep, engine, indicators, SR audit helpers, SR boundary audit helpers, and
+  empty strategy behavior.
+- Fixed two defaulting bugs found during review:
+  - zero-value `RangeDetectorConfig` now returns
+    `DefaultCompressionRangeDetectorConfig()`, including `UseBollinger=true`
+  - zero-value `SRBoundaryAuditConfig` now returns
+    `DefaultSRBoundaryAuditConfig()`, including `DetectorActiveOnly=true`
+- Review verdict:
+  - the codebase passes the review gate for the next non-trading timing audit
+  - first trade entries should still wait until the timing audit proves a
+    closed-candle rejection signal can be identified without future bars
+- Updated `memory/NEXT_CODEX_BRIEF.md` for the boundary-rejection timing audit.
+- Strategy remains `lab.EmptyStrategy`.
+- Trades remain `0`.
+
+Latest review verification:
+
+```bash
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+git diff --check
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./cmd/rangelab
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test -cover ./internal/lab
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test -coverprofile=/tmp/range-strategy-lab-internal.cover ./internal/lab
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go tool cover -func=/tmp/range-strategy-lab-internal.cover
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+  -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv \
+  -out-dir results/sr-boundary-inspection-check \
+  -sr-boundary-inspect
+```
+
+Result:
+
+- `go test ./...` passed.
+- `git diff --check` passed.
+- `go test ./cmd/rangelab` passed.
+- `internal/lab` coverage: `99.8%`.
+- Remaining uncovered internal statements are justified defensive SR audit error
+  propagation branches in `RunSRAudit`.
+- `go test -cover ./cmd/rangelab` and `go test -cover ./...` still fail with
+  the known snap-confine issue for `cmd/rangelab` coverage.
+- SR boundary inspection check printed:
+  - `sr_boundary_inspect events=281080 comparison_rows=192`
+  - `loaded 569451 candles from 2021-01-01T00:00:00Z to 2026-06-01T23:59:59Z`
+  - `strategy=empty trades=0`
+
 Repository setup milestone:
 
 - Set up tracked project memory in `memory/`.
