@@ -2,6 +2,145 @@
 
 ## 2026-06-13
 
+SR rejection timing review milestone:
+
+- Added durable review report:
+  - `docs/SR_REJECTION_TIMING_REVIEW.md`
+- Updated `README.md` docs order to include the review note.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` for the next non-trading
+  confirmation-audit milestone.
+- Review verdict:
+  - boundary-rejection timing audit is not entry-ready
+  - keep `lab.EmptyStrategy`
+  - trades remain `0`
+  - do not add entries, exits, scoring, sizing, or strategy replacement from
+    this audit alone
+- Compact evidence:
+  - broad support decision candidates were flat-to-negative by
+    favorable-minus-adverse across most horizons
+  - resistance was better but still tiny in aggregate, topping out at
+    `+0.45bp` decision-candidate favorable-minus-adverse at `12` bars
+  - top OOS/recent cohorts were split-specific or side-specific rather than one
+    simple support/resistance-symmetric template
+  - common h12 in-zone strength-2 shape was unstable across pierced state and
+    splits
+- Result paths reviewed:
+  - `results/sr-rejection-timing-audit/sr_rejection_timing_summary.csv`
+  - `results/sr-rejection-timing-audit/sr_rejection_timing_candidates.csv`
+- Next recommended work:
+  - stay non-trading
+  - test delayed confirmation after an SR rejection candle, re-indexed so the
+    confirmation candle is the decision candle and future `label_*` outcomes
+    start after that confirmation candle
+
+Latest review verification:
+
+```bash
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+git diff --check
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+  -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv \
+  -out-dir results/sr-rejection-timing-audit \
+  -sr-rejection-timing-audit
+```
+
+Timing audit smoke result:
+
+- `sr_rejection_timing_audit candidate_rows=968 summary_rows=24`
+- `strategy=empty trades=0`
+
+Boundary-rejection timing audit milestone:
+
+- Added CLI flag `-sr-rejection-timing-audit`.
+- Added compact non-trading outputs:
+  - `sr_rejection_timing_candidates.csv`
+  - `sr_rejection_timing_candidates.json`
+  - `sr_rejection_timing_summary.csv`
+  - `sr_rejection_timing_summary.json`
+- Candidate cohorts group decision-candle features separately from forward
+  labels:
+  - side, horizon, close location, touched/pierced/closed-back state
+  - wick-beyond, strength, and distance buckets
+  - balanced detector context
+  - all forward outcome metrics use `label_` prefixes
+- Added tests for no-lookahead decision features, support/resistance symmetry,
+  touch/pierce/closed-back behavior, bucket behavior, detector-active
+  filtering, missing-future skipping, and summary denominators.
+- This milestone did not add entries, exits, scoring, sizing, or strategy
+  replacement.
+- Strategy remains `lab.EmptyStrategy`.
+- Trades remain `0`.
+
+Latest timing-audit verification:
+
+```bash
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+git diff --check
+
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+  -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv \
+  -out-dir results/sr-boundary-inspection-check \
+  -sr-boundary-inspect
+
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+  -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv \
+  -out-dir results/sr-rejection-timing-audit \
+  -sr-rejection-timing-audit
+
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+  -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv \
+  -out-dir results/sr-combined-compat-check \
+  -sr-audit \
+  -sr-boundary-audit \
+  -sr-boundary-inspect \
+  -sr-rejection-timing-audit
+
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+  -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv \
+  -out-dir results/detector-both-check \
+  -detector \
+  -detector-sweep
+```
+
+Result:
+
+- `go test ./...` passed.
+- `git diff --check` passed.
+- Existing boundary inspect check printed:
+  - `sr_boundary_inspect events=281080 comparison_rows=192`
+  - `strategy=empty trades=0`
+- New timing audit printed:
+  - `sr_rejection_timing_audit candidate_rows=968 summary_rows=24`
+  - `strategy=empty trades=0`
+- New timing audit CSV lines including header:
+  - `sr_rejection_timing_candidates.csv`: `969`
+  - `sr_rejection_timing_summary.csv`: `25`
+- Result paths:
+  - `results/sr-rejection-timing-audit/sr_rejection_timing_candidates.csv`
+  - `results/sr-rejection-timing-audit/sr_rejection_timing_candidates.json`
+  - `results/sr-rejection-timing-audit/sr_rejection_timing_summary.csv`
+  - `results/sr-rejection-timing-audit/sr_rejection_timing_summary.json`
+- Combined SR compatibility check preserved existing counts:
+  - SR audit rows: `569,313`
+  - near-support rows: `126,861`
+  - near-resistance rows: `128,085`
+  - boundary events: `281,080`
+  - boundary quality rows: `192`
+  - boundary inspect comparison rows: `192`
+  - timing audit rows: `968` candidates / `24` summary rows
+- Detector compatibility check preserved existing counts:
+  - detector active bars: `77,231`
+  - detector total bars: `569,451`
+  - detector episodes: `2,996`
+  - detector sweep profiles: `19`
+  - detector sweep rows: `76`
+- Every smoke/compatibility run printed `strategy=empty trades=0`.
+
+Follow-up:
+
+- Superseded by the SR rejection timing review milestone above.
+- The review found this boundary-rejection timing shape is not entry-ready.
+
 Entry-readiness review gate:
 
 - Added durable review report:

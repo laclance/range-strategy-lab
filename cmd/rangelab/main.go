@@ -34,6 +34,7 @@ func run() error {
 	srAudit := flag.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
 	srBoundaryAudit := flag.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
 	srBoundaryInspect := flag.Bool("sr-boundary-inspect", false, "write compact non-trading SR boundary candidate comparison diagnostics")
+	srRejectionTimingAudit := flag.Bool("sr-rejection-timing-audit", false, "write compact non-trading SR rejection timing diagnostics")
 	detectorLookbackDays := flag.Int("detector-lookback-days", 20, "range detector trailing lookback in days")
 	detectorPercentile := flag.Float64("detector-percentile", 0.30, "range detector low-compression percentile threshold")
 	detectorMinConsecutiveBars := flag.Int("detector-min-consecutive-bars", 12, "range detector confirmed raw-active bars before active")
@@ -76,7 +77,7 @@ func run() error {
 	}
 	var srRows []lab.SRAuditRow
 	srCfg := lab.DefaultSRAuditConfig()
-	if *srAudit || *srBoundaryAudit || *srBoundaryInspect {
+	if *srAudit || *srBoundaryAudit || *srBoundaryInspect || *srRejectionTimingAudit {
 		var err error
 		srRows, err = lab.RunSRAudit(candles, srCfg, lab.DefaultSplits())
 		if err != nil {
@@ -153,6 +154,31 @@ func run() error {
 				boundaryCfg.DetectorActiveOnly,
 			)
 		}
+	}
+	if *srRejectionTimingAudit {
+		timingCfg := lab.DefaultSRRejectionTimingAuditConfig()
+		candidateRows, summaryRows, err := lab.RunSRRejectionTimingAudit(candles, srRows, timingCfg)
+		if err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "sr_rejection_timing_candidates.json"), candidateRows); err != nil {
+			return err
+		}
+		if err := writeSRRejectionTimingCandidatesCSV(filepath.Join(*outDir, "sr_rejection_timing_candidates.csv"), candidateRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "sr_rejection_timing_summary.json"), summaryRows); err != nil {
+			return err
+		}
+		if err := writeSRRejectionTimingSummaryCSV(filepath.Join(*outDir, "sr_rejection_timing_summary.csv"), summaryRows); err != nil {
+			return err
+		}
+		fmt.Printf("sr_rejection_timing_audit candidate_rows=%d summary_rows=%d horizons=%s detector_active_only=%t\n",
+			len(candidateRows),
+			len(summaryRows),
+			formatIntSlice(timingCfg.HorizonsBars),
+			timingCfg.DetectorActiveOnly,
+		)
 	}
 	if *detector || *detectorSweep {
 		if *detectorLookbackDays <= 0 {
@@ -723,6 +749,180 @@ func writeSRBoundaryCandidateComparisonCSV(path string, rows []lab.SRBoundaryCan
 			formatFloat(row.ReclaimedAvgAdversePct),
 			formatFloat(row.ReclaimedFavorableMinusAdversePct),
 			formatFloat(row.ReclaimedFavorableGreaterThanAdverseRate),
+		}); err != nil {
+			return err
+		}
+	}
+	return w.Error()
+}
+
+func writeSRRejectionTimingCandidatesCSV(path string, rows []lab.SRRejectionTimingCandidateRow) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	w := csv.NewWriter(f)
+	defer w.Flush()
+
+	if err := w.Write([]string{
+		"split",
+		"side",
+		"horizon_bars",
+		"close_location",
+		"touched_zone",
+		"pierced_zone",
+		"closed_back",
+		"decision_rejection_candidate",
+		"wick_beyond_bucket",
+		"strength_bucket",
+		"distance_bucket",
+		"detector_profile_id",
+		"detector_raw_active",
+		"detector_active",
+		"candidate_count",
+		"avg_score",
+		"avg_distance_pct",
+		"avg_wick_beyond_pct",
+		"label_close_break_count",
+		"label_wick_break_count",
+		"label_reclaimed_after_break_count",
+		"label_rejected_count",
+		"label_favorable_greater_than_adverse_count",
+		"label_close_break_rate",
+		"label_wick_break_rate",
+		"label_reclaim_event_rate",
+		"label_reclaim_given_close_break_rate",
+		"label_rejection_rate",
+		"label_avg_favorable_pct",
+		"label_avg_adverse_pct",
+		"label_favorable_minus_adverse_pct",
+		"label_favorable_greater_than_adverse_rate",
+	}); err != nil {
+		return err
+	}
+	for _, row := range rows {
+		if err := w.Write([]string{
+			row.Split,
+			row.Side,
+			strconv.Itoa(row.HorizonBars),
+			row.CloseLocation,
+			strconv.FormatBool(row.TouchedZone),
+			strconv.FormatBool(row.PiercedZone),
+			strconv.FormatBool(row.ClosedBack),
+			strconv.FormatBool(row.DecisionRejectionCandidate),
+			row.WickBeyondBucket,
+			row.StrengthBucket,
+			row.DistanceBucket,
+			row.DetectorProfileID,
+			strconv.FormatBool(row.DetectorRawActive),
+			strconv.FormatBool(row.DetectorActive),
+			strconv.Itoa(row.CandidateCount),
+			formatFloat(row.AvgScore),
+			formatFloat(row.AvgDistancePct),
+			formatFloat(row.AvgWickBeyondPct),
+			strconv.Itoa(row.LabelCloseBreakCount),
+			strconv.Itoa(row.LabelWickBreakCount),
+			strconv.Itoa(row.LabelReclaimedAfterBreakCount),
+			strconv.Itoa(row.LabelRejectedCount),
+			strconv.Itoa(row.LabelFavorableGreaterThanAdverseCount),
+			formatFloat(row.LabelCloseBreakRate),
+			formatFloat(row.LabelWickBreakRate),
+			formatFloat(row.LabelReclaimEventRate),
+			formatFloat(row.LabelReclaimGivenCloseBreakRate),
+			formatFloat(row.LabelRejectionRate),
+			formatFloat(row.LabelAvgFavorablePct),
+			formatFloat(row.LabelAvgAdversePct),
+			formatFloat(row.LabelFavorableMinusAdversePct),
+			formatFloat(row.LabelFavorableGreaterThanAdverseRate),
+		}); err != nil {
+			return err
+		}
+	}
+	return w.Error()
+}
+
+func writeSRRejectionTimingSummaryCSV(path string, rows []lab.SRRejectionTimingSummaryRow) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	w := csv.NewWriter(f)
+	defer w.Flush()
+
+	if err := w.Write([]string{
+		"split",
+		"side",
+		"horizon_bars",
+		"detector_profile_id",
+		"detector_raw_active",
+		"detector_active",
+		"candidate_count",
+		"touched_count",
+		"pierced_count",
+		"closed_back_count",
+		"decision_rejection_candidate_count",
+		"touched_rate",
+		"pierced_rate",
+		"closed_back_rate",
+		"decision_rejection_candidate_rate",
+		"label_close_break_rate",
+		"label_wick_break_rate",
+		"label_reclaim_event_rate",
+		"label_reclaim_given_close_break_rate",
+		"label_rejection_rate",
+		"label_avg_favorable_pct",
+		"label_avg_adverse_pct",
+		"label_favorable_minus_adverse_pct",
+		"label_favorable_greater_than_adverse_rate",
+		"decision_candidate_label_close_break_rate",
+		"decision_candidate_label_wick_break_rate",
+		"decision_candidate_label_reclaim_event_rate",
+		"decision_candidate_label_reclaim_given_close_break_rate",
+		"decision_candidate_label_rejection_rate",
+		"decision_candidate_label_avg_favorable_pct",
+		"decision_candidate_label_avg_adverse_pct",
+		"decision_candidate_label_favorable_minus_adverse_pct",
+		"decision_candidate_label_favorable_greater_than_adverse_rate",
+	}); err != nil {
+		return err
+	}
+	for _, row := range rows {
+		if err := w.Write([]string{
+			row.Split,
+			row.Side,
+			strconv.Itoa(row.HorizonBars),
+			row.DetectorProfileID,
+			strconv.FormatBool(row.DetectorRawActive),
+			strconv.FormatBool(row.DetectorActive),
+			strconv.Itoa(row.CandidateCount),
+			strconv.Itoa(row.TouchedCount),
+			strconv.Itoa(row.PiercedCount),
+			strconv.Itoa(row.ClosedBackCount),
+			strconv.Itoa(row.DecisionRejectionCandidateCount),
+			formatFloat(row.TouchedRate),
+			formatFloat(row.PiercedRate),
+			formatFloat(row.ClosedBackRate),
+			formatFloat(row.DecisionRejectionCandidateRate),
+			formatFloat(row.LabelCloseBreakRate),
+			formatFloat(row.LabelWickBreakRate),
+			formatFloat(row.LabelReclaimEventRate),
+			formatFloat(row.LabelReclaimGivenCloseBreakRate),
+			formatFloat(row.LabelRejectionRate),
+			formatFloat(row.LabelAvgFavorablePct),
+			formatFloat(row.LabelAvgAdversePct),
+			formatFloat(row.LabelFavorableMinusAdversePct),
+			formatFloat(row.LabelFavorableGreaterThanAdverseRate),
+			formatFloat(row.DecisionCandidateLabelCloseBreakRate),
+			formatFloat(row.DecisionCandidateLabelWickBreakRate),
+			formatFloat(row.DecisionCandidateLabelReclaimEventRate),
+			formatFloat(row.DecisionCandidateLabelReclaimGivenCloseBreakRate),
+			formatFloat(row.DecisionCandidateLabelRejectionRate),
+			formatFloat(row.DecisionCandidateLabelAvgFavorablePct),
+			formatFloat(row.DecisionCandidateLabelAvgAdversePct),
+			formatFloat(row.DecisionCandidateLabelFavorableMinusAdversePct),
+			formatFloat(row.DecisionCandidateLabelFavorableGreaterThanAdverseRate),
 		}); err != nil {
 			return err
 		}

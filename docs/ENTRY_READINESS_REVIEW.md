@@ -90,6 +90,8 @@ Observed smoke result:
 
 ## Next Step
 
-Add the compact non-trading boundary-rejection timing audit. The audit should
-test whether rejection can be identified from the decision candle and prior SR
-context only, while keeping 1, 3, 6, and 12 bar forward outcomes as labels.
+This review gate was followed by the non-trading boundary-rejection timing
+audit and `docs/SR_REJECTION_TIMING_REVIEW.md`.
+
+Current verdict after that timing review: boundary rejection is not
+entry-ready, and the strategy should remain `lab.EmptyStrategy`.
