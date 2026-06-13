@@ -28,7 +28,8 @@ Read the docs in this order:
 5. [docs/VERIFICATION.md](docs/VERIFICATION.md)
 6. [docs/ENTRY_READINESS_REVIEW.md](docs/ENTRY_READINESS_REVIEW.md)
 7. [docs/SR_REJECTION_TIMING_REVIEW.md](docs/SR_REJECTION_TIMING_REVIEW.md)
-8. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+8. [docs/SR_CONFIRMATION_TIMING_REVIEW.md](docs/SR_CONFIRMATION_TIMING_REVIEW.md)
+9. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 

@@ -2,6 +2,135 @@
 
 ## 2026-06-13
 
+SR confirmation timing review milestone:
+
+- Added durable review report:
+  - `docs/SR_CONFIRMATION_TIMING_REVIEW.md`
+- Updated `README.md` docs order to include the review note.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` for the next materially different
+  non-trading hypothesis.
+- Review verdict:
+  - delayed confirmation after SR rejection is not entry-ready
+  - keep `lab.EmptyStrategy`
+  - trades remain `0`
+  - do not add entries, exits, scoring, sizing, or strategy replacement from
+    this audit
+  - do not continue broad rejection-confirmation slicing unless the next
+    hypothesis changes materially
+- Inputs reviewed:
+  - `results/sr-confirmation-timing-audit/sr_confirmation_timing_summary.csv`
+  - `results/sr-confirmation-timing-audit/sr_confirmation_timing_candidates.csv`
+- Audit size:
+  - candidate rows: `9,692`
+  - summary rows: `72`
+  - candidate CSV lines including header: `9,693`
+  - summary CSV lines including header: `73`
+- Compact evidence:
+  - broad decision-confirmation cohorts were about `48.9%` to `49.6%` of seed
+    rejection candidates
+  - side/delay/horizon aggregate favorable-minus-adverse topped near `+0.96bp`
+  - recent split support turned flat or negative in several rows
+  - FGTA was mostly below `50%`
+  - with at least `500` rows in every split, best minimum split diff fell to
+    about `+0.16bp`
+  - with at least `750` rows in every split, no stable cohorts remained
+
+Latest confirmation-review verification:
+
+```bash
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+git diff --check
+```
+
+Result:
+
+- Verification passed.
+- Existing generated artifacts were used; the audit smoke was not rerun because
+  `results/sr-confirmation-timing-audit/` was present and current.
+
+SR confirmation timing audit milestone:
+
+- Added CLI flag `-sr-confirmation-timing-audit`.
+- Added compact non-trading delayed-confirmation outputs:
+  - `sr_confirmation_timing_candidates.csv`
+  - `sr_confirmation_timing_candidates.json`
+  - `sr_confirmation_timing_summary.csv`
+  - `sr_confirmation_timing_summary.json`
+- Defaults:
+  - confirmation delays: `1`, `2`, `3` bars after the seed rejection candle
+  - horizons: `1`, `3`, `6`, `12` bars after the confirmation candle
+  - `detector_active=true` seed rows only
+- Decision semantics:
+  - seed candle must be an existing SR rejection candidate
+  - confirmation candle is the decision candle
+  - all forward outcome metrics remain `label_*` fields and start after the
+    confirmation candle
+- Added focused tests for no-lookahead decision features, label-window start,
+  support/resistance symmetry, seed filtering, end-of-data skipping, invalid
+  config, candidate aggregation, and summary denominators.
+- This milestone did not add entries, exits, scoring, sizing, or strategy
+  replacement.
+- Strategy remains `lab.EmptyStrategy`.
+- Trades remain `0`.
+
+Latest confirmation-audit verification:
+
+```bash
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+git diff --check
+
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+  -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv \
+  -out-dir results/sr-confirmation-timing-audit \
+  -sr-confirmation-timing-audit
+
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+  -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv \
+  -out-dir results/sr-confirmation-combined-compat-check \
+  -sr-audit \
+  -sr-boundary-audit \
+  -sr-boundary-inspect \
+  -sr-rejection-timing-audit \
+  -sr-confirmation-timing-audit
+```
+
+Result:
+
+- `go test ./...` passed.
+- `git diff --check` passed.
+- New confirmation audit printed:
+  - `sr_confirmation_timing_audit candidate_rows=9692 summary_rows=72`
+  - `delays=1;2;3`
+  - `horizons=1;3;6;12`
+  - `detector_active_only=true`
+  - `strategy=empty trades=0`
+- New confirmation audit CSV lines including header:
+  - `sr_confirmation_timing_candidates.csv`: `9,693`
+  - `sr_confirmation_timing_summary.csv`: `73`
+- Result paths:
+  - `results/sr-confirmation-timing-audit/sr_confirmation_timing_candidates.csv`
+  - `results/sr-confirmation-timing-audit/sr_confirmation_timing_candidates.json`
+  - `results/sr-confirmation-timing-audit/sr_confirmation_timing_summary.csv`
+  - `results/sr-confirmation-timing-audit/sr_confirmation_timing_summary.json`
+- Combined SR compatibility check preserved existing counts:
+  - SR audit rows: `569,313`
+  - near-support rows: `126,861`
+  - near-resistance rows: `128,085`
+  - boundary events: `281,080`
+  - boundary quality rows: `192`
+  - boundary inspect comparison rows: `192`
+  - rejection timing rows: `968` candidates / `24` summary rows
+  - confirmation timing rows: `9,692` candidates / `72` summary rows
+- Compact aggregate read of `sr_confirmation_timing_summary.csv`:
+  - broad side/delay/horizon decision-confirmation cohorts were about
+    `48.9%` to `49.6%` of seed rejection candidates
+  - decision-candidate favorable-minus-adverse was small-positive across the
+    aggregate side/delay/horizon grid, topping out at about `+0.96bp`
+  - favorable-greater-than-adverse rates were still mostly below `50%`
+- No durable promotion or no-promotion review document was added in this
+  milestone; the next step should review split and cohort stability before any
+  entries.
+
 SR rejection timing review milestone:
 
 - Added durable review report:

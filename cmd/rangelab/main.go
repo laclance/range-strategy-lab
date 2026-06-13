@@ -35,6 +35,7 @@ func run() error {
 	srBoundaryAudit := flag.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
 	srBoundaryInspect := flag.Bool("sr-boundary-inspect", false, "write compact non-trading SR boundary candidate comparison diagnostics")
 	srRejectionTimingAudit := flag.Bool("sr-rejection-timing-audit", false, "write compact non-trading SR rejection timing diagnostics")
+	srConfirmationTimingAudit := flag.Bool("sr-confirmation-timing-audit", false, "write compact non-trading SR confirmation timing diagnostics")
 	detectorLookbackDays := flag.Int("detector-lookback-days", 20, "range detector trailing lookback in days")
 	detectorPercentile := flag.Float64("detector-percentile", 0.30, "range detector low-compression percentile threshold")
 	detectorMinConsecutiveBars := flag.Int("detector-min-consecutive-bars", 12, "range detector confirmed raw-active bars before active")
@@ -77,7 +78,7 @@ func run() error {
 	}
 	var srRows []lab.SRAuditRow
 	srCfg := lab.DefaultSRAuditConfig()
-	if *srAudit || *srBoundaryAudit || *srBoundaryInspect || *srRejectionTimingAudit {
+	if *srAudit || *srBoundaryAudit || *srBoundaryInspect || *srRejectionTimingAudit || *srConfirmationTimingAudit {
 		var err error
 		srRows, err = lab.RunSRAudit(candles, srCfg, lab.DefaultSplits())
 		if err != nil {
@@ -178,6 +179,32 @@ func run() error {
 			len(summaryRows),
 			formatIntSlice(timingCfg.HorizonsBars),
 			timingCfg.DetectorActiveOnly,
+		)
+	}
+	if *srConfirmationTimingAudit {
+		confirmationCfg := lab.DefaultSRConfirmationTimingAuditConfig()
+		candidateRows, summaryRows, err := lab.RunSRConfirmationTimingAudit(candles, srRows, confirmationCfg)
+		if err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "sr_confirmation_timing_candidates.json"), candidateRows); err != nil {
+			return err
+		}
+		if err := writeSRConfirmationTimingCandidatesCSV(filepath.Join(*outDir, "sr_confirmation_timing_candidates.csv"), candidateRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "sr_confirmation_timing_summary.json"), summaryRows); err != nil {
+			return err
+		}
+		if err := writeSRConfirmationTimingSummaryCSV(filepath.Join(*outDir, "sr_confirmation_timing_summary.csv"), summaryRows); err != nil {
+			return err
+		}
+		fmt.Printf("sr_confirmation_timing_audit candidate_rows=%d summary_rows=%d delays=%s horizons=%s detector_active_only=%t\n",
+			len(candidateRows),
+			len(summaryRows),
+			formatIntSlice(confirmationCfg.ConfirmationDelayBars),
+			formatIntSlice(confirmationCfg.HorizonsBars),
+			confirmationCfg.DetectorActiveOnly,
 		)
 	}
 	if *detector || *detectorSweep {
@@ -905,6 +932,184 @@ func writeSRRejectionTimingSummaryCSV(path string, rows []lab.SRRejectionTimingS
 			formatFloat(row.PiercedRate),
 			formatFloat(row.ClosedBackRate),
 			formatFloat(row.DecisionRejectionCandidateRate),
+			formatFloat(row.LabelCloseBreakRate),
+			formatFloat(row.LabelWickBreakRate),
+			formatFloat(row.LabelReclaimEventRate),
+			formatFloat(row.LabelReclaimGivenCloseBreakRate),
+			formatFloat(row.LabelRejectionRate),
+			formatFloat(row.LabelAvgFavorablePct),
+			formatFloat(row.LabelAvgAdversePct),
+			formatFloat(row.LabelFavorableMinusAdversePct),
+			formatFloat(row.LabelFavorableGreaterThanAdverseRate),
+			formatFloat(row.DecisionCandidateLabelCloseBreakRate),
+			formatFloat(row.DecisionCandidateLabelWickBreakRate),
+			formatFloat(row.DecisionCandidateLabelReclaimEventRate),
+			formatFloat(row.DecisionCandidateLabelReclaimGivenCloseBreakRate),
+			formatFloat(row.DecisionCandidateLabelRejectionRate),
+			formatFloat(row.DecisionCandidateLabelAvgFavorablePct),
+			formatFloat(row.DecisionCandidateLabelAvgAdversePct),
+			formatFloat(row.DecisionCandidateLabelFavorableMinusAdversePct),
+			formatFloat(row.DecisionCandidateLabelFavorableGreaterThanAdverseRate),
+		}); err != nil {
+			return err
+		}
+	}
+	return w.Error()
+}
+
+func writeSRConfirmationTimingCandidatesCSV(path string, rows []lab.SRConfirmationTimingCandidateRow) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	w := csv.NewWriter(f)
+	defer w.Flush()
+
+	if err := w.Write([]string{
+		"split",
+		"side",
+		"confirmation_delay_bars",
+		"horizon_bars",
+		"seed_close_location",
+		"seed_pierced_zone",
+		"seed_wick_beyond_bucket",
+		"confirmation_close_location",
+		"confirmation_favorable_close",
+		"confirmation_wrong_side_close",
+		"decision_confirmation_candidate",
+		"strength_bucket",
+		"distance_bucket",
+		"detector_profile_id",
+		"detector_raw_active",
+		"detector_active",
+		"candidate_count",
+		"avg_score",
+		"avg_distance_pct",
+		"avg_seed_wick_beyond_pct",
+		"avg_confirmation_move_pct",
+		"label_close_break_count",
+		"label_wick_break_count",
+		"label_reclaimed_after_break_count",
+		"label_rejected_count",
+		"label_favorable_greater_than_adverse_count",
+		"label_close_break_rate",
+		"label_wick_break_rate",
+		"label_reclaim_event_rate",
+		"label_reclaim_given_close_break_rate",
+		"label_rejection_rate",
+		"label_avg_favorable_pct",
+		"label_avg_adverse_pct",
+		"label_favorable_minus_adverse_pct",
+		"label_favorable_greater_than_adverse_rate",
+	}); err != nil {
+		return err
+	}
+	for _, row := range rows {
+		if err := w.Write([]string{
+			row.Split,
+			row.Side,
+			strconv.Itoa(row.ConfirmationDelayBars),
+			strconv.Itoa(row.HorizonBars),
+			row.SeedCloseLocation,
+			strconv.FormatBool(row.SeedPiercedZone),
+			row.SeedWickBeyondBucket,
+			row.ConfirmationCloseLocation,
+			strconv.FormatBool(row.ConfirmationFavorableClose),
+			strconv.FormatBool(row.ConfirmationWrongSideClose),
+			strconv.FormatBool(row.DecisionConfirmationCandidate),
+			row.StrengthBucket,
+			row.DistanceBucket,
+			row.DetectorProfileID,
+			strconv.FormatBool(row.DetectorRawActive),
+			strconv.FormatBool(row.DetectorActive),
+			strconv.Itoa(row.CandidateCount),
+			formatFloat(row.AvgScore),
+			formatFloat(row.AvgDistancePct),
+			formatFloat(row.AvgSeedWickBeyondPct),
+			formatFloat(row.AvgConfirmationMovePct),
+			strconv.Itoa(row.LabelCloseBreakCount),
+			strconv.Itoa(row.LabelWickBreakCount),
+			strconv.Itoa(row.LabelReclaimedAfterBreakCount),
+			strconv.Itoa(row.LabelRejectedCount),
+			strconv.Itoa(row.LabelFavorableGreaterThanAdverseCount),
+			formatFloat(row.LabelCloseBreakRate),
+			formatFloat(row.LabelWickBreakRate),
+			formatFloat(row.LabelReclaimEventRate),
+			formatFloat(row.LabelReclaimGivenCloseBreakRate),
+			formatFloat(row.LabelRejectionRate),
+			formatFloat(row.LabelAvgFavorablePct),
+			formatFloat(row.LabelAvgAdversePct),
+			formatFloat(row.LabelFavorableMinusAdversePct),
+			formatFloat(row.LabelFavorableGreaterThanAdverseRate),
+		}); err != nil {
+			return err
+		}
+	}
+	return w.Error()
+}
+
+func writeSRConfirmationTimingSummaryCSV(path string, rows []lab.SRConfirmationTimingSummaryRow) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	w := csv.NewWriter(f)
+	defer w.Flush()
+
+	if err := w.Write([]string{
+		"split",
+		"side",
+		"confirmation_delay_bars",
+		"horizon_bars",
+		"detector_profile_id",
+		"detector_raw_active",
+		"detector_active",
+		"candidate_count",
+		"confirmation_favorable_close_count",
+		"confirmation_wrong_side_close_count",
+		"decision_confirmation_candidate_count",
+		"confirmation_favorable_close_rate",
+		"confirmation_wrong_side_close_rate",
+		"decision_confirmation_candidate_rate",
+		"label_close_break_rate",
+		"label_wick_break_rate",
+		"label_reclaim_event_rate",
+		"label_reclaim_given_close_break_rate",
+		"label_rejection_rate",
+		"label_avg_favorable_pct",
+		"label_avg_adverse_pct",
+		"label_favorable_minus_adverse_pct",
+		"label_favorable_greater_than_adverse_rate",
+		"decision_candidate_label_close_break_rate",
+		"decision_candidate_label_wick_break_rate",
+		"decision_candidate_label_reclaim_event_rate",
+		"decision_candidate_label_reclaim_given_close_break_rate",
+		"decision_candidate_label_rejection_rate",
+		"decision_candidate_label_avg_favorable_pct",
+		"decision_candidate_label_avg_adverse_pct",
+		"decision_candidate_label_favorable_minus_adverse_pct",
+		"decision_candidate_label_favorable_greater_than_adverse_rate",
+	}); err != nil {
+		return err
+	}
+	for _, row := range rows {
+		if err := w.Write([]string{
+			row.Split,
+			row.Side,
+			strconv.Itoa(row.ConfirmationDelayBars),
+			strconv.Itoa(row.HorizonBars),
+			row.DetectorProfileID,
+			strconv.FormatBool(row.DetectorRawActive),
+			strconv.FormatBool(row.DetectorActive),
+			strconv.Itoa(row.CandidateCount),
+			strconv.Itoa(row.ConfirmationFavorableCloseCount),
+			strconv.Itoa(row.ConfirmationWrongSideCloseCount),
+			strconv.Itoa(row.DecisionConfirmationCandidateCount),
+			formatFloat(row.ConfirmationFavorableCloseRate),
+			formatFloat(row.ConfirmationWrongSideCloseRate),
+			formatFloat(row.DecisionConfirmationCandidateRate),
 			formatFloat(row.LabelCloseBreakRate),
 			formatFloat(row.LabelWickBreakRate),
 			formatFloat(row.LabelReclaimEventRate),
