@@ -31,6 +31,8 @@ func run() error {
 	maxHoldBars := flag.Int("max-hold-bars", 24, "default max hold bars stamped on placeholder signals")
 	detector := flag.Bool("detector", false, "write detector-only range diagnostics")
 	detectorSweep := flag.Bool("detector-sweep", false, "write detector sweep/audit diagnostics")
+	srAudit := flag.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
+	srBoundaryAudit := flag.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
 	detectorLookbackDays := flag.Int("detector-lookback-days", 20, "range detector trailing lookback in days")
 	detectorPercentile := flag.Float64("detector-percentile", 0.30, "range detector low-compression percentile threshold")
 	detectorMinConsecutiveBars := flag.Int("detector-min-consecutive-bars", 12, "range detector confirmed raw-active bars before active")
@@ -70,6 +72,69 @@ func run() error {
 	}
 	if err := writeSummaryCSV(filepath.Join(*outDir, "summary.csv"), summaries); err != nil {
 		return err
+	}
+	var srRows []lab.SRAuditRow
+	srCfg := lab.DefaultSRAuditConfig()
+	if *srAudit || *srBoundaryAudit {
+		var err error
+		srRows, err = lab.RunSRAudit(candles, srCfg, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+	}
+	if *srAudit {
+		if err := writeJSON(filepath.Join(*outDir, "sr_touch_audit.json"), srRows); err != nil {
+			return err
+		}
+		if err := writeSRTouchAuditCSV(filepath.Join(*outDir, "sr_touch_audit.csv"), srRows); err != nil {
+			return err
+		}
+		nearSupportRows := 0
+		nearResistanceRows := 0
+		for _, row := range srRows {
+			if row.NearSupport {
+				nearSupportRows++
+			}
+			if row.NearResistance {
+				nearResistanceRows++
+			}
+		}
+		warmupBars := 0
+		if len(srRows) > 0 {
+			warmupBars = srRows[0].WarmupBars
+		}
+		fmt.Printf("sr_audit rows=%d lookback_bars=%d warmup_bars=%d near_support_rows=%d near_resistance_rows=%d\n",
+			len(srRows),
+			srCfg.LookbackBars,
+			warmupBars,
+			nearSupportRows,
+			nearResistanceRows,
+		)
+	}
+	if *srBoundaryAudit {
+		boundaryCfg := lab.DefaultSRBoundaryAuditConfig()
+		events, qualityRows, err := lab.RunSRBoundaryAudit(candles, srRows, boundaryCfg)
+		if err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "sr_boundary_events.json"), events); err != nil {
+			return err
+		}
+		if err := writeSRBoundaryEventsCSV(filepath.Join(*outDir, "sr_boundary_events.csv"), events); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "sr_boundary_quality.json"), qualityRows); err != nil {
+			return err
+		}
+		if err := writeSRBoundaryQualityCSV(filepath.Join(*outDir, "sr_boundary_quality.csv"), qualityRows); err != nil {
+			return err
+		}
+		fmt.Printf("sr_boundary_audit events=%d summary_rows=%d horizons=%s detector_active_only=%t\n",
+			len(events),
+			len(qualityRows),
+			formatIntSlice(boundaryCfg.HorizonsBars),
+			boundaryCfg.DetectorActiveOnly,
+		)
 	}
 	if *detector || *detectorSweep {
 		if *detectorLookbackDays <= 0 {
@@ -335,6 +400,255 @@ func writeDetectorSweepCSV(path string, rows []lab.DetectorSweepRow) error {
 		}
 	}
 	return w.Error()
+}
+
+func writeSRTouchAuditCSV(path string, rows []lab.SRAuditRow) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	w := csv.NewWriter(f)
+	defer w.Flush()
+
+	if err := w.Write([]string{
+		"index",
+		"open_time",
+		"close_time",
+		"split",
+		"close",
+		"timeframe",
+		"mode",
+		"lookback_bars",
+		"warmup_bars",
+		"min_strength",
+		"detector_profile_id",
+		"detector_raw_active",
+		"detector_active",
+		"qualified_zone_count",
+		"raw_zone_count",
+		"has_support",
+		"near_support",
+		"nearest_support",
+		"nearest_support_distance",
+		"nearest_support_distance_pct",
+		"nearest_support_strength",
+		"nearest_support_score",
+		"nearest_support_top",
+		"nearest_support_bottom",
+		"nearest_support_last_touch_index",
+		"nearest_support_source_pivots",
+		"has_resistance",
+		"near_resistance",
+		"nearest_resistance",
+		"nearest_resistance_distance",
+		"nearest_resistance_distance_pct",
+		"nearest_resistance_strength",
+		"nearest_resistance_score",
+		"nearest_resistance_top",
+		"nearest_resistance_bottom",
+		"nearest_resistance_last_touch_index",
+		"nearest_resistance_source_pivots",
+	}); err != nil {
+		return err
+	}
+	for _, row := range rows {
+		if err := w.Write([]string{
+			strconv.Itoa(row.Index),
+			row.OpenTime,
+			row.CloseTime,
+			row.Split,
+			formatFloat(row.Close),
+			row.Timeframe,
+			row.Mode,
+			strconv.Itoa(row.LookbackBars),
+			strconv.Itoa(row.WarmupBars),
+			strconv.Itoa(row.MinStrength),
+			row.DetectorProfileID,
+			strconv.FormatBool(row.DetectorRawActive),
+			strconv.FormatBool(row.DetectorActive),
+			strconv.Itoa(row.QualifiedZoneCount),
+			strconv.Itoa(row.RawZoneCount),
+			strconv.FormatBool(row.HasSupport),
+			strconv.FormatBool(row.NearSupport),
+			formatFloat(row.NearestSupport),
+			formatFloat(row.NearestSupportDistance),
+			formatFloat(row.NearestSupportDistancePct),
+			strconv.Itoa(row.NearestSupportStrength),
+			formatFloat(row.NearestSupportScore),
+			formatFloat(row.NearestSupportTop),
+			formatFloat(row.NearestSupportBottom),
+			strconv.Itoa(row.NearestSupportLastTouchIndex),
+			formatIntSlice(row.NearestSupportSourcePivots),
+			strconv.FormatBool(row.HasResistance),
+			strconv.FormatBool(row.NearResistance),
+			formatFloat(row.NearestResistance),
+			formatFloat(row.NearestResistanceDistance),
+			formatFloat(row.NearestResistanceDistancePct),
+			strconv.Itoa(row.NearestResistanceStrength),
+			formatFloat(row.NearestResistanceScore),
+			formatFloat(row.NearestResistanceTop),
+			formatFloat(row.NearestResistanceBottom),
+			strconv.Itoa(row.NearestResistanceLastTouchIndex),
+			formatIntSlice(row.NearestResistanceSourcePivots),
+		}); err != nil {
+			return err
+		}
+	}
+	return w.Error()
+}
+
+func writeSRBoundaryEventsCSV(path string, rows []lab.SRBoundaryEventRow) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	w := csv.NewWriter(f)
+	defer w.Flush()
+
+	if err := w.Write([]string{
+		"index",
+		"open_time",
+		"close_time",
+		"split",
+		"side",
+		"close",
+		"boundary_price",
+		"zone_top",
+		"zone_bottom",
+		"zone_width",
+		"rejection_threshold",
+		"distance_pct",
+		"strength",
+		"strength_bucket",
+		"score",
+		"detector_profile_id",
+		"detector_raw_active",
+		"detector_active",
+		"horizon_bars",
+		"future_max_high",
+		"future_min_low",
+		"future_close",
+		"favorable_move",
+		"adverse_move",
+		"favorable_move_pct",
+		"adverse_move_pct",
+		"distance_bucket",
+		"wick_break",
+		"close_break",
+		"reclaimed_after_break",
+		"rejected",
+		"favorable_greater_than_adverse",
+	}); err != nil {
+		return err
+	}
+	for _, row := range rows {
+		if err := w.Write([]string{
+			strconv.Itoa(row.Index),
+			row.OpenTime,
+			row.CloseTime,
+			row.Split,
+			row.Side,
+			formatFloat(row.Close),
+			formatFloat(row.BoundaryPrice),
+			formatFloat(row.ZoneTop),
+			formatFloat(row.ZoneBottom),
+			formatFloat(row.ZoneWidth),
+			formatFloat(row.RejectionThreshold),
+			formatFloat(row.DistancePct),
+			strconv.Itoa(row.Strength),
+			row.StrengthBucket,
+			formatFloat(row.Score),
+			row.DetectorProfileID,
+			strconv.FormatBool(row.DetectorRawActive),
+			strconv.FormatBool(row.DetectorActive),
+			strconv.Itoa(row.HorizonBars),
+			formatFloat(row.FutureMaxHigh),
+			formatFloat(row.FutureMinLow),
+			formatFloat(row.FutureClose),
+			formatFloat(row.FavorableMove),
+			formatFloat(row.AdverseMove),
+			formatFloat(row.FavorableMovePct),
+			formatFloat(row.AdverseMovePct),
+			row.DistanceBucket,
+			strconv.FormatBool(row.WickBreak),
+			strconv.FormatBool(row.CloseBreak),
+			strconv.FormatBool(row.ReclaimedAfterBreak),
+			strconv.FormatBool(row.Rejected),
+			strconv.FormatBool(row.FavorableGreaterThanAdverse),
+		}); err != nil {
+			return err
+		}
+	}
+	return w.Error()
+}
+
+func writeSRBoundaryQualityCSV(path string, rows []lab.SRBoundaryQualityRow) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	w := csv.NewWriter(f)
+	defer w.Flush()
+
+	if err := w.Write([]string{
+		"split",
+		"side",
+		"horizon_bars",
+		"strength_bucket",
+		"distance_bucket",
+		"event_count",
+		"avg_score",
+		"avg_distance_pct",
+		"avg_favorable_pct",
+		"median_favorable_pct",
+		"avg_adverse_pct",
+		"median_adverse_pct",
+		"close_break_rate",
+		"wick_break_rate",
+		"reclaim_after_break_rate",
+		"rejection_rate",
+		"favorable_greater_than_adverse_rate",
+	}); err != nil {
+		return err
+	}
+	for _, row := range rows {
+		if err := w.Write([]string{
+			row.Split,
+			row.Side,
+			strconv.Itoa(row.HorizonBars),
+			row.StrengthBucket,
+			row.DistanceBucket,
+			strconv.Itoa(row.EventCount),
+			formatFloat(row.AvgScore),
+			formatFloat(row.AvgDistancePct),
+			formatFloat(row.AvgFavorablePct),
+			formatFloat(row.MedianFavorablePct),
+			formatFloat(row.AvgAdversePct),
+			formatFloat(row.MedianAdversePct),
+			formatFloat(row.CloseBreakRate),
+			formatFloat(row.WickBreakRate),
+			formatFloat(row.ReclaimAfterBreakRate),
+			formatFloat(row.RejectionRate),
+			formatFloat(row.FavorableGreaterThanAdverseRate),
+		}); err != nil {
+			return err
+		}
+	}
+	return w.Error()
+}
+
+func formatIntSlice(values []int) string {
+	if len(values) == 0 {
+		return ""
+	}
+	out := strconv.Itoa(values[0])
+	for _, value := range values[1:] {
+		out += ";" + strconv.Itoa(value)
+	}
+	return out
 }
 
 func formatFloat(v float64) string {
