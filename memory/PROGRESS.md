@@ -458,7 +458,29 @@ Result: passed.
 
 Next implementation:
 
-- If explicitly asked to add trades, start with at most one closed-candle
-  boundary-rejection entry template.
-- Before adding trades, consider one more compact timing audit that asks whether
-  rejection can be identified on the decision candle without using future bars.
+- Start with an entry-readiness review before adding trades.
+- Use `CODEX_BRIEF.md` / `memory/NEXT_CODEX_BRIEF.md` as the next prompt.
+- Review code correctness, lookahead safety, coverage gaps, docs, and memory
+  before the first entry implementation.
+- After the review is clean, consider one more compact timing audit that asks
+  whether rejection can be identified on the decision candle without using
+  future bars.
+
+Entry-readiness handoff:
+
+- Committed SR boundary inspection mode:
+  - commit: `1e26695 Add SR boundary inspection mode`
+- Refreshed `CODEX_BRIEF.md` and `memory/NEXT_CODEX_BRIEF.md` with a
+  paste-ready prompt for:
+  - whole-project review before entries
+  - test coverage gap investigation
+  - docs/memory readiness
+  - next non-trading boundary-rejection timing audit
+- Kept `CODEX_BRIEF.md` and `memory/NEXT_CODEX_BRIEF.md` byte-for-byte
+  identical.
+- Coverage check:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test -cover ./internal/lab`
+  - result: `84.5%` statement coverage
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test -cover ./...`
+  - result: failed in `cmd/rangelab` with the known snap-confine issue, while
+    `/usr/local/go/bin/go test ./cmd/rangelab` passed
