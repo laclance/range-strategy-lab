@@ -20,6 +20,9 @@
 - Future Codex sessions should read `AGENTS.md` and `memory/` before nontrivial work.
 - The canonical next-session prompt is `memory/NEXT_CODEX_BRIEF.md`; do not
   keep a duplicate root `CODEX_BRIEF.md`.
+- After completing a brief or milestone, Codex should automatically run the
+  closeout checks and commit the completed repo changes unless the user
+  explicitly says not to commit.
 - Detector diagnostics are detector-only and must not create trade signals.
 - The initial balanced detector baseline is:
   - percentile: `0.30`

@@ -2,6 +2,61 @@
 
 ## 2026-06-14
 
+False-break reclaim timing review milestone:
+
+- Added durable review report:
+  - `docs/SR_FALSE_BREAK_RECLAIM_TIMING_REVIEW.md`
+- Updated `README.md` docs order to include the review note.
+- Updated `memory/DECISIONS.md` to record that completed briefs/milestones
+  should be checked and committed automatically unless the user says not to
+  commit.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` with the new verdict and next
+  non-trading handoff.
+- Review verdict:
+  - false-break reclaim timing audit is not entry-ready
+  - keep `lab.EmptyStrategy`
+  - trades remain `0`
+  - do not add entries, exits, scoring, sizing, or strategy replacement from
+    this audit
+  - do not continue narrow SR timing slices unless the next hypothesis changes
+    materially
+- Inputs reviewed:
+  - `results/sr-false-break-reclaim-timing-audit/sr_false_break_reclaim_timing_summary.csv`
+  - `results/sr-false-break-reclaim-timing-audit/sr_false_break_reclaim_timing_candidates.csv`
+- Audit size:
+  - candidate rows: `17,652`
+  - summary rows: `24`
+  - candidate CSV lines including header: `17,653`
+  - summary CSV lines including header: `25`
+  - support reclaim decisions across all splits: `4,120` per horizon
+  - resistance reclaim decisions across all splits: `4,150` per horizon
+- Compact evidence:
+  - broad side/horizon favorable-minus-adverse was small-positive, topping at
+    `+2.41bp`
+  - broad FGTA was mostly near coin-flip, about `49.27%` to `51.54%`
+  - `2025_2026_recent` support was negative across all horizons
+  - `2023_2024_oos` resistance was negative at `3`, `6`, and `12` bars
+  - fully sliced cohorts had `0` stable rows at every threshold from `25` to
+    `500` candidates per split
+  - coarse cohorts had no stable rows at `500` candidates per split; close
+    shape cohorts survived at `500`, but the best row had only `+0.51bp` min
+    split diff and `46.69%` min FGTA
+- Existing generated artifacts were used; the audit smoke was not rerun because
+  files were present and matched expected counts.
+
+Latest false-break reclaim review verification:
+
+```bash
+wc -l results/sr-false-break-reclaim-timing-audit/sr_false_break_reclaim_timing_candidates.csv results/sr-false-break-reclaim-timing-audit/sr_false_break_reclaim_timing_summary.csv
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+git diff --check
+```
+
+Result:
+
+- CSV line counts matched expected values.
+- Verification passed.
+
 False-break reclaim timing audit milestone:
 
 - Added CLI flag `-sr-false-break-reclaim-timing-audit`.
