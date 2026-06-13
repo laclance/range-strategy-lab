@@ -33,6 +33,7 @@ func run() error {
 	detectorSweep := flag.Bool("detector-sweep", false, "write detector sweep/audit diagnostics")
 	srAudit := flag.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
 	srBoundaryAudit := flag.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
+	srBoundaryInspect := flag.Bool("sr-boundary-inspect", false, "write compact non-trading SR boundary candidate comparison diagnostics")
 	detectorLookbackDays := flag.Int("detector-lookback-days", 20, "range detector trailing lookback in days")
 	detectorPercentile := flag.Float64("detector-percentile", 0.30, "range detector low-compression percentile threshold")
 	detectorMinConsecutiveBars := flag.Int("detector-min-consecutive-bars", 12, "range detector confirmed raw-active bars before active")
@@ -75,7 +76,7 @@ func run() error {
 	}
 	var srRows []lab.SRAuditRow
 	srCfg := lab.DefaultSRAuditConfig()
-	if *srAudit || *srBoundaryAudit {
+	if *srAudit || *srBoundaryAudit || *srBoundaryInspect {
 		var err error
 		srRows, err = lab.RunSRAudit(candles, srCfg, lab.DefaultSplits())
 		if err != nil {
@@ -111,30 +112,47 @@ func run() error {
 			nearResistanceRows,
 		)
 	}
-	if *srBoundaryAudit {
+	if *srBoundaryAudit || *srBoundaryInspect {
 		boundaryCfg := lab.DefaultSRBoundaryAuditConfig()
 		events, qualityRows, err := lab.RunSRBoundaryAudit(candles, srRows, boundaryCfg)
 		if err != nil {
 			return err
 		}
-		if err := writeJSON(filepath.Join(*outDir, "sr_boundary_events.json"), events); err != nil {
-			return err
+		if *srBoundaryAudit {
+			if err := writeJSON(filepath.Join(*outDir, "sr_boundary_events.json"), events); err != nil {
+				return err
+			}
+			if err := writeSRBoundaryEventsCSV(filepath.Join(*outDir, "sr_boundary_events.csv"), events); err != nil {
+				return err
+			}
+			if err := writeJSON(filepath.Join(*outDir, "sr_boundary_quality.json"), qualityRows); err != nil {
+				return err
+			}
+			if err := writeSRBoundaryQualityCSV(filepath.Join(*outDir, "sr_boundary_quality.csv"), qualityRows); err != nil {
+				return err
+			}
+			fmt.Printf("sr_boundary_audit events=%d summary_rows=%d horizons=%s detector_active_only=%t\n",
+				len(events),
+				len(qualityRows),
+				formatIntSlice(boundaryCfg.HorizonsBars),
+				boundaryCfg.DetectorActiveOnly,
+			)
 		}
-		if err := writeSRBoundaryEventsCSV(filepath.Join(*outDir, "sr_boundary_events.csv"), events); err != nil {
-			return err
+		if *srBoundaryInspect {
+			comparisonRows := lab.SummarizeSRBoundaryCandidateComparison(events)
+			if err := writeJSON(filepath.Join(*outDir, "sr_boundary_candidate_comparison.json"), comparisonRows); err != nil {
+				return err
+			}
+			if err := writeSRBoundaryCandidateComparisonCSV(filepath.Join(*outDir, "sr_boundary_candidate_comparison.csv"), comparisonRows); err != nil {
+				return err
+			}
+			fmt.Printf("sr_boundary_inspect events=%d comparison_rows=%d horizons=%s detector_active_only=%t\n",
+				len(events),
+				len(comparisonRows),
+				formatIntSlice(boundaryCfg.HorizonsBars),
+				boundaryCfg.DetectorActiveOnly,
+			)
 		}
-		if err := writeJSON(filepath.Join(*outDir, "sr_boundary_quality.json"), qualityRows); err != nil {
-			return err
-		}
-		if err := writeSRBoundaryQualityCSV(filepath.Join(*outDir, "sr_boundary_quality.csv"), qualityRows); err != nil {
-			return err
-		}
-		fmt.Printf("sr_boundary_audit events=%d summary_rows=%d horizons=%s detector_active_only=%t\n",
-			len(events),
-			len(qualityRows),
-			formatIntSlice(boundaryCfg.HorizonsBars),
-			boundaryCfg.DetectorActiveOnly,
-		)
 	}
 	if *detector || *detectorSweep {
 		if *detectorLookbackDays <= 0 {
@@ -633,6 +651,78 @@ func writeSRBoundaryQualityCSV(path string, rows []lab.SRBoundaryQualityRow) err
 			formatFloat(row.ReclaimAfterBreakRate),
 			formatFloat(row.RejectionRate),
 			formatFloat(row.FavorableGreaterThanAdverseRate),
+		}); err != nil {
+			return err
+		}
+	}
+	return w.Error()
+}
+
+func writeSRBoundaryCandidateComparisonCSV(path string, rows []lab.SRBoundaryCandidateComparisonRow) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	w := csv.NewWriter(f)
+	defer w.Flush()
+
+	if err := w.Write([]string{
+		"split",
+		"side",
+		"horizon_bars",
+		"strength_bucket",
+		"distance_bucket",
+		"event_count",
+		"close_break_count",
+		"rejected_count",
+		"reclaimed_after_break_count",
+		"close_break_rate",
+		"rejection_rate",
+		"reclaim_event_rate",
+		"reclaim_given_close_break_rate",
+		"all_avg_favorable_pct",
+		"all_avg_adverse_pct",
+		"all_favorable_minus_adverse_pct",
+		"all_favorable_greater_than_adverse_rate",
+		"rejected_avg_favorable_pct",
+		"rejected_avg_adverse_pct",
+		"rejected_favorable_minus_adverse_pct",
+		"rejected_favorable_greater_than_adverse_rate",
+		"reclaimed_avg_favorable_pct",
+		"reclaimed_avg_adverse_pct",
+		"reclaimed_favorable_minus_adverse_pct",
+		"reclaimed_favorable_greater_than_adverse_rate",
+	}); err != nil {
+		return err
+	}
+	for _, row := range rows {
+		if err := w.Write([]string{
+			row.Split,
+			row.Side,
+			strconv.Itoa(row.HorizonBars),
+			row.StrengthBucket,
+			row.DistanceBucket,
+			strconv.Itoa(row.EventCount),
+			strconv.Itoa(row.CloseBreakCount),
+			strconv.Itoa(row.RejectedCount),
+			strconv.Itoa(row.ReclaimedAfterBreakCount),
+			formatFloat(row.CloseBreakRate),
+			formatFloat(row.RejectionRate),
+			formatFloat(row.ReclaimEventRate),
+			formatFloat(row.ReclaimGivenCloseBreakRate),
+			formatFloat(row.AllAvgFavorablePct),
+			formatFloat(row.AllAvgAdversePct),
+			formatFloat(row.AllFavorableMinusAdversePct),
+			formatFloat(row.AllFavorableGreaterThanAdverseRate),
+			formatFloat(row.RejectedAvgFavorablePct),
+			formatFloat(row.RejectedAvgAdversePct),
+			formatFloat(row.RejectedFavorableMinusAdversePct),
+			formatFloat(row.RejectedFavorableGreaterThanAdverseRate),
+			formatFloat(row.ReclaimedAvgFavorablePct),
+			formatFloat(row.ReclaimedAvgAdversePct),
+			formatFloat(row.ReclaimedFavorableMinusAdversePct),
+			formatFloat(row.ReclaimedFavorableGreaterThanAdverseRate),
 		}); err != nil {
 			return err
 		}

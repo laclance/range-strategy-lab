@@ -204,6 +204,96 @@ func TestSummarizeSRBoundaryQualityGroupsAndRates(t *testing.T) {
 	}
 }
 
+func TestSummarizeSRBoundaryCandidateComparisonCohortsAndSort(t *testing.T) {
+	events := []SRBoundaryEventRow{
+		{
+			Split:               "2023_2024_oos",
+			Side:                SRBoundarySideResistance,
+			HorizonBars:         6,
+			StrengthBucket:      "3",
+			DistanceBucket:      "5_10bp",
+			FavorableMovePct:    0.01,
+			AdverseMovePct:      0.02,
+			CloseBreak:          true,
+			ReclaimedAfterBreak: true,
+		},
+		{
+			Split:                       "2021_2022_stress",
+			Side:                        SRBoundarySideSupport,
+			HorizonBars:                 3,
+			StrengthBucket:              "2",
+			DistanceBucket:              "0_5bp",
+			FavorableMovePct:            0.02,
+			AdverseMovePct:              0.03,
+			CloseBreak:                  true,
+			ReclaimedAfterBreak:         true,
+			FavorableGreaterThanAdverse: false,
+		},
+		{
+			Split:                       "2021_2022_stress",
+			Side:                        SRBoundarySideSupport,
+			HorizonBars:                 3,
+			StrengthBucket:              "2",
+			DistanceBucket:              "0_5bp",
+			FavorableMovePct:            0.04,
+			AdverseMovePct:              0.01,
+			Rejected:                    true,
+			FavorableGreaterThanAdverse: true,
+		},
+		{
+			Split:            "2021_2022_stress",
+			Side:             SRBoundarySideSupport,
+			HorizonBars:      3,
+			StrengthBucket:   "2",
+			DistanceBucket:   "0_5bp",
+			FavorableMovePct: 0.01,
+			AdverseMovePct:   0.05,
+			CloseBreak:       true,
+		},
+	}
+
+	rows := SummarizeSRBoundaryCandidateComparison(events)
+	if len(rows) != 2 {
+		t.Fatalf("rows=%d, want 2", len(rows))
+	}
+
+	row := rows[0]
+	if row.Split != "2021_2022_stress" || row.Side != SRBoundarySideSupport ||
+		row.HorizonBars != 3 || row.StrengthBucket != "2" || row.DistanceBucket != "0_5bp" {
+		t.Fatalf("first row not in deterministic key order: %+v", row)
+	}
+	if rows[1].Split != "2023_2024_oos" || rows[1].Side != SRBoundarySideResistance {
+		t.Fatalf("second row not in deterministic key order: %+v", rows[1])
+	}
+	if row.EventCount != 3 || row.CloseBreakCount != 2 || row.RejectedCount != 1 || row.ReclaimedAfterBreakCount != 1 {
+		t.Fatalf("bad candidate counts: %+v", row)
+	}
+	if !boundaryAlmostEqual(row.CloseBreakRate, 2.0/3.0) ||
+		!boundaryAlmostEqual(row.RejectionRate, 1.0/3.0) ||
+		!boundaryAlmostEqual(row.ReclaimEventRate, 1.0/3.0) ||
+		!boundaryAlmostEqual(row.ReclaimGivenCloseBreakRate, 0.5) {
+		t.Fatalf("bad candidate rates: %+v", row)
+	}
+	if !boundaryAlmostEqual(row.AllAvgFavorablePct, 0.07/3.0) ||
+		!boundaryAlmostEqual(row.AllAvgAdversePct, 0.09/3.0) ||
+		!boundaryAlmostEqual(row.AllFavorableMinusAdversePct, -0.02/3.0) ||
+		!boundaryAlmostEqual(row.AllFavorableGreaterThanAdverseRate, 1.0/3.0) {
+		t.Fatalf("bad all-cohort metrics: %+v", row)
+	}
+	if !boundaryAlmostEqual(row.RejectedAvgFavorablePct, 0.04) ||
+		!boundaryAlmostEqual(row.RejectedAvgAdversePct, 0.01) ||
+		!boundaryAlmostEqual(row.RejectedFavorableMinusAdversePct, 0.03) ||
+		!boundaryAlmostEqual(row.RejectedFavorableGreaterThanAdverseRate, 1) {
+		t.Fatalf("bad rejected-cohort metrics: %+v", row)
+	}
+	if !boundaryAlmostEqual(row.ReclaimedAvgFavorablePct, 0.02) ||
+		!boundaryAlmostEqual(row.ReclaimedAvgAdversePct, 0.03) ||
+		!boundaryAlmostEqual(row.ReclaimedFavorableMinusAdversePct, -0.01) ||
+		!boundaryAlmostEqual(row.ReclaimedFavorableGreaterThanAdverseRate, 0) {
+		t.Fatalf("bad reclaimed-cohort metrics: %+v", row)
+	}
+}
+
 func boundaryAlmostEqual(a, b float64) bool {
 	return math.Abs(a-b) < 1e-12
 }

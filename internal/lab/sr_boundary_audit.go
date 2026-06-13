@@ -71,6 +71,34 @@ type SRBoundaryQualityRow struct {
 	FavorableGreaterThanAdverseRate float64 `json:"favorable_greater_than_adverse_rate"`
 }
 
+type SRBoundaryCandidateComparisonRow struct {
+	Split                                    string  `json:"split"`
+	Side                                     string  `json:"side"`
+	HorizonBars                              int     `json:"horizon_bars"`
+	StrengthBucket                           string  `json:"strength_bucket"`
+	DistanceBucket                           string  `json:"distance_bucket"`
+	EventCount                               int     `json:"event_count"`
+	CloseBreakCount                          int     `json:"close_break_count"`
+	RejectedCount                            int     `json:"rejected_count"`
+	ReclaimedAfterBreakCount                 int     `json:"reclaimed_after_break_count"`
+	CloseBreakRate                           float64 `json:"close_break_rate"`
+	RejectionRate                            float64 `json:"rejection_rate"`
+	ReclaimEventRate                         float64 `json:"reclaim_event_rate"`
+	ReclaimGivenCloseBreakRate               float64 `json:"reclaim_given_close_break_rate"`
+	AllAvgFavorablePct                       float64 `json:"all_avg_favorable_pct"`
+	AllAvgAdversePct                         float64 `json:"all_avg_adverse_pct"`
+	AllFavorableMinusAdversePct              float64 `json:"all_favorable_minus_adverse_pct"`
+	AllFavorableGreaterThanAdverseRate       float64 `json:"all_favorable_greater_than_adverse_rate"`
+	RejectedAvgFavorablePct                  float64 `json:"rejected_avg_favorable_pct"`
+	RejectedAvgAdversePct                    float64 `json:"rejected_avg_adverse_pct"`
+	RejectedFavorableMinusAdversePct         float64 `json:"rejected_favorable_minus_adverse_pct"`
+	RejectedFavorableGreaterThanAdverseRate  float64 `json:"rejected_favorable_greater_than_adverse_rate"`
+	ReclaimedAvgFavorablePct                 float64 `json:"reclaimed_avg_favorable_pct"`
+	ReclaimedAvgAdversePct                   float64 `json:"reclaimed_avg_adverse_pct"`
+	ReclaimedFavorableMinusAdversePct        float64 `json:"reclaimed_favorable_minus_adverse_pct"`
+	ReclaimedFavorableGreaterThanAdverseRate float64 `json:"reclaimed_favorable_greater_than_adverse_rate"`
+}
+
 func DefaultSRBoundaryAuditConfig() SRBoundaryAuditConfig {
 	return SRBoundaryAuditConfig{
 		HorizonsBars:       []int{1, 3, 6, 12},
@@ -378,6 +406,145 @@ func (acc srBoundaryQualityAccumulator) row() SRBoundaryQualityRow {
 	return row
 }
 
+type srBoundaryCandidateComparisonAccumulator struct {
+	key                srBoundaryQualityKey
+	events             int
+	closeBreaks        int
+	rejections         int
+	reclaimsAfterBreak int
+	all                srBoundaryCandidateCohortAccumulator
+	rejected           srBoundaryCandidateCohortAccumulator
+	reclaimed          srBoundaryCandidateCohortAccumulator
+}
+
+type srBoundaryCandidateCohortAccumulator struct {
+	events                       int
+	favorablePctSum              float64
+	adversePctSum                float64
+	favorableGreaterThanAdverses int
+}
+
+func SummarizeSRBoundaryCandidateComparison(events []SRBoundaryEventRow) []SRBoundaryCandidateComparisonRow {
+	accumulators := map[srBoundaryQualityKey]*srBoundaryCandidateComparisonAccumulator{}
+	for _, event := range events {
+		key := srBoundaryQualityKey{
+			split:          event.Split,
+			side:           event.Side,
+			horizonBars:    event.HorizonBars,
+			strengthBucket: event.StrengthBucket,
+			distanceBucket: event.DistanceBucket,
+		}
+		acc := accumulators[key]
+		if acc == nil {
+			acc = &srBoundaryCandidateComparisonAccumulator{key: key}
+			accumulators[key] = acc
+		}
+		acc.add(event)
+	}
+
+	rows := make([]SRBoundaryCandidateComparisonRow, 0, len(accumulators))
+	for _, acc := range accumulators {
+		rows = append(rows, acc.row())
+	}
+	sort.Slice(rows, func(i, j int) bool {
+		return lessSRBoundaryCandidateComparisonRow(rows[i], rows[j])
+	})
+	return rows
+}
+
+func (acc *srBoundaryCandidateComparisonAccumulator) add(event SRBoundaryEventRow) {
+	acc.events++
+	acc.all.add(event)
+	if event.CloseBreak {
+		acc.closeBreaks++
+	}
+	if event.Rejected {
+		acc.rejections++
+		acc.rejected.add(event)
+	}
+	if event.ReclaimedAfterBreak {
+		acc.reclaimsAfterBreak++
+		acc.reclaimed.add(event)
+	}
+}
+
+func (acc *srBoundaryCandidateCohortAccumulator) add(event SRBoundaryEventRow) {
+	acc.events++
+	acc.favorablePctSum += event.FavorableMovePct
+	acc.adversePctSum += event.AdverseMovePct
+	if event.FavorableGreaterThanAdverse {
+		acc.favorableGreaterThanAdverses++
+	}
+}
+
+func (acc srBoundaryCandidateComparisonAccumulator) row() SRBoundaryCandidateComparisonRow {
+	row := SRBoundaryCandidateComparisonRow{
+		Split:                    acc.key.split,
+		Side:                     acc.key.side,
+		HorizonBars:              acc.key.horizonBars,
+		StrengthBucket:           acc.key.strengthBucket,
+		DistanceBucket:           acc.key.distanceBucket,
+		EventCount:               acc.events,
+		CloseBreakCount:          acc.closeBreaks,
+		RejectedCount:            acc.rejections,
+		ReclaimedAfterBreakCount: acc.reclaimsAfterBreak,
+	}
+	if acc.events > 0 {
+		row.CloseBreakRate = float64(acc.closeBreaks) / float64(acc.events)
+		row.RejectionRate = float64(acc.rejections) / float64(acc.events)
+		row.ReclaimEventRate = float64(acc.reclaimsAfterBreak) / float64(acc.events)
+	}
+	if acc.closeBreaks > 0 {
+		row.ReclaimGivenCloseBreakRate = float64(acc.reclaimsAfterBreak) / float64(acc.closeBreaks)
+	}
+	acc.all.addToAllRow(&row)
+	acc.rejected.addToRejectedRow(&row)
+	acc.reclaimed.addToReclaimedRow(&row)
+	return row
+}
+
+func (acc srBoundaryCandidateCohortAccumulator) avgFavorablePct() float64 {
+	if acc.events == 0 {
+		return 0
+	}
+	return acc.favorablePctSum / float64(acc.events)
+}
+
+func (acc srBoundaryCandidateCohortAccumulator) avgAdversePct() float64 {
+	if acc.events == 0 {
+		return 0
+	}
+	return acc.adversePctSum / float64(acc.events)
+}
+
+func (acc srBoundaryCandidateCohortAccumulator) favorableGreaterThanAdverseRate() float64 {
+	if acc.events == 0 {
+		return 0
+	}
+	return float64(acc.favorableGreaterThanAdverses) / float64(acc.events)
+}
+
+func (acc srBoundaryCandidateCohortAccumulator) addToAllRow(row *SRBoundaryCandidateComparisonRow) {
+	row.AllAvgFavorablePct = acc.avgFavorablePct()
+	row.AllAvgAdversePct = acc.avgAdversePct()
+	row.AllFavorableMinusAdversePct = row.AllAvgFavorablePct - row.AllAvgAdversePct
+	row.AllFavorableGreaterThanAdverseRate = acc.favorableGreaterThanAdverseRate()
+}
+
+func (acc srBoundaryCandidateCohortAccumulator) addToRejectedRow(row *SRBoundaryCandidateComparisonRow) {
+	row.RejectedAvgFavorablePct = acc.avgFavorablePct()
+	row.RejectedAvgAdversePct = acc.avgAdversePct()
+	row.RejectedFavorableMinusAdversePct = row.RejectedAvgFavorablePct - row.RejectedAvgAdversePct
+	row.RejectedFavorableGreaterThanAdverseRate = acc.favorableGreaterThanAdverseRate()
+}
+
+func (acc srBoundaryCandidateCohortAccumulator) addToReclaimedRow(row *SRBoundaryCandidateComparisonRow) {
+	row.ReclaimedAvgFavorablePct = acc.avgFavorablePct()
+	row.ReclaimedAvgAdversePct = acc.avgAdversePct()
+	row.ReclaimedFavorableMinusAdversePct = row.ReclaimedAvgFavorablePct - row.ReclaimedAvgAdversePct
+	row.ReclaimedFavorableGreaterThanAdverseRate = acc.favorableGreaterThanAdverseRate()
+}
+
 func medianFloat(values []float64) float64 {
 	if len(values) == 0 {
 		return 0
@@ -392,6 +559,22 @@ func medianFloat(values []float64) float64 {
 }
 
 func lessSRBoundaryQualityRow(a, b SRBoundaryQualityRow) bool {
+	if splitSortKey(a.Split) != splitSortKey(b.Split) {
+		return splitSortKey(a.Split) < splitSortKey(b.Split)
+	}
+	if sideSortKey(a.Side) != sideSortKey(b.Side) {
+		return sideSortKey(a.Side) < sideSortKey(b.Side)
+	}
+	if a.HorizonBars != b.HorizonBars {
+		return a.HorizonBars < b.HorizonBars
+	}
+	if strengthBucketSortKey(a.StrengthBucket) != strengthBucketSortKey(b.StrengthBucket) {
+		return strengthBucketSortKey(a.StrengthBucket) < strengthBucketSortKey(b.StrengthBucket)
+	}
+	return distanceBucketSortKey(a.DistanceBucket) < distanceBucketSortKey(b.DistanceBucket)
+}
+
+func lessSRBoundaryCandidateComparisonRow(a, b SRBoundaryCandidateComparisonRow) bool {
 	if splitSortKey(a.Split) != splitSortKey(b.Split) {
 		return splitSortKey(a.Split) < splitSortKey(b.Split)
 	}

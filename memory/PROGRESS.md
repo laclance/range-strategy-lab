@@ -386,11 +386,79 @@ git diff --check
 
 Result: passed.
 
+SR boundary-inspection milestone:
+
+- Added CLI flag `-sr-boundary-inspect`.
+- Added compact non-trading candidate comparison outputs:
+  - `sr_boundary_candidate_comparison.csv`
+  - `sr_boundary_candidate_comparison.json`
+- Grouping:
+  - split
+  - side
+  - horizon bars
+  - strength bucket
+  - distance bucket
+- Metrics include counts and rates for close breaks, rejections, reclaimed
+  breaks, and favorable-vs-adverse cohorts for all, rejected, and reclaimed
+  events.
+- This milestone did not add entries, exits, scoring, sizing, or strategy
+  replacement.
+- Strategy remains `lab.EmptyStrategy`.
+- Trades remain `0`.
+
+Latest SR boundary-inspection run:
+
+```bash
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+  -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv \
+  -out-dir results/sr-boundary-inspection \
+  -sr-boundary-inspect
+```
+
+Observed SR boundary-inspection facts:
+
+- Boundary event rows inspected in memory: `281,080`.
+- Candidate comparison rows: `192`.
+- Candidate comparison CSV lines including header: `193`.
+- Result paths:
+  - `results/sr-boundary-inspection/sr_boundary_candidate_comparison.csv`
+  - `results/sr-boundary-inspection/sr_boundary_candidate_comparison.json`
+- Compact inspect mode did not write `sr_boundary_events.*` or
+  `sr_boundary_quality.*`; only the standard empty-strategy summary/trades
+  files were also written.
+- `strategy=empty trades=0`.
+
+Factual comparison outcome:
+
+- Boundary rejection has better current evidence than false-break reclaim.
+- By side/horizon across all splits:
+  - rejection rates ranged from `10.52%` to `36.77%`
+  - rejected-cohort favorable-minus-adverse ranged from `14.75bp` to `27.73bp`
+  - rejected-cohort favorable-greater-than-adverse was `96.34%` to `98.16%`
+- Reclaim-after-break was mostly a longer-horizon conditional outcome:
+  - reclaim event rate reached about `20%` at `12` bars
+  - reclaim given close break reached about `43%` at `12` bars
+  - reclaimed-cohort favorable-minus-adverse was negative at `3`, `6`, and
+    `12` bars for both support and resistance in this event definition
+- The `10_20bp` distance bucket remains sparse:
+  - resistance events across all splits/horizons: `208`
+  - support events across all splits/horizons: `96`
+- Do not treat rejection as a ready entry rule yet; it is still an ex-post
+  audit label. False-break reclaim needs a later post-reclaim timing audit
+  before becoming a first entry template.
+
+Latest test command:
+
+```bash
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+git diff --check
+```
+
+Result: passed.
+
 Next implementation:
 
-- Inspect `results/sr-boundary-quality/sr_boundary_quality.csv`.
-- Compare support vs resistance outcomes by split, horizon, strength bucket,
-  and distance bucket.
-- Choose at most one first entry template if the audit supports it, likely
-  false-break reclaim or boundary rejection.
-- Keep the next milestone research-first unless explicitly adding trades.
+- If explicitly asked to add trades, start with at most one closed-candle
+  boundary-rejection entry template.
+- Before adding trades, consider one more compact timing audit that asks whether
+  rejection can be identified on the decision candle without using future bars.
