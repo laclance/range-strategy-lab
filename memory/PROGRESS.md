@@ -1,5 +1,81 @@
 # Progress
 
+## 2026-06-14
+
+False-break reclaim timing audit milestone:
+
+- Added CLI flag `-sr-false-break-reclaim-timing-audit`.
+- Added compact non-trading false-break reclaim outputs:
+  - `sr_false_break_reclaim_timing_candidates.csv`
+  - `sr_false_break_reclaim_timing_candidates.json`
+  - `sr_false_break_reclaim_timing_summary.csv`
+  - `sr_false_break_reclaim_timing_summary.json`
+- Defaults:
+  - max closed-candle break delay: `3` bars after the anchor candle
+  - max closed-candle reclaim delay: `12` bars after the break candle
+  - horizons: `1`, `3`, `6`, `12` bars after the reclaim candle
+  - `detector_active=true` anchor rows only
+- Decision semantics:
+  - support false break closes below the frozen anchor support zone bottom,
+    then reclaims with a close at or above the frozen anchor support level
+  - resistance false break closes above the frozen anchor resistance zone top,
+    then reclaims with a close at or below the frozen anchor resistance level
+  - the reclaim candle is the decision candle
+  - all forward outcome metrics remain `label_*` fields and start after the
+    reclaim candle
+- Added focused tests for no-lookahead decision features, label-window start,
+  support/resistance symmetry, detector-active filtering, no-break/no-reclaim
+  skipping, end-of-data skipping, invalid config, candidate aggregation, and
+  summary denominators.
+- This milestone did not add entries, exits, scoring, sizing, or strategy
+  replacement.
+- Strategy remains `lab.EmptyStrategy`.
+- Trades remain `0`.
+
+Latest false-break reclaim audit verification:
+
+```bash
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+git diff --check
+
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+  -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv \
+  -out-dir results/sr-false-break-reclaim-timing-audit \
+  -sr-false-break-reclaim-timing-audit
+```
+
+Result:
+
+- `go test ./...` passed.
+- `git diff --check` passed.
+- New false-break reclaim audit printed:
+  - `sr_false_break_reclaim_timing_audit candidate_rows=17652 summary_rows=24`
+  - `max_break_delay=3`
+  - `max_reclaim_delay=12`
+  - `horizons=1;3;6;12`
+  - `detector_active_only=true`
+  - `strategy=empty trades=0`
+- New false-break reclaim audit CSV lines including header:
+  - `sr_false_break_reclaim_timing_candidates.csv`: `17,653`
+  - `sr_false_break_reclaim_timing_summary.csv`: `25`
+- Result paths:
+  - `results/sr-false-break-reclaim-timing-audit/sr_false_break_reclaim_timing_candidates.csv`
+  - `results/sr-false-break-reclaim-timing-audit/sr_false_break_reclaim_timing_candidates.json`
+  - `results/sr-false-break-reclaim-timing-audit/sr_false_break_reclaim_timing_summary.csv`
+  - `results/sr-false-break-reclaim-timing-audit/sr_false_break_reclaim_timing_summary.json`
+- Compact aggregate read of `sr_false_break_reclaim_timing_summary.csv`:
+  - support reclaim decisions across all splits: `4,120` per horizon
+  - resistance reclaim decisions across all splits: `4,150` per horizon
+  - broad side/horizon favorable-minus-adverse was small-positive:
+    - support: about `+1.03bp`, `+1.76bp`, `+1.61bp`, `+0.75bp` at
+      horizons `1`, `3`, `6`, `12`
+    - resistance: about `+0.84bp`, `+1.28bp`, `+1.85bp`, `+2.41bp` at
+      horizons `1`, `3`, `6`, `12`
+  - broad favorable-greater-than-adverse rates were about `49.3%` to `51.5%`
+- No durable promotion or no-promotion review document was added in this
+  milestone; the next step should review split and cohort stability before any
+  entries.
+
 ## 2026-06-13
 
 SR confirmation timing review milestone:
