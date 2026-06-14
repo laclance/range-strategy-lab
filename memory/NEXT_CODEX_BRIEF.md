@@ -1,4 +1,4 @@
-# Next Codex Brief: Choose Next Non-Trading Hypothesis After SR Timing Reviews
+# Next Codex Brief: Review Compression Breakout Audit Before Any Entries
 
 ```text
 We are in /home/lance/range-strategy-lab, a standalone Go project named range-strategy-lab.
@@ -13,31 +13,36 @@ Current verdict:
 - Boundary-rejection timing audit was not entry-ready.
 - Delayed confirmation after SR rejection was not entry-ready.
 - False-break reclaim timing audit was not entry-ready.
+- Compression breakout audit outputs now exist, but they have not yet received a durable entry-readiness review.
 - Keep lab.EmptyStrategy.
 - Trades remain 0.
 - Do not add entries, exits, scoring, sizing, strategy replacement, live code, deploy scripts, API keys, grid, martingale, averaging down, or two-exchange execution unless the user explicitly changes scope.
 
-Latest false-break reclaim review:
-- Durable report:
-  - docs/SR_FALSE_BREAK_RECLAIM_TIMING_REVIEW.md
-- Inputs reviewed:
-  - results/sr-false-break-reclaim-timing-audit/sr_false_break_reclaim_timing_candidates.csv/json
-  - results/sr-false-break-reclaim-timing-audit/sr_false_break_reclaim_timing_summary.csv/json
+Latest compression breakout audit:
+- CLI flag:
+  - -compression-breakout-audit
+- Outputs:
+  - results/compression-breakout-audit/compression_breakout_candidates.csv/json
+  - results/compression-breakout-audit/compression_breakout_summary.csv/json
 - Audit size:
-  - candidate_rows=17652
+  - candidate_rows=5096
   - summary_rows=24
-  - candidate CSV lines including header: 17,653
+  - candidate CSV lines including header: 5,097
   - summary CSV lines including header: 25
-  - support reclaim decisions across all splits: 4,120 per horizon
-  - resistance reclaim decisions across all splits: 4,150 per horizon
-- Compact verdict evidence:
-  - broad side/horizon favorable-minus-adverse was small-positive, topping at about +2.41bp
-  - broad FGTA was mostly near coin-flip, about 49.27% to 51.54%
-  - 2025_2026_recent support was negative across all horizons
-  - 2023_2024_oos resistance was negative at 3, 6, and 12 bars
-  - fully sliced cohorts had 0 stable rows at every threshold from 25 to 500 candidates per split
-  - coarse cohorts had no stable rows at 500 candidates per split
-  - close-shape cohorts survived at 500 candidates per split, but the best row had only about +0.51bp min split diff and 46.69% min FGTA
+  - breakout decisions across all splits: 2,548 per horizon
+  - one-bar horizon side counts: 1,290 up breakouts and 1,258 down breakouts
+- Defaults:
+  - detector_profile_id=p30_c12_bollinger_on_adx_off
+  - max_breakout_delay=12
+  - horizons=1;3;6;12
+- Decision semantics:
+  - episodes are contiguous RawActive detector runs that eventually become Active
+  - episode high/low are frozen using only closed candles through the episode end
+  - the first close above the frozen episode high or below the frozen episode low within 12 bars is the decision breakout candle
+  - all forward outcome metrics are label_* fields and start after the breakout candle
+- Latest smoke:
+  - loaded 569451 candles from 2021-01-01T00:00:00Z to 2026-06-01T23:59:59Z
+  - strategy=empty trades=0
 
 Non-negotiables:
 - Offline BTCUSDT 5m research only.
@@ -50,11 +55,9 @@ Non-negotiables:
 - After completing a brief or milestone, run closeout checks and commit the completed repo changes unless the user explicitly says not to commit.
 
 Recommended next task:
-Do not continue narrow SR timing slices by default. Choose or design a materially different non-trading audit before any entries. A reasonable default branch is a compact compression-breakout or volatility-expansion audit built from the existing detector outputs, but first keep the work to an inspectable audit plan or audit outputs, not trade logic.
+Review the compression breakout audit outputs for split and cohort stability before any entries. Add a durable review document only if the review reaches a clear verdict. Keep lab.EmptyStrategy unless the user explicitly changes scope after the review.
 
 Suggested verification for docs/memory-only closeouts:
-```bash
-env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
-git diff --check
-```
+- env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+- git diff --check
 ```

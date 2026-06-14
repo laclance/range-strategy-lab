@@ -2,6 +2,80 @@
 
 ## 2026-06-14
 
+Compression breakout audit milestone:
+
+- Added CLI flag `-compression-breakout-audit`.
+- Added compact non-trading compression breakout outputs:
+  - `compression_breakout_candidates.csv`
+  - `compression_breakout_candidates.json`
+  - `compression_breakout_summary.csv`
+  - `compression_breakout_summary.json`
+- Defaults:
+  - balanced compression detector profile:
+    `p30_c12_bollinger_on_adx_off`
+  - max closed-candle breakout delay: `12` bars after the raw-active
+    compression episode ends
+  - horizons: `1`, `3`, `6`, `12` bars after the breakout candle
+- Decision semantics:
+  - episodes are contiguous `RawActive` detector runs that eventually become
+    `Active`
+  - episode high/low are frozen using only closed candles through the episode
+    end
+  - the first close above the frozen episode high or below the frozen episode
+    low within `12` bars is the decision breakout candle
+  - all forward outcome metrics remain `label_*` fields and start after the
+    breakout candle
+- Added focused tests for raw-run episode construction, frozen episode bounds,
+  first close-break selection, up/down symmetry, forward label-window start,
+  no-break/missing-future skipping, invalid config, deterministic sorting, and
+  aggregation denominators.
+- This milestone did not add entries, exits, scoring, sizing, or strategy
+  replacement.
+- Strategy remains `lab.EmptyStrategy`.
+- Trades remain `0`.
+- No durable promotion or no-promotion review document was added in this
+  milestone; the next step should review split and cohort stability before any
+  entries.
+
+Latest compression breakout audit verification:
+
+```bash
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+  -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv \
+  -out-dir results/compression-breakout-audit \
+  -compression-breakout-audit
+
+wc -l results/compression-breakout-audit/compression_breakout_candidates.csv results/compression-breakout-audit/compression_breakout_summary.csv
+awk -F, 'NR>1 {counts[$3]+=$5} END {for (h in counts) print h, counts[h]}' results/compression-breakout-audit/compression_breakout_summary.csv
+awk -F, 'NR>1 && $3==1 {counts[$2]+=$5} END {for (s in counts) print s, counts[s]}' results/compression-breakout-audit/compression_breakout_summary.csv
+```
+
+Result:
+
+- `go test ./...` passed.
+- New compression breakout audit printed:
+  - `compression_breakout_audit candidate_rows=5096 summary_rows=24`
+  - `max_breakout_delay=12`
+  - `horizons=1;3;6;12`
+  - `detector_profile_id=p30_c12_bollinger_on_adx_off`
+  - `strategy=empty trades=0`
+- New compression breakout audit CSV lines including header:
+  - `compression_breakout_candidates.csv`: `5,097`
+  - `compression_breakout_summary.csv`: `25`
+- Result paths:
+  - `results/compression-breakout-audit/compression_breakout_candidates.csv`
+  - `results/compression-breakout-audit/compression_breakout_candidates.json`
+  - `results/compression-breakout-audit/compression_breakout_summary.csv`
+  - `results/compression-breakout-audit/compression_breakout_summary.json`
+- Compact aggregate read of `compression_breakout_summary.csv`:
+  - breakout decisions across all splits: `2,548` per horizon
+  - one-bar horizon side counts: `1,290` up breakouts and `1,258` down
+    breakouts
+  - summary rows are split by `2021_2022_stress`, `2023_2024_oos`, and
+    `2025_2026_recent`
+
 False-break reclaim timing review milestone:
 
 - Added durable review report:

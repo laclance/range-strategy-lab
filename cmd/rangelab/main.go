@@ -37,6 +37,7 @@ func run() error {
 	srRejectionTimingAudit := flag.Bool("sr-rejection-timing-audit", false, "write compact non-trading SR rejection timing diagnostics")
 	srConfirmationTimingAudit := flag.Bool("sr-confirmation-timing-audit", false, "write compact non-trading SR confirmation timing diagnostics")
 	srFalseBreakReclaimTimingAudit := flag.Bool("sr-false-break-reclaim-timing-audit", false, "write compact non-trading SR false-break reclaim timing diagnostics")
+	compressionBreakoutAudit := flag.Bool("compression-breakout-audit", false, "write compact non-trading compression breakout diagnostics")
 	detectorLookbackDays := flag.Int("detector-lookback-days", 20, "range detector trailing lookback in days")
 	detectorPercentile := flag.Float64("detector-percentile", 0.30, "range detector low-compression percentile threshold")
 	detectorMinConsecutiveBars := flag.Int("detector-min-consecutive-bars", 12, "range detector confirmed raw-active bars before active")
@@ -233,6 +234,32 @@ func run() error {
 			falseBreakCfg.MaxReclaimDelayBars,
 			formatIntSlice(falseBreakCfg.HorizonsBars),
 			falseBreakCfg.DetectorActiveOnly,
+		)
+	}
+	if *compressionBreakoutAudit {
+		breakoutCfg := lab.DefaultCompressionBreakoutAuditConfig()
+		candidateRows, summaryRows, err := lab.RunCompressionBreakoutAudit(candles, breakoutCfg, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "compression_breakout_candidates.json"), candidateRows); err != nil {
+			return err
+		}
+		if err := writeCompressionBreakoutCandidatesCSV(filepath.Join(*outDir, "compression_breakout_candidates.csv"), candidateRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "compression_breakout_summary.json"), summaryRows); err != nil {
+			return err
+		}
+		if err := writeCompressionBreakoutSummaryCSV(filepath.Join(*outDir, "compression_breakout_summary.csv"), summaryRows); err != nil {
+			return err
+		}
+		fmt.Printf("compression_breakout_audit candidate_rows=%d summary_rows=%d max_breakout_delay=%d horizons=%s detector_profile_id=%s\n",
+			len(candidateRows),
+			len(summaryRows),
+			breakoutCfg.MaxBreakoutDelayBars,
+			formatIntSlice(breakoutCfg.HorizonsBars),
+			breakoutCfg.DetectorProfileID,
 		)
 	}
 	if *detector || *detectorSweep {
@@ -494,6 +521,134 @@ func writeDetectorSweepCSV(path string, rows []lab.DetectorSweepRow) error {
 			formatFloat(row.AvgEpisodeLength),
 			formatFloat(row.MedianEpisodeLength),
 			strconv.Itoa(row.LongestEpisodeLength),
+		}); err != nil {
+			return err
+		}
+	}
+	return w.Error()
+}
+
+func writeCompressionBreakoutCandidatesCSV(path string, rows []lab.CompressionBreakoutCandidateRow) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	w := csv.NewWriter(f)
+	defer w.Flush()
+
+	if err := w.Write([]string{
+		"split",
+		"side",
+		"breakout_delay_bars",
+		"horizon_bars",
+		"episode_raw_length_bucket",
+		"episode_active_length_bucket",
+		"episode_range_width_bucket",
+		"breakout_move_bucket",
+		"decision_true_range_expansion_bucket",
+		"detector_profile_id",
+		"candidate_count",
+		"avg_episode_raw_length_bars",
+		"avg_episode_active_length_bars",
+		"avg_episode_range_width_pct",
+		"avg_breakout_move_pct",
+		"avg_decision_true_range_atr",
+		"label_reentered_range_count",
+		"label_opposite_close_break_count",
+		"label_favorable_greater_than_adverse_count",
+		"label_reentered_range_rate",
+		"label_opposite_close_break_rate",
+		"label_avg_favorable_pct",
+		"label_avg_adverse_pct",
+		"label_favorable_minus_adverse_pct",
+		"label_favorable_greater_than_adverse_rate",
+	}); err != nil {
+		return err
+	}
+	for _, row := range rows {
+		if err := w.Write([]string{
+			row.Split,
+			row.Side,
+			strconv.Itoa(row.BreakoutDelayBars),
+			strconv.Itoa(row.HorizonBars),
+			row.EpisodeRawLengthBucket,
+			row.EpisodeActiveLengthBucket,
+			row.EpisodeRangeWidthBucket,
+			row.BreakoutMoveBucket,
+			row.DecisionTrueRangeExpansionBucket,
+			row.DetectorProfileID,
+			strconv.Itoa(row.CandidateCount),
+			formatFloat(row.AvgEpisodeRawLengthBars),
+			formatFloat(row.AvgEpisodeActiveLengthBars),
+			formatFloat(row.AvgEpisodeRangeWidthPct),
+			formatFloat(row.AvgBreakoutMovePct),
+			formatFloat(row.AvgDecisionTrueRangeATR),
+			strconv.Itoa(row.LabelReenteredRangeCount),
+			strconv.Itoa(row.LabelOppositeCloseBreakCount),
+			strconv.Itoa(row.LabelFavorableGreaterThanAdverseCount),
+			formatFloat(row.LabelReenteredRangeRate),
+			formatFloat(row.LabelOppositeCloseBreakRate),
+			formatFloat(row.LabelAvgFavorablePct),
+			formatFloat(row.LabelAvgAdversePct),
+			formatFloat(row.LabelFavorableMinusAdversePct),
+			formatFloat(row.LabelFavorableGreaterThanAdverseRate),
+		}); err != nil {
+			return err
+		}
+	}
+	return w.Error()
+}
+
+func writeCompressionBreakoutSummaryCSV(path string, rows []lab.CompressionBreakoutSummaryRow) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	w := csv.NewWriter(f)
+	defer w.Flush()
+
+	if err := w.Write([]string{
+		"split",
+		"side",
+		"horizon_bars",
+		"detector_profile_id",
+		"candidate_count",
+		"avg_breakout_delay_bars",
+		"avg_episode_raw_length_bars",
+		"avg_episode_active_length_bars",
+		"avg_episode_range_width_pct",
+		"avg_breakout_move_pct",
+		"avg_decision_true_range_atr",
+		"label_reentered_range_rate",
+		"label_opposite_close_break_rate",
+		"label_avg_favorable_pct",
+		"label_avg_adverse_pct",
+		"label_favorable_minus_adverse_pct",
+		"label_favorable_greater_than_adverse_rate",
+	}); err != nil {
+		return err
+	}
+	for _, row := range rows {
+		if err := w.Write([]string{
+			row.Split,
+			row.Side,
+			strconv.Itoa(row.HorizonBars),
+			row.DetectorProfileID,
+			strconv.Itoa(row.CandidateCount),
+			formatFloat(row.AvgBreakoutDelayBars),
+			formatFloat(row.AvgEpisodeRawLengthBars),
+			formatFloat(row.AvgEpisodeActiveLengthBars),
+			formatFloat(row.AvgEpisodeRangeWidthPct),
+			formatFloat(row.AvgBreakoutMovePct),
+			formatFloat(row.AvgDecisionTrueRangeATR),
+			formatFloat(row.LabelReenteredRangeRate),
+			formatFloat(row.LabelOppositeCloseBreakRate),
+			formatFloat(row.LabelAvgFavorablePct),
+			formatFloat(row.LabelAvgAdversePct),
+			formatFloat(row.LabelFavorableMinusAdversePct),
+			formatFloat(row.LabelFavorableGreaterThanAdverseRate),
 		}); err != nil {
 			return err
 		}
