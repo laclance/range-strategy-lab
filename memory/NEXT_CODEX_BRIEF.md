@@ -1,4 +1,4 @@
-# Next Codex Brief: Pick The Next Non-Trading Audit Hypothesis
+# Next Codex Brief: Review Range Regime Durability Stability
 
 ```text
 We are in /home/lance/range-strategy-lab, a standalone Go project named range-strategy-lab.
@@ -14,42 +14,35 @@ Current verdict:
 - Delayed confirmation after SR rejection was not entry-ready.
 - False-break reclaim timing audit was not entry-ready.
 - Compression breakout audit was not entry-ready.
+- Range regime durability audit has been implemented but not reviewed for stability yet.
 - Keep lab.EmptyStrategy.
 - Trades remain 0.
 - Do not add entries, exits, scoring, sizing, strategy replacement, live code, deploy scripts, API keys, grid, martingale, averaging down, or two-exchange execution unless the user explicitly changes scope.
 
-Latest compression breakout audit:
+Latest range regime durability audit:
 - CLI flag:
-  - -compression-breakout-audit
+  - -range-regime-durability-audit
 - Outputs:
-  - results/compression-breakout-audit/compression_breakout_candidates.csv/json
-  - results/compression-breakout-audit/compression_breakout_summary.csv/json
+  - results/range-regime-durability-audit/range_regime_durability_episodes.csv/json
+  - results/range-regime-durability-audit/range_regime_durability_summary.csv/json
 - Audit size:
-  - candidate_rows=5096
-  - summary_rows=24
-  - candidate CSV lines including header: 5,097
-  - summary CSV lines including header: 25
-  - breakout decisions across all splits: 2,548 per horizon
-  - one-bar horizon side counts: 1,290 up breakouts and 1,258 down breakouts
+  - episode_rows=11984
+  - summary_rows=452
+  - episode CSV lines including header: 11,985
+  - summary CSV lines including header: 453
 - Defaults:
   - detector_profile_id=p30_c12_bollinger_on_adx_off
-  - max_breakout_delay=12
   - horizons=1;3;6;12
-- Decision semantics:
+  - quick_invalidation_bars=3
+- Episode semantics:
   - episodes are contiguous RawActive detector runs that eventually become Active
-  - episode high/low are frozen using only closed candles through the episode end
-  - the first close above the frozen episode high or below the frozen episode low within 12 bars is the decision breakout candle
-  - all forward outcome metrics are label_* fields and start after the breakout candle
+  - episode high/low, width, length, and ATR context use only closed candles through the episode end
+  - label windows start at episode_end_index + 1
+  - all forward durability metrics are label_* fields and are labels only, not decision inputs
+  - summary rows include period splits plus full_2021_2026 aggregate rows
 - Latest smoke:
   - loaded 569451 candles from 2021-01-01T00:00:00Z to 2026-06-01T23:59:59Z
   - strategy=empty trades=0
-- Durable review:
-  - docs/COMPRESSION_BREAKOUT_REVIEW.md
-  - verdict: not entry-ready
-  - broad favorable-minus-adverse was positive, about +2.09bp to +2.97bp, but broad FGTA stayed below 50%
-  - 2025_2026_recent up breakouts were negative at 3, 6, and 12 bars
-  - down breakouts were negative in 2021_2022_stress at 12 bars and 2025_2026_recent at 1 bar
-  - no positive stable cohort survived the 50 candidates-per-split threshold in any reviewed grouping
 
 Non-negotiables:
 - Offline BTCUSDT 5m research only.
@@ -62,7 +55,7 @@ Non-negotiables:
 - After completing a brief or milestone, run closeout checks and commit the completed repo changes unless the user explicitly says not to commit.
 
 Recommended next task:
-Choose a materially different non-trading audit hypothesis before any entries. Do not continue narrower SR timing slices or narrower compression-breakout slicing unless the hypothesis changes materially. Keep lab.EmptyStrategy unless the user explicitly changes scope after a future review.
+Review the range regime durability outputs for split/time stability before testing another entry trigger. Decide whether the current range/compression regimes are durable, explainable, and narrow enough to use as future context. Do not add entries, exits, scoring, sizing, or strategy replacement in that review. Do not add a review verdict doc unless the audit outputs are actually reviewed in that same session.
 
 Suggested verification for docs/memory-only closeouts:
 - env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...

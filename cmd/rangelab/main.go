@@ -38,6 +38,7 @@ func run() error {
 	srConfirmationTimingAudit := flag.Bool("sr-confirmation-timing-audit", false, "write compact non-trading SR confirmation timing diagnostics")
 	srFalseBreakReclaimTimingAudit := flag.Bool("sr-false-break-reclaim-timing-audit", false, "write compact non-trading SR false-break reclaim timing diagnostics")
 	compressionBreakoutAudit := flag.Bool("compression-breakout-audit", false, "write compact non-trading compression breakout diagnostics")
+	rangeRegimeDurabilityAudit := flag.Bool("range-regime-durability-audit", false, "write compact non-trading range regime durability diagnostics")
 	detectorLookbackDays := flag.Int("detector-lookback-days", 20, "range detector trailing lookback in days")
 	detectorPercentile := flag.Float64("detector-percentile", 0.30, "range detector low-compression percentile threshold")
 	detectorMinConsecutiveBars := flag.Int("detector-min-consecutive-bars", 12, "range detector confirmed raw-active bars before active")
@@ -260,6 +261,32 @@ func run() error {
 			breakoutCfg.MaxBreakoutDelayBars,
 			formatIntSlice(breakoutCfg.HorizonsBars),
 			breakoutCfg.DetectorProfileID,
+		)
+	}
+	if *rangeRegimeDurabilityAudit {
+		durabilityCfg := lab.DefaultRangeRegimeDurabilityAuditConfig()
+		episodeRows, summaryRows, err := lab.RunRangeRegimeDurabilityAudit(candles, durabilityCfg, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "range_regime_durability_episodes.json"), episodeRows); err != nil {
+			return err
+		}
+		if err := writeRangeRegimeDurabilityEpisodesCSV(filepath.Join(*outDir, "range_regime_durability_episodes.csv"), episodeRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "range_regime_durability_summary.json"), summaryRows); err != nil {
+			return err
+		}
+		if err := writeRangeRegimeDurabilitySummaryCSV(filepath.Join(*outDir, "range_regime_durability_summary.csv"), summaryRows); err != nil {
+			return err
+		}
+		fmt.Printf("range_regime_durability_audit episode_rows=%d summary_rows=%d quick_invalidation_bars=%d horizons=%s detector_profile_id=%s\n",
+			len(episodeRows),
+			len(summaryRows),
+			durabilityCfg.QuickInvalidationBars,
+			formatIntSlice(durabilityCfg.HorizonsBars),
+			durabilityCfg.DetectorProfileID,
 		)
 	}
 	if *detector || *detectorSweep {
@@ -649,6 +676,188 @@ func writeCompressionBreakoutSummaryCSV(path string, rows []lab.CompressionBreak
 			formatFloat(row.LabelAvgAdversePct),
 			formatFloat(row.LabelFavorableMinusAdversePct),
 			formatFloat(row.LabelFavorableGreaterThanAdverseRate),
+		}); err != nil {
+			return err
+		}
+	}
+	return w.Error()
+}
+
+func writeRangeRegimeDurabilityEpisodesCSV(path string, rows []lab.RangeRegimeDurabilityEpisodeRow) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	w := csv.NewWriter(f)
+	defer w.Flush()
+
+	if err := w.Write([]string{
+		"split",
+		"episode_id",
+		"start_index",
+		"end_index",
+		"start_time",
+		"end_time",
+		"horizon_bars",
+		"detector_profile_id",
+		"raw_length_bars",
+		"active_length_bars",
+		"raw_length_bucket",
+		"active_length_bucket",
+		"episode_high",
+		"episode_low",
+		"episode_end_close",
+		"episode_width_pct",
+		"episode_width_bucket",
+		"avg_normalized_atr",
+		"end_normalized_atr",
+		"width_to_atr_ratio",
+		"width_to_atr_bucket",
+		"label_window_start_index",
+		"label_window_end_index",
+		"label_window_start_time",
+		"label_window_end_time",
+		"label_reentered_range",
+		"label_persisted_inside_range",
+		"label_quick_invalidated",
+		"label_invalidated_up",
+		"label_invalidated_down",
+		"label_chopped",
+		"label_trended_up",
+		"label_trended_down",
+		"label_close_drift_pct",
+		"label_max_up_move_pct",
+		"label_max_down_move_pct",
+	}); err != nil {
+		return err
+	}
+	for _, row := range rows {
+		if err := w.Write([]string{
+			row.Split,
+			strconv.Itoa(row.EpisodeID),
+			strconv.Itoa(row.StartIndex),
+			strconv.Itoa(row.EndIndex),
+			row.StartTime,
+			row.EndTime,
+			strconv.Itoa(row.HorizonBars),
+			row.DetectorProfileID,
+			strconv.Itoa(row.RawLengthBars),
+			strconv.Itoa(row.ActiveLengthBars),
+			row.RawLengthBucket,
+			row.ActiveLengthBucket,
+			formatFloat(row.EpisodeHigh),
+			formatFloat(row.EpisodeLow),
+			formatFloat(row.EpisodeEndClose),
+			formatFloat(row.EpisodeWidthPct),
+			row.EpisodeWidthBucket,
+			formatFloat(row.AvgNormalizedATR),
+			formatFloat(row.EndNormalizedATR),
+			formatFloat(row.WidthToATRRatio),
+			row.WidthToATRBucket,
+			strconv.Itoa(row.LabelWindowStartIndex),
+			strconv.Itoa(row.LabelWindowEndIndex),
+			row.LabelWindowStartTime,
+			row.LabelWindowEndTime,
+			strconv.FormatBool(row.LabelReenteredRange),
+			strconv.FormatBool(row.LabelPersistedInsideRange),
+			strconv.FormatBool(row.LabelQuickInvalidated),
+			strconv.FormatBool(row.LabelInvalidatedUp),
+			strconv.FormatBool(row.LabelInvalidatedDown),
+			strconv.FormatBool(row.LabelChopped),
+			strconv.FormatBool(row.LabelTrendedUp),
+			strconv.FormatBool(row.LabelTrendedDown),
+			formatFloat(row.LabelCloseDriftPct),
+			formatFloat(row.LabelMaxUpMovePct),
+			formatFloat(row.LabelMaxDownMovePct),
+		}); err != nil {
+			return err
+		}
+	}
+	return w.Error()
+}
+
+func writeRangeRegimeDurabilitySummaryCSV(path string, rows []lab.RangeRegimeDurabilitySummaryRow) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	w := csv.NewWriter(f)
+	defer w.Flush()
+
+	if err := w.Write([]string{
+		"split",
+		"horizon_bars",
+		"raw_length_bucket",
+		"active_length_bucket",
+		"episode_width_bucket",
+		"width_to_atr_bucket",
+		"detector_profile_id",
+		"episode_count",
+		"avg_raw_length_bars",
+		"avg_active_length_bars",
+		"avg_episode_width_pct",
+		"avg_normalized_atr",
+		"avg_end_normalized_atr",
+		"avg_width_to_atr_ratio",
+		"label_reentered_range_count",
+		"label_persisted_inside_range_count",
+		"label_quick_invalidated_count",
+		"label_invalidated_up_count",
+		"label_invalidated_down_count",
+		"label_chopped_count",
+		"label_trended_up_count",
+		"label_trended_down_count",
+		"label_reentered_range_rate",
+		"label_persisted_inside_range_rate",
+		"label_quick_invalidated_rate",
+		"label_invalidated_up_rate",
+		"label_invalidated_down_rate",
+		"label_chopped_rate",
+		"label_trended_up_rate",
+		"label_trended_down_rate",
+		"label_avg_close_drift_pct",
+		"label_avg_max_up_move_pct",
+		"label_avg_max_down_move_pct",
+	}); err != nil {
+		return err
+	}
+	for _, row := range rows {
+		if err := w.Write([]string{
+			row.Split,
+			strconv.Itoa(row.HorizonBars),
+			row.RawLengthBucket,
+			row.ActiveLengthBucket,
+			row.EpisodeWidthBucket,
+			row.WidthToATRBucket,
+			row.DetectorProfileID,
+			strconv.Itoa(row.EpisodeCount),
+			formatFloat(row.AvgRawLengthBars),
+			formatFloat(row.AvgActiveLengthBars),
+			formatFloat(row.AvgEpisodeWidthPct),
+			formatFloat(row.AvgNormalizedATR),
+			formatFloat(row.AvgEndNormalizedATR),
+			formatFloat(row.AvgWidthToATRRatio),
+			strconv.Itoa(row.LabelReenteredRangeCount),
+			strconv.Itoa(row.LabelPersistedInsideRangeCount),
+			strconv.Itoa(row.LabelQuickInvalidatedCount),
+			strconv.Itoa(row.LabelInvalidatedUpCount),
+			strconv.Itoa(row.LabelInvalidatedDownCount),
+			strconv.Itoa(row.LabelChoppedCount),
+			strconv.Itoa(row.LabelTrendedUpCount),
+			strconv.Itoa(row.LabelTrendedDownCount),
+			formatFloat(row.LabelReenteredRangeRate),
+			formatFloat(row.LabelPersistedInsideRangeRate),
+			formatFloat(row.LabelQuickInvalidatedRate),
+			formatFloat(row.LabelInvalidatedUpRate),
+			formatFloat(row.LabelInvalidatedDownRate),
+			formatFloat(row.LabelChoppedRate),
+			formatFloat(row.LabelTrendedUpRate),
+			formatFloat(row.LabelTrendedDownRate),
+			formatFloat(row.LabelAvgCloseDriftPct),
+			formatFloat(row.LabelAvgMaxUpMovePct),
+			formatFloat(row.LabelAvgMaxDownMovePct),
 		}); err != nil {
 			return err
 		}

@@ -2,6 +2,72 @@
 
 ## 2026-06-14
 
+Range regime durability audit milestone:
+
+- Added CLI flag `-range-regime-durability-audit`.
+- Added compact non-trading range regime durability outputs:
+  - `range_regime_durability_episodes.csv`
+  - `range_regime_durability_episodes.json`
+  - `range_regime_durability_summary.csv`
+  - `range_regime_durability_summary.json`
+- Defaults:
+  - balanced compression detector profile:
+    `p30_c12_bollinger_on_adx_off`
+  - horizons: `1`, `3`, `6`, `12` bars after the detected episode end
+  - quick invalidation window: `3` bars after the detected episode end
+- Episode semantics:
+  - episodes are contiguous `RawActive` detector runs that eventually become
+    `Active`
+  - episode high/low, width, length, and ATR context use only closed candles
+    through the episode end
+  - all forward durability metrics are `label_*` fields and start at
+    `episode_end_index + 1`
+  - summary rows include period splits plus `full_2021_2026` aggregate rows
+- Added focused tests for no-lookahead raw-run episode construction,
+  deterministic output, label-window start, split/full-summary handling,
+  invalid config, missing-future skipping, and summary denominators.
+- This milestone did not add entries, exits, scoring, sizing, or strategy
+  replacement.
+- Strategy remains `lab.EmptyStrategy`.
+- Trades remain `0`.
+- No durable review verdict document was added in this milestone; the next step
+  should review regime durability stability before any entry trigger work.
+
+Latest range regime durability audit verification:
+
+```bash
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+  -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv \
+  -out-dir results/range-regime-durability-audit \
+  -range-regime-durability-audit
+
+wc -l results/range-regime-durability-audit/range_regime_durability_episodes.csv results/range-regime-durability-audit/range_regime_durability_summary.csv
+git diff --check
+```
+
+Result:
+
+- `go test ./...` passed.
+- `git diff --check` passed.
+- New range regime durability audit printed:
+  - `range_regime_durability_audit episode_rows=11984 summary_rows=452`
+  - `quick_invalidation_bars=3`
+  - `horizons=1;3;6;12`
+  - `detector_profile_id=p30_c12_bollinger_on_adx_off`
+  - `loaded 569451 candles from 2021-01-01T00:00:00Z to
+    2026-06-01T23:59:59Z`
+  - `strategy=empty trades=0`
+- New range regime durability audit CSV lines including header:
+  - `range_regime_durability_episodes.csv`: `11,985`
+  - `range_regime_durability_summary.csv`: `453`
+- Result paths:
+  - `results/range-regime-durability-audit/range_regime_durability_episodes.csv`
+  - `results/range-regime-durability-audit/range_regime_durability_episodes.json`
+  - `results/range-regime-durability-audit/range_regime_durability_summary.csv`
+  - `results/range-regime-durability-audit/range_regime_durability_summary.json`
+
 Compression breakout review milestone:
 
 - Added durable review report:
