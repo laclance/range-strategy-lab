@@ -2,6 +2,61 @@
 
 ## 2026-06-14
 
+Compression breakout review milestone:
+
+- Added durable review report:
+  - `docs/COMPRESSION_BREAKOUT_REVIEW.md`
+- Updated `README.md` docs order to include the compression breakout review.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` with the new verdict and next
+  non-trading handoff.
+- Review verdict:
+  - compression breakout audit is not entry-ready
+  - keep `lab.EmptyStrategy`
+  - trades remain `0`
+  - do not add entries, exits, scoring, sizing, or strategy replacement from
+    this audit
+  - do not continue narrow compression-breakout slicing unless the next
+    hypothesis changes materially
+- Inputs reviewed:
+  - `results/compression-breakout-audit/compression_breakout_summary.csv`
+  - `results/compression-breakout-audit/compression_breakout_summary.json`
+  - `results/compression-breakout-audit/compression_breakout_candidates.csv`
+  - `results/compression-breakout-audit/compression_breakout_candidates.json`
+- Audit size:
+  - candidate rows: `5,096`
+  - summary rows: `24`
+  - candidate CSV lines including header: `5,097`
+  - summary CSV lines including header: `25`
+  - breakout decisions across all splits: `2,548` per horizon
+  - one-bar side counts: `1,290` up breakouts and `1,258` down breakouts
+- Compact evidence:
+  - broad side/horizon favorable-minus-adverse was positive, about `+2.09bp`
+    to `+2.97bp`, but every broad FGTA row was below `50%`
+  - `2025_2026_recent` up breakouts were negative at `3`, `6`, and `12` bars
+  - down breakouts were negative in `2021_2022_stress` at `12` bars and in
+    `2025_2026_recent` at `1` bar
+  - range re-entry rose to about `65.97%` for up and `70.11%` for down by the
+    `12` bar horizon
+  - fully sliced, no-delay, and breakout-shape cohorts had `0` stable positive
+    rows at every threshold from `25` to `500` candidates per split
+  - no positive stable cohort survived the `50` candidates-per-split threshold
+    in any reviewed grouping
+- Existing generated artifacts were used; the audit smoke was not rerun because
+  files were present and matched expected counts.
+
+Latest compression breakout review verification:
+
+```bash
+wc -l results/compression-breakout-audit/compression_breakout_candidates.csv results/compression-breakout-audit/compression_breakout_summary.csv
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+git diff --check
+```
+
+Result:
+
+- CSV line counts matched expected values.
+- Verification passed.
+
 Compression breakout audit milestone:
 
 - Added CLI flag `-compression-breakout-audit`.
