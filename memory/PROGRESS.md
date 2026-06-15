@@ -2,6 +2,79 @@
 
 ## 2026-06-15
 
+Detector durability sweep review milestone:
+
+- Added durable review report:
+  - `docs/DETECTOR_DURABILITY_SWEEP_REVIEW.md`
+- Updated `README.md` docs order to include the detector durability sweep
+  review.
+- Updated `memory/DECISIONS.md` with a durable gate: no profile in the current
+  `DefaultDetectorSweepProfiles` detector durability sweep is approved as
+  future entry context; `p30_c12_bollinger_on_adx_on` is diagnostic only.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` with the next non-trading
+  detector/context refinement handoff.
+- Review verdict:
+  - no current sweep profile is approved as future entry context
+  - `p30_c12_bollinger_on_adx_on` improves short-horizon persistence and quick
+    invalidation, but is not promoted
+  - the best broad `12` bar persistence floors remain below `18%`
+  - the best fully specified `12` bar slices remain too weak or sparse
+  - next implementation should refine or reframe detector/context first
+  - keep `lab.EmptyStrategy`
+  - trades remain `0`
+  - do not add entries, exits, scoring, sizing, or strategy replacement from
+    this review
+- Inputs reviewed:
+  - `results/detector-durability-sweep/detector_durability_sweep.csv`
+  - `results/detector-durability-sweep/detector_durability_sweep.json`
+  - `results/detector-durability-sweep/detector_durability_slices.csv`
+  - `results/detector-durability-sweep/detector_durability_slices.json`
+  - `results/detector-durability-sweep/detector_durability_stability.csv`
+  - `results/detector-durability-sweep/detector_durability_stability.json`
+- Audit size:
+  - profiles: `19`
+  - broad rows: `304`
+  - slice rows: `9,088`
+  - stability rows: `76`
+  - broad CSV lines including header: `305`
+  - slice CSV lines including header: `9,089`
+  - stability CSV lines including header: `77`
+  - horizons: `1`, `3`, `6`, `12`
+  - quick invalidation window: `3` bars after episode end
+- Compact evidence:
+  - balanced baseline `p30_c12_bollinger_on_adx_off` had only `13.61%`
+    minimum `12` bar persistence, `70.43%` maximum quick invalidation, and
+    `51.79%` maximum trended rate across period splits
+  - ADX comparison `p30_c12_bollinger_on_adx_on` improved `1` bar minimum
+    persistence to `59.28%` and maximum quick invalidation to `40.72%`, but
+    still had only `16.47%` minimum `12` bar persistence and `50.75%` maximum
+    trended rate
+  - the best broad `12` bar persistence floors were `17.57%`, `17.43%`, and
+    `17.30%`, all with high quick-invalidation or trended rates
+  - fully specified `12` bar slice counts by minimum episodes in every period
+    split were `203`, `80`, `45`, `13`, `0`, and `0` at thresholds `10`,
+    `25`, `50`, `100`, `250`, and `500`
+  - the best fully specified `12` bar slice at the `100` episodes-per-split
+    threshold had `26.95%` minimum persistence and `60.28%` maximum quick
+    invalidation
+- Existing generated artifacts were used; the detector durability sweep was not
+  rerun because files were present and matched expected counts.
+
+Latest detector durability sweep review verification:
+
+```bash
+wc -l results/detector-durability-sweep/detector_durability_sweep.csv results/detector-durability-sweep/detector_durability_slices.csv results/detector-durability-sweep/detector_durability_stability.csv
+rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+git diff --check
+```
+
+Result:
+
+- CSV line counts matched expected values.
+- `memory/NEXT_CODEX_BRIEF.md` remains the only canonical next-session prompt.
+- Verification passed.
+
 Detector durability sweep milestone:
 
 - Added CLI flag `-detector-durability-sweep`.

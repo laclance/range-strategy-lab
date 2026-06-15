@@ -33,6 +33,10 @@
   context for future entry hypotheses until detector/context refinement is
   reviewed; its durability weakness repeats across splits and it quick
   invalidates too often after episode end.
+- The current `DefaultDetectorSweepProfiles` detector durability sweep has
+  been reviewed, and no profile is approved as future entry context. The ADX
+  comparison profile `p30_c12_bollinger_on_adx_on` is diagnostic only, not a
+  promoted detector.
 - External helper modules may be used for feature extraction and audit outputs
   only; strategy hypotheses, entries, exits, scoring, sizing, and backtest
   behavior stay inside this lab.

@@ -1,4 +1,4 @@
-# Next Codex Brief: Review Detector Durability Sweep
+# Next Codex Brief: Refine Detector Context
 
 ```text
 We are in /home/lance/range-strategy-lab, a standalone Go project named range-strategy-lab.
@@ -6,7 +6,7 @@ We are in /home/lance/range-strategy-lab, a standalone Go project named range-st
 Before work:
 - Read AGENTS.md.
 - Read memory/README.md, memory/PROGRESS.md, and memory/DECISIONS.md.
-- Read README.md and docs/*.md, especially docs/RANGE_REGIME_DURABILITY_REVIEW.md, docs/COMPRESSION_BREAKOUT_REVIEW.md, docs/SR_FALSE_BREAK_RECLAIM_TIMING_REVIEW.md, docs/SR_CONFIRMATION_TIMING_REVIEW.md, docs/SR_REJECTION_TIMING_REVIEW.md, docs/ENTRY_READINESS_REVIEW.md, docs/RESEARCH_HELPERS.md, docs/STRATEGY_WORKFLOW.md, docs/ARCHITECTURE.md, and docs/VERIFICATION.md.
+- Read README.md and docs/*.md, especially docs/DETECTOR_DURABILITY_SWEEP_REVIEW.md, docs/RANGE_REGIME_DURABILITY_REVIEW.md, docs/COMPRESSION_BREAKOUT_REVIEW.md, docs/SR_FALSE_BREAK_RECLAIM_TIMING_REVIEW.md, docs/SR_CONFIRMATION_TIMING_REVIEW.md, docs/SR_REJECTION_TIMING_REVIEW.md, docs/ENTRY_READINESS_REVIEW.md, docs/RESEARCH_HELPERS.md, docs/STRATEGY_WORKFLOW.md, docs/ARCHITECTURE.md, and docs/VERIFICATION.md.
 - Check git status before editing.
 
 Current verdict:
@@ -15,15 +15,16 @@ Current verdict:
 - False-break reclaim timing audit was not entry-ready.
 - Compression breakout audit was not entry-ready.
 - Range regime durability review says the current balanced detector regimes are not durable enough to use as context for future entry hypotheses.
-- Detector durability sweep has been implemented but not reviewed for profile stability yet.
+- Detector durability sweep review says no current DefaultDetectorSweepProfiles profile is approved as future entry context.
+- p30_c12_bollinger_on_adx_on improves short-horizon durability and quick invalidation, but it is diagnostic only and not promoted.
 - Keep lab.EmptyStrategy.
 - Trades remain 0.
 - Do not add entries, exits, scoring, sizing, strategy replacement, live code, deploy scripts, API keys, grid, martingale, averaging down, or two-exchange execution unless the user explicitly changes scope.
 
-Latest detector durability sweep:
-- CLI flag:
-  - -detector-durability-sweep
-- Outputs:
+Latest detector durability sweep review:
+- Review doc:
+  - docs/DETECTOR_DURABILITY_SWEEP_REVIEW.md
+- Reviewed outputs:
   - results/detector-durability-sweep/detector_durability_sweep.csv/json
   - results/detector-durability-sweep/detector_durability_slices.csv/json
   - results/detector-durability-sweep/detector_durability_stability.csv/json
@@ -35,18 +36,12 @@ Latest detector durability sweep:
   - broad CSV lines including header: 305
   - slice CSV lines including header: 9,089
   - stability CSV lines including header: 77
-- Defaults:
-  - profile grid: existing DefaultDetectorSweepProfiles
-  - horizons=1;3;6;12
-  - quick_invalidation_bars=3
-- Semantics:
-  - broad rows are one row per detector profile, split, and horizon
-  - slice rows use existing raw length, active length, width, and width/ATR buckets
-  - stability rows compare 2021_2022_stress, 2023_2024_oos, and 2025_2026_recent
-  - label_* fields are forward outcomes only, not decision inputs
-- Latest smoke:
-  - loaded 569451 candles from 2021-01-01T00:00:00Z to 2026-06-01T23:59:59Z
-  - strategy=empty trades=0
+- Compact evidence:
+  - balanced baseline p30_c12_bollinger_on_adx_off had only 13.61% minimum 12-bar persistence, 70.43% maximum quick invalidation, and 51.79% maximum trended rate across period splits
+  - ADX comparison p30_c12_bollinger_on_adx_on improved 1-bar minimum persistence to 59.28% and maximum quick invalidation to 40.72%, but still had only 16.47% minimum 12-bar persistence and 50.75% maximum trended rate
+  - best broad 12-bar persistence floors were 17.57%, 17.43%, and 17.30%, all still blocked by quick invalidation or trend behavior
+  - fully specified 12-bar slice counts by minimum episodes in every period split were 203, 80, 45, 13, 0, and 0 at thresholds 10, 25, 50, 100, 250, and 500
+  - the best fully specified 12-bar slice at the 100 episodes-per-split threshold had 26.95% minimum persistence and 60.28% maximum quick invalidation
 
 Non-negotiables:
 - Offline BTCUSDT 5m research only.
@@ -60,9 +55,15 @@ Non-negotiables:
 - After completing a brief or milestone, run closeout checks and commit the completed repo changes unless the user explicitly says not to commit.
 
 Recommended next task:
-Review the detector durability sweep outputs for profile-level split stability and regime quality before any detector promotion or entry-trigger work. Decide whether any detector profile is durable enough to become future entry context, or whether detector/context refinement must continue. Do not add entries, exits, scoring, sizing, or strategy replacement in that review. Do not add a durable verdict doc unless the sweep outputs are actually reviewed in that same session.
+Implement a compact, non-trading detector/context refinement audit that tries to reduce quick invalidation and trend leakage before any entry-trigger work. Use the detector durability review as the evidence base: treat ADX gating as a diagnostic clue, not a promoted detector. Keep outputs inspectable under results/, keep all label_* fields as forward outcomes only, and do not add entries, exits, scoring, sizing, or strategy replacement.
 
-Suggested verification for docs/memory-only closeouts:
+Suggested verification:
 - env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+- env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+    -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv \
+    -out-dir results/<new-detector-context-refinement-dir> \
+    <new-audit-flag>
+- wc -l results/<new-detector-context-refinement-dir>/*.csv
+- rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
 - git diff --check
 ```
