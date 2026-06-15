@@ -2,6 +2,84 @@
 
 ## 2026-06-15
 
+Detector context refinement audit milestone:
+
+- Added CLI flag `-detector-context-refinement-audit`.
+- Added compact non-trading detector/context refinement outputs:
+  - `detector_context_refinement_candidates.csv`
+  - `detector_context_refinement_candidates.json`
+  - `detector_context_refinement_summary.csv`
+  - `detector_context_refinement_summary.json`
+  - `detector_context_refinement_stability.csv`
+  - `detector_context_refinement_stability.json`
+- Added exported lab API:
+  - `DefaultDetectorContextRefinementAuditConfig`
+  - `DefaultDetectorContextRefinementProfiles`
+  - `RunDetectorContextRefinementAudit`
+  - `DetectorContextRefinementCandidateRow`
+  - `DetectorContextRefinementSummaryRow`
+  - `DetectorContextRefinementStabilityRow`
+- Audit semantics:
+  - uses 8 detector profiles from the detector durability review, including
+    the ADX diagnostic variants
+  - uses 5 closed-candle context rules: `episode_end`, `hold_1_inside`,
+    `hold_3_inside`, `hold_6_inside`, and `hold_3_inside_mid_50`
+  - freezes episode high/low at the original raw-active episode end
+  - delayed rules set `decision_index = episode_end_index + hold_bars`
+  - all `label_*` fields start at `decision_index + 1` and are forward
+    outcomes only, not decision inputs
+  - summary rows include source episode counts, candidate counts, candidate
+    rates, and label rates by profile, context rule, split, and horizon
+  - stability rows compare only `2021_2022_stress`, `2023_2024_oos`, and
+    `2025_2026_recent`
+- This milestone did not add entries, exits, scoring, sizing, or strategy
+  replacement.
+- Strategy remains `lab.EmptyStrategy`.
+- Trades remain `0`.
+- No detector promotion verdict was added in this milestone; the next step
+  should review the detector context refinement outputs before any detector
+  promotion or entry-trigger work.
+
+Latest detector context refinement audit verification:
+
+```bash
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+  -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv \
+  -out-dir results/detector-context-refinement-audit \
+  -detector-context-refinement-audit
+
+wc -l results/detector-context-refinement-audit/*.csv
+rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
+git diff --check
+```
+
+Result:
+
+- `go test ./...` passed.
+- New detector context refinement audit printed:
+  - `detector_context_refinement_audit profiles=8 rules=5 candidate_rows=113824 summary_rows=640 stability_rows=160`
+  - `quick_invalidation_bars=3`
+  - `horizons=1;3;6;12`
+  - `loaded 569451 candles from 2021-01-01T00:00:00Z to
+    2026-06-01T23:59:59Z`
+  - `strategy=empty trades=0`
+- New detector context refinement CSV lines including header:
+  - `detector_context_refinement_candidates.csv`: `113,825`
+  - `detector_context_refinement_summary.csv`: `641`
+  - `detector_context_refinement_stability.csv`: `161`
+  - base `summary.csv`: `13`
+- Result paths:
+  - `results/detector-context-refinement-audit/detector_context_refinement_candidates.csv`
+  - `results/detector-context-refinement-audit/detector_context_refinement_candidates.json`
+  - `results/detector-context-refinement-audit/detector_context_refinement_summary.csv`
+  - `results/detector-context-refinement-audit/detector_context_refinement_summary.json`
+  - `results/detector-context-refinement-audit/detector_context_refinement_stability.csv`
+  - `results/detector-context-refinement-audit/detector_context_refinement_stability.json`
+- `memory/NEXT_CODEX_BRIEF.md` remains the only canonical next-session prompt.
+- `git diff --check` passed.
+
 Detector durability sweep review milestone:
 
 - Added durable review report:
