@@ -2,6 +2,77 @@
 
 ## 2026-06-15
 
+Detector durability sweep milestone:
+
+- Added CLI flag `-detector-durability-sweep`.
+- Added compact non-trading detector durability sweep outputs:
+  - `detector_durability_sweep.csv`
+  - `detector_durability_sweep.json`
+  - `detector_durability_slices.csv`
+  - `detector_durability_slices.json`
+  - `detector_durability_stability.csv`
+  - `detector_durability_stability.json`
+- Added exported lab API:
+  - `RunDetectorDurabilitySweep`
+  - `DetectorDurabilitySweepRow`
+  - `DetectorDurabilitySliceRow`
+  - `DetectorDurabilityStabilityRow`
+- Sweep semantics:
+  - reuses the existing `DefaultDetectorSweepProfiles` 19-profile grid
+  - applies existing range-regime durability label semantics to each profile
+  - broad rows are one row per profile, split, and horizon
+  - slice rows use existing raw length, active length, width, and width/ATR
+    buckets
+  - stability rows compare only `2021_2022_stress`, `2023_2024_oos`, and
+    `2025_2026_recent`
+  - all `label_*` fields are forward outcomes only, not decision inputs
+- This milestone did not add entries, exits, scoring, sizing, or strategy
+  replacement.
+- Strategy remains `lab.EmptyStrategy`.
+- Trades remain `0`.
+- No detector promotion verdict was added in this milestone; the next step
+  should review the detector durability sweep outputs before any detector
+  promotion or entry-trigger work.
+
+Latest detector durability sweep verification:
+
+```bash
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+  -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv \
+  -out-dir results/detector-durability-sweep \
+  -detector-durability-sweep
+
+wc -l results/detector-durability-sweep/detector_durability_sweep.csv results/detector-durability-sweep/detector_durability_slices.csv results/detector-durability-sweep/detector_durability_stability.csv
+rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
+git diff --check
+```
+
+Result:
+
+- `go test ./...` passed.
+- New detector durability sweep printed:
+  - `detector_durability_sweep profiles=19 broad_rows=304 slice_rows=9088 stability_rows=76`
+  - `quick_invalidation_bars=3`
+  - `horizons=1;3;6;12`
+  - `loaded 569451 candles from 2021-01-01T00:00:00Z to
+    2026-06-01T23:59:59Z`
+  - `strategy=empty trades=0`
+- New detector durability sweep CSV lines including header:
+  - `detector_durability_sweep.csv`: `305`
+  - `detector_durability_slices.csv`: `9,089`
+  - `detector_durability_stability.csv`: `77`
+- Result paths:
+  - `results/detector-durability-sweep/detector_durability_sweep.csv`
+  - `results/detector-durability-sweep/detector_durability_sweep.json`
+  - `results/detector-durability-sweep/detector_durability_slices.csv`
+  - `results/detector-durability-sweep/detector_durability_slices.json`
+  - `results/detector-durability-sweep/detector_durability_stability.csv`
+  - `results/detector-durability-sweep/detector_durability_stability.json`
+- `memory/NEXT_CODEX_BRIEF.md` remains the only canonical next-session prompt.
+- `git diff --check` passed.
+
 Range regime durability review milestone:
 
 - Added durable review report:
