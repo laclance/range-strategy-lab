@@ -6,7 +6,14 @@ We are in /home/lance/range-strategy-lab, a standalone Go project named range-st
 Before work:
 - Read AGENTS.md.
 - Read memory/README.md, memory/PROGRESS.md, and memory/DECISIONS.md.
-- Read README.md and docs/*.md, especially docs/HOLD_INSIDE_DIRECTIONAL_EDGE_REVIEW.md, docs/DETECTOR_CONTEXT_REFINEMENT_REVIEW.md, docs/DETECTOR_DURABILITY_SWEEP_REVIEW.md, docs/RANGE_REGIME_DURABILITY_REVIEW.md, docs/COMPRESSION_BREAKOUT_REVIEW.md, docs/SR_FALSE_BREAK_RECLAIM_TIMING_REVIEW.md, docs/SR_CONFIRMATION_TIMING_REVIEW.md, docs/SR_REJECTION_TIMING_REVIEW.md, docs/ENTRY_READINESS_REVIEW.md, docs/RESEARCH_HELPERS.md, docs/STRATEGY_WORKFLOW.md, docs/ARCHITECTURE.md, and docs/VERIFICATION.md.
+- Read README.md as the docs index.
+- Read only the docs relevant to this review:
+  - docs/HOLD_INSIDE_DIRECTIONAL_EDGE_REVIEW.md
+  - docs/DETECTOR_CONTEXT_REFINEMENT_REVIEW.md
+  - docs/DETECTOR_DURABILITY_SWEEP_REVIEW.md
+  - docs/RANGE_REGIME_DURABILITY_REVIEW.md
+  - docs/RESEARCH_HELPERS.md and docs/VERIFICATION.md only if implementation or verification questions arise
+- Do not read every historical review doc by default; open older SR/compression docs only if the current review needs that comparison.
 - Check git status before editing.
 
 Current verdict:

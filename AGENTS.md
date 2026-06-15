@@ -7,7 +7,7 @@ Before nontrivial work:
 1. Read `memory/README.md`.
 2. Read `memory/PROGRESS.md`.
 3. Read `memory/DECISIONS.md`.
-4. Read `README.md` and the relevant docs under `docs/`.
+4. Read `README.md` and only the relevant docs under `docs/`.
 
 Keep project memory current:
 
@@ -16,6 +16,16 @@ Keep project memory current:
 - Keep generated CSV/JSON outputs under `results/`; do not paste bulky generated output into memory.
 - Record verification commands, result paths, and short factual outcomes.
 - Keep notes dated and concise so future sessions can trust them quickly.
+
+Context budget:
+
+- Treat tracked memory as a compact working index, not a full transcript.
+- Do not make future sessions read every historical doc by default; use
+  `README.md` as an index and open only docs relevant to the current task.
+- When `memory/PROGRESS.md` grows past roughly 300 lines, compact older
+  milestones to date, artifact/doc paths, row counts or verdict, and commit.
+- Put detailed evidence in focused docs, generated artifacts under `results/`,
+  or git history instead of expanding always-read memory files.
 
 Hard boundaries:
 

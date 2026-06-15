@@ -19,7 +19,9 @@ It deliberately does not copy the bot's existing strategy scoring, live
 execution, deploy scripts, presets, portfolio coordinator, credentials, or
 order code.
 
-Read the docs in this order:
+Use the docs list as an index. For routine work, read only the docs relevant to
+the current task plus `memory/NEXT_CODEX_BRIEF.md`; for onboarding or broad
+review, read the docs in this order:
 
 1. [docs/PURPOSE.md](docs/PURPOSE.md)
 2. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)

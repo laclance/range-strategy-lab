@@ -20,6 +20,11 @@
 - Future Codex sessions should read `AGENTS.md` and `memory/` before nontrivial work.
 - The canonical next-session prompt is `memory/NEXT_CODEX_BRIEF.md`; do not
   keep a duplicate root `CODEX_BRIEF.md`.
+- Keep tracked memory context-budgeted: always-read memory files are a compact
+  working index, not a full transcript. If `memory/PROGRESS.md` grows past
+  roughly 300 lines, compact older milestones to date, artifact/doc paths, row
+  counts or verdict, and commit. Handoff briefs should name only task-relevant
+  docs, not require a blanket `docs/*.md` read.
 - After completing a brief or milestone, Codex should automatically run the
   closeout checks and commit the completed repo changes unless the user
   explicitly says not to commit.
