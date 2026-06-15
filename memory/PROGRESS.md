@@ -1,5 +1,71 @@
 # Progress
 
+## 2026-06-15
+
+Range regime durability review milestone:
+
+- Added durable review report:
+  - `docs/RANGE_REGIME_DURABILITY_REVIEW.md`
+- Updated `README.md` docs order to include the range regime durability review.
+- Updated `memory/DECISIONS.md` with a durable gate: the current
+  `p30_c12_bollinger_on_adx_off` detector is not approved as context for future
+  entry hypotheses until detector/context refinement is reviewed.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` with the new detector/context
+  refinement handoff.
+- Review verdict:
+  - current balanced detector regimes are not durable enough to use as context
+    for future entry hypotheses
+  - split stability mostly reflects weakness repeating across splits, not high
+    regime quality
+  - next implementation should refine detector/context first
+  - keep `lab.EmptyStrategy`
+  - trades remain `0`
+  - do not add entries, exits, scoring, sizing, or strategy replacement from
+    this audit
+- Inputs reviewed:
+  - `results/range-regime-durability-audit/range_regime_durability_summary.csv`
+  - `results/range-regime-durability-audit/range_regime_durability_episodes.csv`
+- Audit size:
+  - episode rows: `11,984`
+  - unique episodes: `2,996`
+  - summary rows: `452`
+  - episode CSV lines including header: `11,985`
+  - summary CSV lines including header: `453`
+  - detector profile: `p30_c12_bollinger_on_adx_off`
+  - horizons: `1`, `3`, `6`, `12`
+  - quick invalidation window: `3` bars after the episode end
+- Compact evidence:
+  - full-sample persistence fell from `44.66%` at `1` bar to `14.95%` at
+    `12` bars
+  - full-sample quick invalidation reached `70.06%` by the `3` bar horizon and
+    stayed there
+  - the period splits had similar broad weakness: `12` bar persistence was
+    `15.68%`, `15.07%`, and `13.61%`
+  - no fully specified bucket slice had at least `100` episodes in every period
+    split
+  - the best `12` bar fully specified slice with at least `25` episodes in
+    every split still had only `23.93%` minimum persistence and `58.12%`
+    maximum quick invalidation
+  - the broad `12` bar width-only `gt_50bp` slice still had only `16.80%`
+    minimum persistence and `68.07%` maximum quick invalidation
+- Existing generated artifacts were used; the audit smoke was not rerun because
+  files were present and matched expected counts.
+
+Latest range regime durability review verification:
+
+```bash
+wc -l results/range-regime-durability-audit/range_regime_durability_episodes.csv results/range-regime-durability-audit/range_regime_durability_summary.csv
+rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+git diff --check
+```
+
+Result:
+
+- CSV line counts matched expected values.
+- `memory/NEXT_CODEX_BRIEF.md` remains the only canonical next-session prompt.
+- Verification passed.
+
 ## 2026-06-14
 
 Range regime durability audit milestone:

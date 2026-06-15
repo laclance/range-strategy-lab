@@ -29,6 +29,10 @@
   - min consecutive bars: `12`
   - Bollinger: on
   - ADX: off
+- The current `p30_c12_bollinger_on_adx_off` detector is not approved as
+  context for future entry hypotheses until detector/context refinement is
+  reviewed; its durability weakness repeats across splits and it quick
+  invalidates too often after episode end.
 - External helper modules may be used for feature extraction and audit outputs
   only; strategy hypotheses, entries, exits, scoring, sizing, and backtest
   behavior stay inside this lab.
