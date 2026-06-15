@@ -46,6 +46,14 @@
   residual `12` bar trend leakage stays material, and the `label_*` fields are
   regime-durability outcomes, not P&L. No profile or context rule is promoted;
   keep `lab.EmptyStrategy`.
+- The hold-inside directional edge audit has been reviewed. The leading
+  `hold_3_inside`/`hold_6_inside` context does not show a split-stable
+  directional edge toward the frozen range high or low. No all-bucket row
+  passes the review gate of positive worst-split favorable-minus-adverse,
+  worst-split favorable-greater-than-adverse above `50%`, and adequate
+  candidate counts; no decision-close-position bucket reaches `100` candidates
+  in every period split. Do not promote `paper_side=toward_high` or
+  `paper_side=toward_low` into entry context; keep `lab.EmptyStrategy`.
 - External helper modules may be used for feature extraction and audit outputs
   only; strategy hypotheses, entries, exits, scoring, sizing, and backtest
   behavior stay inside this lab.

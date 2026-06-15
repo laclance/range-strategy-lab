@@ -1,4 +1,4 @@
-# Next Codex Brief: Review Hold-Inside Directional Edge Audit
+# Next Codex Brief: Build Hold-Inside Midline Transition Audit
 
 ```text
 We are in /home/lance/range-strategy-lab, a standalone Go project named range-strategy-lab.
@@ -6,7 +6,7 @@ We are in /home/lance/range-strategy-lab, a standalone Go project named range-st
 Before work:
 - Read AGENTS.md.
 - Read memory/README.md, memory/PROGRESS.md, and memory/DECISIONS.md.
-- Read README.md and docs/*.md, especially docs/DETECTOR_CONTEXT_REFINEMENT_REVIEW.md, docs/DETECTOR_DURABILITY_SWEEP_REVIEW.md, docs/RANGE_REGIME_DURABILITY_REVIEW.md, docs/COMPRESSION_BREAKOUT_REVIEW.md, docs/SR_FALSE_BREAK_RECLAIM_TIMING_REVIEW.md, docs/SR_CONFIRMATION_TIMING_REVIEW.md, docs/SR_REJECTION_TIMING_REVIEW.md, docs/ENTRY_READINESS_REVIEW.md, docs/RESEARCH_HELPERS.md, docs/STRATEGY_WORKFLOW.md, docs/ARCHITECTURE.md, and docs/VERIFICATION.md.
+- Read README.md and docs/*.md, especially docs/HOLD_INSIDE_DIRECTIONAL_EDGE_REVIEW.md, docs/DETECTOR_CONTEXT_REFINEMENT_REVIEW.md, docs/DETECTOR_DURABILITY_SWEEP_REVIEW.md, docs/RANGE_REGIME_DURABILITY_REVIEW.md, docs/COMPRESSION_BREAKOUT_REVIEW.md, docs/SR_FALSE_BREAK_RECLAIM_TIMING_REVIEW.md, docs/SR_CONFIRMATION_TIMING_REVIEW.md, docs/SR_REJECTION_TIMING_REVIEW.md, docs/ENTRY_READINESS_REVIEW.md, docs/RESEARCH_HELPERS.md, docs/STRATEGY_WORKFLOW.md, docs/ARCHITECTURE.md, and docs/VERIFICATION.md.
 - Check git status before editing.
 
 Current verdict:
@@ -17,19 +17,18 @@ Current verdict:
 - Range regime durability review says the balanced detector regimes are not durable enough as context for future entry hypotheses.
 - Detector durability sweep review says no current DefaultDetectorSweepProfiles profile is approved as future entry context; p30_c12_bollinger_on_adx_on is diagnostic only.
 - Detector context refinement review says delayed hold_3_inside and hold_6_inside are the first context refinement that materially and split-stably reduces quick invalidation and trend leakage with adequate candidates. They are leading decision-candle context, but NOT promoted to entry context.
-- A hold-inside directional edge audit has now been built. It is output-only and has no verdict yet.
+- Hold-inside directional edge review says hold_3_inside/hold_6_inside do not show a split-stable directional edge toward the frozen range high or low. No all-bucket row passed the review gate, and no non-all decision-close-position bucket reached 100 candidates in every period split.
 - Keep lab.EmptyStrategy.
 - Trades remain 0.
 - Do not add entries, exits, scoring, sizing, strategy replacement, live code, deploy scripts, API keys, grid, martingale, averaging down, or two-exchange execution unless the user explicitly changes scope.
 
-Latest hold-inside directional edge audit build:
-- CLI flag: -hold-inside-directional-edge-audit
-- Result directory:
-  - results/hold-inside-directional-edge-audit/
-- Outputs:
-  - hold_inside_directional_edge_candidates.csv/json
-  - hold_inside_directional_edge_summary.csv/json
-  - hold_inside_directional_edge_stability.csv/json
+Latest hold-inside directional edge review:
+- Review doc:
+  - docs/HOLD_INSIDE_DIRECTIONAL_EDGE_REVIEW.md
+- Inputs reviewed:
+  - results/hold-inside-directional-edge-audit/hold_inside_directional_edge_candidates.csv/json
+  - results/hold-inside-directional-edge-audit/hold_inside_directional_edge_summary.csv/json
+  - results/hold-inside-directional-edge-audit/hold_inside_directional_edge_stability.csv/json
 - Audit size:
   - profiles: 1
   - context rules: 3
@@ -42,41 +41,42 @@ Latest hold-inside directional edge audit build:
   - stability CSV lines including header: 169
   - horizons: 1, 3, 6, 12
   - quick invalidation window: 3 bars after the decision candle
-- Run printed:
-  - loaded 569451 candles from 2021-01-01T00:00:00Z to 2026-06-01T23:59:59Z
-  - strategy=empty trades=0
-
-Audit semantics:
-- Detector profile is only p30_c12_bollinger_on_adx_off.
-- Context rules are hold_3_inside, hold_6_inside, and hold_3_inside_mid_50.
-- Candidate rows are one row per passed source episode, context rule, horizon, and paper side:
-  - paper_side=toward_high
-  - paper_side=toward_low
-- Decision fields use only data known at the decision candle:
-  - frozen episode high/low/mid
-  - decision close position and bucket
-  - distance to high/low/mid
-  - raw/active length, width, ATR, and width/ATR context
-- Forward label_* fields start at decision_index + 1.
-- Summary rows aggregate by profile, context rule, split, horizon, paper side, and decision close position bucket, including all.
-- Stability rows compare only 2021_2022_stress, 2023_2024_oos, and 2025_2026_recent.
+- Compact evidence:
+  - hold_3_inside h3 toward_high all-bucket had 222 minimum split candidates and +0.78bp minimum favorable-minus-adverse, but only 46.56% minimum favorable-greater-than-adverse.
+  - hold_3_inside h6 toward_high all-bucket had 222 minimum split candidates and +0.62bp minimum favorable-minus-adverse, but only 45.51% minimum favorable-greater-than-adverse.
+  - hold_6_inside h6 toward_low all-bucket had 170 minimum split candidates and 50.18% minimum favorable-greater-than-adverse, but -0.03bp minimum favorable-minus-adverse.
+  - all other primary all-bucket rows had negative minimum favorable-minus-adverse, minimum favorable-greater-than-adverse below 50%, or both.
+  - non-all bucket rows for hold_3_inside/hold_6_inside: 0 rows with >=100 candidates in every period split; 32 rows with >=50 candidates in every period split, but the best relaxed positives were sparse or weak by FGTA.
 
 Recommended next task:
-Stay non-trading. Review the hold-inside directional edge outputs for split-stable directional edge before any entry trigger. Focus on:
-- hold_3_inside and hold_6_inside first; use hold_3_inside_mid_50 as a stricter comparison, not the primary sample.
-- Compare paper_side=toward_high vs paper_side=toward_low by horizon and decision close position bucket.
-- Prioritize stability rows over full-sample averages.
-- Look for worst-split evidence in label_avg_favorable_minus_adverse_pct, label_favorable_greater_than_adverse_rate, label_touched_mid_rate, label_closed_across_mid_rate, label_side_boundary_touch_rate, label_opposite_close_break_rate, and label_quick_invalidated_rate.
-- Treat broad positivity as insufficient unless it survives the three period splits and has adequate candidate counts.
-- If there is a clear verdict, add a durable review doc such as docs/HOLD_INSIDE_DIRECTIONAL_EDGE_REVIEW.md and update README.md docs order.
-- If there is no clear split-stable edge, record a no-promotion conclusion and pivot the next brief to a materially different non-trading hypothesis.
+Stay non-trading. Build a compact hold-inside midline transition audit that asks a different question from the failed toward-high/toward-low paper-side audit:
+- condition only on p30_c12_bollinger_on_adx_off with hold_3_inside and hold_6_inside first
+- keep hold_3_inside_mid_50 as diagnostic comparison only if useful
+- use only confirmed closed-candle decision fields known at the decision candle
+- label what happens after the decision candle around the frozen range midline, not a paper trade side
+- useful label examples:
+  - touched_mid within horizon
+  - closed_across_mid within horizon
+  - first_mid_touch_delay_bars
+  - mid_touch_before_boundary_touch
+  - mid_cross_before_boundary_close_break
+  - persisted_inside_range
+  - quick_invalidated within 3 bars
+  - invalidated_up/down and trended_up/down for context
+- aggregate by profile, context rule, split, horizon, decision_mid_side, and decision close position bucket including all
+- emit candidate, summary, and stability CSV/JSON under results/hold-inside-midline-transition-audit/
+- prioritize stability rows over full-sample averages and require adequate per-split candidates before any follow-up
 
-Do not add entries, exits, scoring, sizing, or strategy replacement in the review session. Do not convert paper-side labels into trades. Do not add live code, deploy scripts, API keys, grid, martingale, averaging down, or two-exchange execution.
+Do not add entries, exits, scoring, sizing, or strategy replacement in this implementation. Do not convert midline labels into trades. Do not add live code, deploy scripts, API keys, grid, martingale, averaging down, or two-exchange execution.
 
-Suggested verification for the review:
-- wc -l results/hold-inside-directional-edge-audit/hold_inside_directional_edge_candidates.csv results/hold-inside-directional-edge-audit/hold_inside_directional_edge_summary.csv results/hold-inside-directional-edge-audit/hold_inside_directional_edge_stability.csv
-- rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
+Suggested verification for the next audit:
 - env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+- env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+    -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv \
+    -out-dir results/hold-inside-midline-transition-audit \
+    -hold-inside-midline-transition-audit
+- wc -l results/hold-inside-midline-transition-audit/*.csv
+- rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
 - git diff --check
 
 Closeout:

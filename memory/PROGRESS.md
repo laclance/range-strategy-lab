@@ -2,6 +2,83 @@
 
 ## 2026-06-15
 
+Hold-inside directional edge review milestone:
+
+- Added durable review report:
+  - `docs/HOLD_INSIDE_DIRECTIONAL_EDGE_REVIEW.md`
+- Updated `README.md` docs order to include the hold-inside directional edge
+  review (now item `14`; `memory/NEXT_CODEX_BRIEF.md` is item `15`).
+- Updated `memory/DECISIONS.md` with a durable no-promotion gate: the current
+  hold-inside directional paper-side labels are not approved as entry context
+  or strategy inputs.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` with the next non-trading
+  hold-inside midline-transition audit handoff.
+- Review verdict:
+  - hold-inside directional edge audit is not entry-ready
+  - `hold_3_inside` and `hold_6_inside` remain useful range-survival context,
+    but do not show a split-stable directional edge toward the frozen range
+    high or low
+  - no primary all-bucket row passed the review gate of positive worst-split
+    favorable-minus-adverse, worst-split favorable-greater-than-adverse above
+    `50%`, and adequate candidate counts
+  - no non-`all` decision-close-position bucket reached `100` candidates in
+    every period split for `hold_3_inside`/`hold_6_inside`
+  - keep `lab.EmptyStrategy`
+  - trades remain `0`
+  - do not add entries, exits, scoring, sizing, strategy replacement, or convert
+    `paper_side=toward_high`/`paper_side=toward_low` labels into trades
+- Inputs reviewed:
+  - `results/hold-inside-directional-edge-audit/hold_inside_directional_edge_candidates.csv`
+  - `results/hold-inside-directional-edge-audit/hold_inside_directional_edge_candidates.json`
+  - `results/hold-inside-directional-edge-audit/hold_inside_directional_edge_summary.csv`
+  - `results/hold-inside-directional-edge-audit/hold_inside_directional_edge_summary.json`
+  - `results/hold-inside-directional-edge-audit/hold_inside_directional_edge_stability.csv`
+  - `results/hold-inside-directional-edge-audit/hold_inside_directional_edge_stability.json`
+- Audit size:
+  - profiles: `1`
+  - context rules: `3`
+  - paper sides: `2`
+  - candidate rows: `15,976`
+  - summary rows: `624`
+  - stability rows: `168`
+  - candidate CSV lines including header: `15,977`
+  - summary CSV lines including header: `625`
+  - stability CSV lines including header: `169`
+  - horizons: `1`, `3`, `6`, `12`
+  - quick invalidation window: `3` bars after the decision candle
+- Compact evidence:
+  - primary all-bucket `hold_3_inside`, `h3`, `toward_high`: `222` minimum
+    split candidates, `+0.78bp` minimum favorable-minus-adverse, but only
+    `46.56%` minimum favorable-greater-than-adverse
+  - primary all-bucket `hold_3_inside`, `h6`, `toward_high`: `222` minimum
+    split candidates, `+0.62bp` minimum favorable-minus-adverse, but only
+    `45.51%` minimum favorable-greater-than-adverse
+  - primary all-bucket `hold_6_inside`, `h6`, `toward_low`: `170` minimum split
+    candidates and `50.18%` minimum favorable-greater-than-adverse, but
+    `-0.03bp` minimum favorable-minus-adverse
+  - all other primary all-bucket rows had negative minimum
+    favorable-minus-adverse, minimum favorable-greater-than-adverse below
+    `50%`, or both
+  - non-`all` bucket rows for `hold_3_inside`/`hold_6_inside`: `0` rows with
+    `>=100` candidates in every period split; `32` rows with `>=50` candidates
+    in every period split, but the best relaxed positives were sparse or weak
+    by FGTA
+
+Latest hold-inside directional edge review verification:
+
+```bash
+wc -l results/hold-inside-directional-edge-audit/hold_inside_directional_edge_candidates.csv results/hold-inside-directional-edge-audit/hold_inside_directional_edge_summary.csv results/hold-inside-directional-edge-audit/hold_inside_directional_edge_stability.csv
+rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+git diff --check
+```
+
+Result:
+
+- CSV line counts matched expected values (`15,977` / `625` / `169`).
+- `memory/NEXT_CODEX_BRIEF.md` remains the only canonical next-session prompt.
+- Verification passed.
+
 Hold-inside directional edge audit milestone:
 
 - Added CLI flag `-hold-inside-directional-edge-audit`.
