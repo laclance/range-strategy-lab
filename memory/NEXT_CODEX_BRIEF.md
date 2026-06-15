@@ -1,4 +1,4 @@
-# Next Codex Brief: Review Detector Context Refinement Audit
+# Next Codex Brief: Hold-Inside Directional Edge Audit
 
 ```text
 We are in /home/lance/range-strategy-lab, a standalone Go project named range-strategy-lab.
@@ -6,7 +6,7 @@ We are in /home/lance/range-strategy-lab, a standalone Go project named range-st
 Before work:
 - Read AGENTS.md.
 - Read memory/README.md, memory/PROGRESS.md, and memory/DECISIONS.md.
-- Read README.md and docs/*.md, especially docs/DETECTOR_DURABILITY_SWEEP_REVIEW.md, docs/RANGE_REGIME_DURABILITY_REVIEW.md, docs/COMPRESSION_BREAKOUT_REVIEW.md, docs/SR_FALSE_BREAK_RECLAIM_TIMING_REVIEW.md, docs/SR_CONFIRMATION_TIMING_REVIEW.md, docs/SR_REJECTION_TIMING_REVIEW.md, docs/ENTRY_READINESS_REVIEW.md, docs/RESEARCH_HELPERS.md, docs/STRATEGY_WORKFLOW.md, docs/ARCHITECTURE.md, and docs/VERIFICATION.md.
+- Read README.md and docs/*.md, especially docs/DETECTOR_CONTEXT_REFINEMENT_REVIEW.md, docs/DETECTOR_DURABILITY_SWEEP_REVIEW.md, docs/RANGE_REGIME_DURABILITY_REVIEW.md, docs/COMPRESSION_BREAKOUT_REVIEW.md, docs/SR_FALSE_BREAK_RECLAIM_TIMING_REVIEW.md, docs/SR_CONFIRMATION_TIMING_REVIEW.md, docs/SR_REJECTION_TIMING_REVIEW.md, docs/ENTRY_READINESS_REVIEW.md, docs/RESEARCH_HELPERS.md, docs/STRATEGY_WORKFLOW.md, docs/ARCHITECTURE.md, and docs/VERIFICATION.md.
 - Check git status before editing.
 
 Current verdict:
@@ -14,54 +14,31 @@ Current verdict:
 - Delayed confirmation after SR rejection was not entry-ready.
 - False-break reclaim timing audit was not entry-ready.
 - Compression breakout audit was not entry-ready.
-- Range regime durability review says the current balanced detector regimes are not durable enough to use as context for future entry hypotheses.
-- Detector durability sweep review says no current DefaultDetectorSweepProfiles profile is approved as future entry context.
-- p30_c12_bollinger_on_adx_on improves short-horizon durability and quick invalidation, but it is diagnostic only and not promoted.
-- Detector context refinement audit has been implemented but not reviewed for profile/rule stability yet.
+- Range regime durability review says the balanced detector regimes are not durable enough as context for future entry hypotheses.
+- Detector durability sweep review says no current DefaultDetectorSweepProfiles profile is approved as future entry context; p30_c12_bollinger_on_adx_on is diagnostic only.
+- Detector context refinement review says the delayed hold_3_inside and hold_6_inside context rules are the first refinement that materially and split-stably reduces quick invalidation and trend leakage with adequate candidates. They are the leading decision-candle context, but they are NOT promoted to entry context: the gain is a heavy survivorship/conditioning effect, residual 12 bar trend leakage stays material, and the label_* fields are regime-durability outcomes, not P&L.
 - Keep lab.EmptyStrategy.
 - Trades remain 0.
 - Do not add entries, exits, scoring, sizing, strategy replacement, live code, deploy scripts, API keys, grid, martingale, averaging down, or two-exchange execution unless the user explicitly changes scope.
 
-Latest detector context refinement audit:
-- CLI flag:
-  - -detector-context-refinement-audit
-- Outputs:
-  - results/detector-context-refinement-audit/detector_context_refinement_candidates.csv/json
+Latest detector context refinement review:
+- Durable report: docs/DETECTOR_CONTEXT_REFINEMENT_REVIEW.md
+- Inputs reviewed (existing artifacts, not rerun):
   - results/detector-context-refinement-audit/detector_context_refinement_summary.csv/json
   - results/detector-context-refinement-audit/detector_context_refinement_stability.csv/json
-- Audit size:
-  - profiles=8
-  - rules=5
-  - candidate_rows=113824
-  - summary_rows=640
-  - stability_rows=160
-  - candidate CSV lines including header: 113,825
-  - summary CSV lines including header: 641
-  - stability CSV lines including header: 161
-- Profiles:
-  - p30_c12_bollinger_on_adx_off
-  - p30_c12_bollinger_on_adx_on
-  - p20_c24_bollinger_on_adx_off
-  - p30_c24_bollinger_on_adx_off
-  - p40_c24_bollinger_on_adx_off
-  - p20_c24_bollinger_on_adx_on
-  - p30_c24_bollinger_on_adx_on
-  - p40_c24_bollinger_on_adx_on
-- Context rules:
-  - episode_end
-  - hold_1_inside
-  - hold_3_inside
-  - hold_6_inside
-  - hold_3_inside_mid_50
-- Semantics:
-  - episode high/low are frozen at the original raw-active episode end
-  - delayed rules set decision_index = episode_end_index + hold_bars
-  - source episode counts remain in summary denominators even when a context rule rejects the episode
-  - all label_* fields start at decision_index + 1 and are forward outcomes only, not decision inputs
-  - stability rows compare 2021_2022_stress, 2023_2024_oos, and 2025_2026_recent
-- Latest smoke:
-  - loaded 569451 candles from 2021-01-01T00:00:00Z to 2026-06-01T23:59:59Z
-  - strategy=empty trades=0
+  - results/detector-context-refinement-audit/detector_context_refinement_candidates.csv (sampled)
+- Audit size: profiles=8, rules=5, candidate_rows=113824, summary_rows=640, stability_rows=160
+- Lead context rules: hold_3_inside, hold_6_inside (closed-candle knowable at the decision candle; labels start at decision_index+1).
+
+Recommended next task:
+Stay non-trading. Implement a compact hold-inside directional edge audit that conditions on the leading hold-inside decision-candle context and measures forward, split-stable DIRECTIONAL outcomes, not just range survival. Concretely:
+- Reuse the existing context machinery: rangeRegimeDurabilityEpisodes, DetectorContextRefinementRule / detectorContextRulePasses, decisionClosePosition / decisionClosePositionBucket, classifyDetectorSweepProfile, and the split helpers.
+- Focus on the balanced baseline detector p30_c12_bollinger_on_adx_off with hold_3_inside and hold_6_inside context (optionally one stricter mid_50 variant for comparison).
+- At the decision candle, record decision-candle features only (close position bucket, distance to frozen episode high/low, width and width/ATR context). Add forward label_* outcomes that capture direction, for example reversion toward range mid versus continued trend out of the range, favorable-minus-adverse move by side, and max favorable/adverse excursion, starting at decision_index+1.
+- Keep horizons 1, 3, 6, 12 and the 3-bar quick-invalidation window for comparability.
+- Emit compact CSV/JSON candidate, summary, and split-stability outputs under results/, plus a CLI flag, mirroring the existing audit modes.
+- Add focused tests for no-lookahead decision features, label-window start, support/resistance (toward-high vs toward-low) symmetry, hold-rule filtering, missing-future skipping, invalid config, deterministic sorting, and summary denominators.
+Do not add entries, exits, scoring, sizing, or strategy replacement. Do not add a durable verdict doc in the same session as the audit build; the next session reviews the outputs for whether a directional edge survives split-stably and net of an assumed cost before any entry trigger.
 
 Non-negotiables:
 - Offline BTCUSDT 5m research only.
@@ -74,12 +51,10 @@ Non-negotiables:
 - Update memory/DECISIONS.md only if a durable constraint changes.
 - After completing a brief or milestone, run closeout checks and commit the completed repo changes unless the user explicitly says not to commit.
 
-Recommended next task:
-Review the detector context refinement audit outputs for profile/rule-level split stability and regime quality before any detector promotion or entry-trigger work. Decide whether any context rule materially reduces quick invalidation and trend leakage with enough split-stable candidates, or whether detector/context refinement must continue. Do not add entries, exits, scoring, sizing, or strategy replacement in that review. Do not add a durable verdict doc unless the outputs are actually reviewed in that same session.
-
-Suggested verification for docs/memory-only closeouts:
-- wc -l results/detector-context-refinement-audit/detector_context_refinement_candidates.csv results/detector-context-refinement-audit/detector_context_refinement_summary.csv results/detector-context-refinement-audit/detector_context_refinement_stability.csv
-- rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
+Suggested verification for an audit build:
 - env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+- env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv -out-dir results/<new-audit-dir> -<new-audit-flag>
+- wc -l results/<new-audit-dir>/*.csv
+- rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
 - git diff --check
 ```

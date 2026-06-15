@@ -2,6 +2,79 @@
 
 ## 2026-06-15
 
+Detector context refinement review milestone:
+
+- Added durable review report:
+  - `docs/DETECTOR_CONTEXT_REFINEMENT_REVIEW.md`
+- Updated `README.md` docs order to include the detector context refinement
+  review (now item `13`; `memory/NEXT_CODEX_BRIEF.md` is item `14`).
+- Updated `memory/DECISIONS.md` with a durable gate: the delayed
+  `hold_3_inside`/`hold_6_inside` context rules are the leading context
+  refinement and materially improve split-stable durability, but remain
+  regime-durability filters and are not approved as entry context.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` with the next non-trading
+  hold-inside directional edge handoff.
+- Review verdict:
+  - the delayed hold-inside context rules are the first refinement that
+    materially and split-stably reduces quick invalidation and trend leakage
+    with adequate candidates; lead rules are `hold_3_inside` and
+    `hold_6_inside`
+  - not promoted to entry context; the gain is heavy survivorship/conditioning,
+    residual `12` bar trend leakage is still material, and the labels are
+    regime-durability outcomes, not P&L
+  - keep `lab.EmptyStrategy`
+  - trades remain `0`
+  - do not add entries, exits, scoring, sizing, or strategy replacement from
+    this review
+- Inputs reviewed:
+  - `results/detector-context-refinement-audit/detector_context_refinement_summary.csv`
+  - `results/detector-context-refinement-audit/detector_context_refinement_summary.json`
+  - `results/detector-context-refinement-audit/detector_context_refinement_stability.csv`
+  - `results/detector-context-refinement-audit/detector_context_refinement_stability.json`
+  - `results/detector-context-refinement-audit/detector_context_refinement_candidates.csv` (sampled)
+- Audit size:
+  - profiles: `8`
+  - context rules: `5`
+  - candidate rows: `113,824`
+  - summary rows: `640`
+  - stability rows: `160`
+  - candidate CSV lines including header: `113,825`
+  - summary CSV lines including header: `641`
+  - stability CSV lines including header: `161`
+  - horizons: `1`, `3`, `6`, `12`
+  - quick invalidation window: `3` bars after the decision candle
+- Compact evidence (balanced baseline `p30_c12_bollinger_on_adx_off`, `12` bar
+  horizon, worst split across the three period splits):
+  - `episode_end`: `13.61%` min persisted, `70.43%` max quick invalidated,
+    `51.79%` max trended, `742` min split candidates
+  - `hold_3_inside`: `40.54%` min persisted, `25.32%` max quick invalidated,
+    `40.09%` max trended, `222` min split candidates, `~30%` candidate rate
+  - `hold_6_inside`: `44.71%` min persisted, `21.46%` max quick invalidated,
+    `35.88%` max trended, `170` min split candidates, `~22%-24%` candidate rate
+  - `hold_3_inside_mid_50`: `47.83%` min persisted, `16.28%` max quick
+    invalidated, `33.06%` max trended, `94` min split candidates, `~14%`
+    candidate rate
+  - the same monotonic improvement held across all `8` profiles; the strongest
+    worst-split `12` bar rows with at least `150` candidates per split were all
+    delayed-hold rules
+- Existing generated artifacts were used; the audit was not rerun because files
+  were present and matched expected counts.
+
+Latest detector context refinement review verification:
+
+```bash
+wc -l results/detector-context-refinement-audit/detector_context_refinement_candidates.csv results/detector-context-refinement-audit/detector_context_refinement_summary.csv results/detector-context-refinement-audit/detector_context_refinement_stability.csv
+rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+git diff --check
+```
+
+Result:
+
+- CSV line counts matched expected values (`113,825` / `641` / `161`).
+- `memory/NEXT_CODEX_BRIEF.md` remains the only canonical next-session prompt.
+- Verification passed.
+
 Detector context refinement audit milestone:
 
 - Added CLI flag `-detector-context-refinement-audit`.

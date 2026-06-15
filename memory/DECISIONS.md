@@ -37,6 +37,15 @@
   been reviewed, and no profile is approved as future entry context. The ADX
   comparison profile `p30_c12_bollinger_on_adx_on` is diagnostic only, not a
   promoted detector.
+- The detector context refinement audit has been reviewed. The delayed
+  `hold_3_inside` and `hold_6_inside` context rules are the leading context
+  refinement: they materially and split-stably reduce quick invalidation and
+  trend leakage with adequate candidates, and the hold condition is
+  closed-candle knowable at the decision candle. They are still not approved as
+  entry context, because the gain is a heavy survivorship/conditioning effect,
+  residual `12` bar trend leakage stays material, and the `label_*` fields are
+  regime-durability outcomes, not P&L. No profile or context rule is promoted;
+  keep `lab.EmptyStrategy`.
 - External helper modules may be used for feature extraction and audit outputs
   only; strategy hypotheses, entries, exits, scoring, sizing, and backtest
   behavior stay inside this lab.
