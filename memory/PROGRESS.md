@@ -13,10 +13,50 @@ git history.
 - No live code, API keys, deploy scripts, grid, martingale, averaging down, or
   two-exchange execution is allowed.
 - `memory/NEXT_CODEX_BRIEF.md` is the only canonical next-session prompt.
-- Current next task: implement a non-trading hold-inside midline reaction audit
-  that re-indexes the first midline event as the decision candle.
+- Current next task: review the generated hold-inside midline reaction audit
+  outputs and decide whether stable post-event evidence supports a first
+  minimal entry prototype or closes this detector family.
 
 ## 2026-06-15
+
+Hold-inside midline reaction audit milestone:
+
+- Added CLI flag `-hold-inside-midline-reaction-audit`.
+- Result directory: `results/hold-inside-midline-reaction-audit/`.
+- Outputs:
+  - `hold_inside_midline_reaction_candidates.csv/json`
+  - `hold_inside_midline_reaction_funnel_summary.csv/json`
+  - `hold_inside_midline_reaction_summary.csv/json`
+  - `hold_inside_midline_reaction_stability.csv/json`
+- Audit size:
+  - profiles: `1`
+  - rules: `3`
+  - event types: `2`
+  - candidate rows: `9,080`
+  - funnel rows: `24`
+  - summary rows: `1,296`
+  - stability rows: `352`
+  - CSV lines including header: `9,081` / `25` / `1,297` / `353`
+  - horizons: `1`, `3`, `6`, `12`
+  - max midline event delay: `12` bars
+  - quick invalidation window: `3` bars
+- Scope:
+  - profile `p30_c12_bollinger_on_adx_off`
+  - rules `hold_3_inside`, `hold_6_inside`, and diagnostic
+    `hold_3_inside_mid_50`
+  - event types `mid_touch` and `mid_close_across`
+  - event candle is the reindexed decision candle; labels start at
+    `event_index + 1`
+  - no entries, exits, scoring, sizing, paper side, favorable/adverse fields,
+    strategy replacement, or live wiring
+- Last run loaded `569,451` candles through `2026-06-01T23:59:59Z` and printed
+  `strategy=empty trades=0`.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build GOPATH=/tmp/range-strategy-lab-go GOMODCACHE=/tmp/range-strategy-lab-go/pkg/mod /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build GOPATH=/tmp/range-strategy-lab-go GOMODCACHE=/tmp/range-strategy-lab-go/pkg/mod /usr/local/go/bin/go run ./cmd/rangelab -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv -hold-inside-midline-reaction-audit -out-dir results/hold-inside-midline-reaction-audit`
+  - `wc -l results/hold-inside-midline-reaction-audit/*.csv`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
 
 Context budget cleanup milestone:
 

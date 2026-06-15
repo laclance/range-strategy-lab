@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	"range-strategy-lab/internal/lab"
@@ -35,6 +37,7 @@ func run() error {
 	detectorContextRefinementAudit := flag.Bool("detector-context-refinement-audit", false, "write non-trading detector context refinement diagnostics")
 	holdInsideDirectionalEdgeAudit := flag.Bool("hold-inside-directional-edge-audit", false, "write non-trading hold-inside directional edge diagnostics")
 	holdInsideMidlineTransitionAudit := flag.Bool("hold-inside-midline-transition-audit", false, "write non-trading hold-inside midline transition diagnostics")
+	holdInsideMidlineReactionAudit := flag.Bool("hold-inside-midline-reaction-audit", false, "write non-trading hold-inside midline reaction diagnostics")
 	srAudit := flag.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
 	srBoundaryAudit := flag.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
 	srBoundaryInspect := flag.Bool("sr-boundary-inspect", false, "write compact non-trading SR boundary candidate comparison diagnostics")
@@ -293,7 +296,7 @@ func run() error {
 			durabilityCfg.DetectorProfileID,
 		)
 	}
-	if *detector || *detectorSweep || *detectorDurabilitySweep || *detectorContextRefinementAudit || *holdInsideDirectionalEdgeAudit || *holdInsideMidlineTransitionAudit {
+	if *detector || *detectorSweep || *detectorDurabilitySweep || *detectorContextRefinementAudit || *holdInsideDirectionalEdgeAudit || *holdInsideMidlineTransitionAudit || *holdInsideMidlineReactionAudit {
 		if *detectorLookbackDays <= 0 {
 			return fmt.Errorf("detector lookback days must be positive")
 		}
@@ -516,6 +519,52 @@ func run() error {
 			formatIntSlice(midlineDefaults.HorizonsBars),
 		)
 	}
+	if *holdInsideMidlineReactionAudit {
+		detectorCfg := lab.DefaultCompressionRangeDetectorConfig()
+		detectorCfg.LookbackDays = *detectorLookbackDays
+		reactionDefaults := lab.DefaultHoldInsideMidlineReactionAuditConfig()
+
+		candidateRows, funnelRows, summaryRows, stabilityRows, err := lab.RunHoldInsideMidlineReactionAudit(candles, detectorCfg, lab.HoldInsideMidlineReactionAuditConfig{}, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "hold_inside_midline_reaction_candidates.json"), candidateRows); err != nil {
+			return err
+		}
+		if err := writeHoldInsideMidlineReactionCandidatesCSV(filepath.Join(*outDir, "hold_inside_midline_reaction_candidates.csv"), candidateRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "hold_inside_midline_reaction_funnel_summary.json"), funnelRows); err != nil {
+			return err
+		}
+		if err := writeHoldInsideMidlineReactionFunnelSummaryCSV(filepath.Join(*outDir, "hold_inside_midline_reaction_funnel_summary.csv"), funnelRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "hold_inside_midline_reaction_summary.json"), summaryRows); err != nil {
+			return err
+		}
+		if err := writeHoldInsideMidlineReactionSummaryCSV(filepath.Join(*outDir, "hold_inside_midline_reaction_summary.csv"), summaryRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "hold_inside_midline_reaction_stability.json"), stabilityRows); err != nil {
+			return err
+		}
+		if err := writeHoldInsideMidlineReactionStabilityCSV(filepath.Join(*outDir, "hold_inside_midline_reaction_stability.csv"), stabilityRows); err != nil {
+			return err
+		}
+		fmt.Printf("hold_inside_midline_reaction_audit profiles=%d rules=%d event_types=%d candidate_rows=%d funnel_rows=%d summary_rows=%d stability_rows=%d max_midline_event_delay_bars=%d quick_invalidation_bars=%d horizons=%s\n",
+			len(reactionDefaults.Profiles),
+			len(reactionDefaults.ContextRules),
+			2,
+			len(candidateRows),
+			len(funnelRows),
+			len(summaryRows),
+			len(stabilityRows),
+			reactionDefaults.MaxMidlineEventDelayBars,
+			reactionDefaults.QuickInvalidationBars,
+			formatIntSlice(reactionDefaults.HorizonsBars),
+		)
+	}
 
 	first := candles[0].OpenTime.Format(time.RFC3339)
 	last := candles[len(candles)-1].CloseTime.Format(time.RFC3339)
@@ -530,6 +579,81 @@ func writeJSON(path string, value any) error {
 		return err
 	}
 	return os.WriteFile(path, append(data, '\n'), 0o644)
+}
+
+func writeJSONTaggedCSV[T any](path string, rows []T) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	w := csv.NewWriter(f)
+	defer w.Flush()
+
+	rowType := reflect.TypeOf((*T)(nil)).Elem()
+	if rowType.Kind() == reflect.Pointer {
+		rowType = rowType.Elem()
+	}
+	fieldIndexes := make([]int, 0, rowType.NumField())
+	headers := make([]string, 0, rowType.NumField())
+	for i := 0; i < rowType.NumField(); i++ {
+		field := rowType.Field(i)
+		if field.PkgPath != "" {
+			continue
+		}
+		header := strings.Split(field.Tag.Get("json"), ",")[0]
+		if header == "" {
+			header = field.Name
+		}
+		if header == "-" {
+			continue
+		}
+		fieldIndexes = append(fieldIndexes, i)
+		headers = append(headers, header)
+	}
+	if err := w.Write(headers); err != nil {
+		return err
+	}
+	for _, row := range rows {
+		value := reflect.ValueOf(row)
+		if value.Kind() == reflect.Pointer {
+			if value.IsNil() {
+				continue
+			}
+			value = value.Elem()
+		}
+		record := make([]string, 0, len(fieldIndexes))
+		for _, index := range fieldIndexes {
+			record = append(record, csvScalar(value.Field(index)))
+		}
+		if err := w.Write(record); err != nil {
+			return err
+		}
+	}
+	return w.Error()
+}
+
+func csvScalar(value reflect.Value) string {
+	if !value.IsValid() {
+		return ""
+	}
+	switch value.Kind() {
+	case reflect.String:
+		return value.String()
+	case reflect.Bool:
+		return strconv.FormatBool(value.Bool())
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return strconv.FormatInt(value.Int(), 10)
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return strconv.FormatUint(value.Uint(), 10)
+	case reflect.Float32, reflect.Float64:
+		return formatFloat(value.Float())
+	default:
+		if value.CanInterface() {
+			return fmt.Sprint(value.Interface())
+		}
+		return ""
+	}
 }
 
 func writeSummaryCSV(path string, rows []lab.SummaryRow) error {
@@ -1734,6 +1858,22 @@ func writeHoldInsideDirectionalEdgeStabilityCSV(path string, rows []lab.HoldInsi
 		}
 	}
 	return w.Error()
+}
+
+func writeHoldInsideMidlineReactionCandidatesCSV(path string, rows []lab.HoldInsideMidlineReactionCandidateRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeHoldInsideMidlineReactionFunnelSummaryCSV(path string, rows []lab.HoldInsideMidlineReactionFunnelSummaryRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeHoldInsideMidlineReactionSummaryCSV(path string, rows []lab.HoldInsideMidlineReactionSummaryRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeHoldInsideMidlineReactionStabilityCSV(path string, rows []lab.HoldInsideMidlineReactionStabilityRow) error {
+	return writeJSONTaggedCSV(path, rows)
 }
 
 func writeHoldInsideMidlineTransitionCandidatesCSV(path string, rows []lab.HoldInsideMidlineTransitionCandidateRow) error {
