@@ -2,6 +2,86 @@
 
 ## 2026-06-15
 
+Hold-inside directional edge audit milestone:
+
+- Added CLI flag `-hold-inside-directional-edge-audit`.
+- Added compact non-trading hold-inside directional edge outputs:
+  - `hold_inside_directional_edge_candidates.csv`
+  - `hold_inside_directional_edge_candidates.json`
+  - `hold_inside_directional_edge_summary.csv`
+  - `hold_inside_directional_edge_summary.json`
+  - `hold_inside_directional_edge_stability.csv`
+  - `hold_inside_directional_edge_stability.json`
+- Added exported lab API:
+  - `DefaultHoldInsideDirectionalEdgeAuditConfig`
+  - `RunHoldInsideDirectionalEdgeAudit`
+  - `HoldInsideDirectionalEdgeCandidateRow`
+  - `HoldInsideDirectionalEdgeSummaryRow`
+  - `HoldInsideDirectionalEdgeStabilityRow`
+- Audit semantics:
+  - uses only balanced baseline detector `p30_c12_bollinger_on_adx_off`
+  - uses context rules `hold_3_inside`, `hold_6_inside`, and
+    `hold_3_inside_mid_50`
+  - emits two paper-side labels per passed source episode:
+    `toward_high` and `toward_low`
+  - records only decision-candle-known features: frozen high/low/mid, decision
+    close position and bucket, distance to high/low/mid, episode width, ATR,
+    and width/ATR context
+  - all forward `label_*` fields start at `decision_index + 1`
+  - summary rows aggregate by profile, context rule, split, horizon, paper
+    side, and decision close position bucket, including `all`
+  - stability rows compare only `2021_2022_stress`, `2023_2024_oos`, and
+    `2025_2026_recent`
+- This milestone did not add entries, exits, scoring, sizing, strategy
+  replacement, live code, deploy scripts, API keys, grid, martingale,
+  averaging down, or two-exchange execution.
+- Strategy remains `lab.EmptyStrategy`.
+- Trades remain `0`.
+- No durable verdict doc was added; the next step should review the generated
+  outputs for split-stable directional edge before any entry trigger.
+- `memory/DECISIONS.md` was not changed because no durable constraint changed.
+
+Latest hold-inside directional edge audit verification:
+
+```bash
+git status --short
+
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+  -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv \
+  -out-dir results/hold-inside-directional-edge-audit \
+  -hold-inside-directional-edge-audit
+
+wc -l results/hold-inside-directional-edge-audit/*.csv
+rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
+git diff --check
+```
+
+Result:
+
+- Initial `git status --short` was clean.
+- `go test ./...` passed.
+- New hold-inside directional edge audit printed:
+  - `hold_inside_directional_edge_audit profiles=1 rules=3 paper_sides=2 candidate_rows=15976 summary_rows=624 stability_rows=168 quick_invalidation_bars=3 horizons=1;3;6;12`
+  - `loaded 569451 candles from 2021-01-01T00:00:00Z to
+    2026-06-01T23:59:59Z`
+  - `strategy=empty trades=0`
+- New hold-inside directional edge CSV lines including header:
+  - `hold_inside_directional_edge_candidates.csv`: `15,977`
+  - `hold_inside_directional_edge_summary.csv`: `625`
+  - `hold_inside_directional_edge_stability.csv`: `169`
+  - base `summary.csv`: `13`
+- Result paths:
+  - `results/hold-inside-directional-edge-audit/hold_inside_directional_edge_candidates.csv`
+  - `results/hold-inside-directional-edge-audit/hold_inside_directional_edge_candidates.json`
+  - `results/hold-inside-directional-edge-audit/hold_inside_directional_edge_summary.csv`
+  - `results/hold-inside-directional-edge-audit/hold_inside_directional_edge_summary.json`
+  - `results/hold-inside-directional-edge-audit/hold_inside_directional_edge_stability.csv`
+  - `results/hold-inside-directional-edge-audit/hold_inside_directional_edge_stability.json`
+- `memory/NEXT_CODEX_BRIEF.md` remains the only canonical next-session prompt.
+- `git diff --check` passed.
+
 Detector context refinement review milestone:
 
 - Added durable review report:

@@ -1,4 +1,4 @@
-# Next Codex Brief: Hold-Inside Directional Edge Audit
+# Next Codex Brief: Review Hold-Inside Directional Edge Audit
 
 ```text
 We are in /home/lance/range-strategy-lab, a standalone Go project named range-strategy-lab.
@@ -16,45 +16,72 @@ Current verdict:
 - Compression breakout audit was not entry-ready.
 - Range regime durability review says the balanced detector regimes are not durable enough as context for future entry hypotheses.
 - Detector durability sweep review says no current DefaultDetectorSweepProfiles profile is approved as future entry context; p30_c12_bollinger_on_adx_on is diagnostic only.
-- Detector context refinement review says the delayed hold_3_inside and hold_6_inside context rules are the first refinement that materially and split-stably reduces quick invalidation and trend leakage with adequate candidates. They are the leading decision-candle context, but they are NOT promoted to entry context: the gain is a heavy survivorship/conditioning effect, residual 12 bar trend leakage stays material, and the label_* fields are regime-durability outcomes, not P&L.
+- Detector context refinement review says delayed hold_3_inside and hold_6_inside are the first context refinement that materially and split-stably reduces quick invalidation and trend leakage with adequate candidates. They are leading decision-candle context, but NOT promoted to entry context.
+- A hold-inside directional edge audit has now been built. It is output-only and has no verdict yet.
 - Keep lab.EmptyStrategy.
 - Trades remain 0.
 - Do not add entries, exits, scoring, sizing, strategy replacement, live code, deploy scripts, API keys, grid, martingale, averaging down, or two-exchange execution unless the user explicitly changes scope.
 
-Latest detector context refinement review:
-- Durable report: docs/DETECTOR_CONTEXT_REFINEMENT_REVIEW.md
-- Inputs reviewed (existing artifacts, not rerun):
-  - results/detector-context-refinement-audit/detector_context_refinement_summary.csv/json
-  - results/detector-context-refinement-audit/detector_context_refinement_stability.csv/json
-  - results/detector-context-refinement-audit/detector_context_refinement_candidates.csv (sampled)
-- Audit size: profiles=8, rules=5, candidate_rows=113824, summary_rows=640, stability_rows=160
-- Lead context rules: hold_3_inside, hold_6_inside (closed-candle knowable at the decision candle; labels start at decision_index+1).
+Latest hold-inside directional edge audit build:
+- CLI flag: -hold-inside-directional-edge-audit
+- Result directory:
+  - results/hold-inside-directional-edge-audit/
+- Outputs:
+  - hold_inside_directional_edge_candidates.csv/json
+  - hold_inside_directional_edge_summary.csv/json
+  - hold_inside_directional_edge_stability.csv/json
+- Audit size:
+  - profiles: 1
+  - context rules: 3
+  - paper sides: 2
+  - candidate rows: 15,976
+  - summary rows: 624
+  - stability rows: 168
+  - candidate CSV lines including header: 15,977
+  - summary CSV lines including header: 625
+  - stability CSV lines including header: 169
+  - horizons: 1, 3, 6, 12
+  - quick invalidation window: 3 bars after the decision candle
+- Run printed:
+  - loaded 569451 candles from 2021-01-01T00:00:00Z to 2026-06-01T23:59:59Z
+  - strategy=empty trades=0
+
+Audit semantics:
+- Detector profile is only p30_c12_bollinger_on_adx_off.
+- Context rules are hold_3_inside, hold_6_inside, and hold_3_inside_mid_50.
+- Candidate rows are one row per passed source episode, context rule, horizon, and paper side:
+  - paper_side=toward_high
+  - paper_side=toward_low
+- Decision fields use only data known at the decision candle:
+  - frozen episode high/low/mid
+  - decision close position and bucket
+  - distance to high/low/mid
+  - raw/active length, width, ATR, and width/ATR context
+- Forward label_* fields start at decision_index + 1.
+- Summary rows aggregate by profile, context rule, split, horizon, paper side, and decision close position bucket, including all.
+- Stability rows compare only 2021_2022_stress, 2023_2024_oos, and 2025_2026_recent.
 
 Recommended next task:
-Stay non-trading. Implement a compact hold-inside directional edge audit that conditions on the leading hold-inside decision-candle context and measures forward, split-stable DIRECTIONAL outcomes, not just range survival. Concretely:
-- Reuse the existing context machinery: rangeRegimeDurabilityEpisodes, DetectorContextRefinementRule / detectorContextRulePasses, decisionClosePosition / decisionClosePositionBucket, classifyDetectorSweepProfile, and the split helpers.
-- Focus on the balanced baseline detector p30_c12_bollinger_on_adx_off with hold_3_inside and hold_6_inside context (optionally one stricter mid_50 variant for comparison).
-- At the decision candle, record decision-candle features only (close position bucket, distance to frozen episode high/low, width and width/ATR context). Add forward label_* outcomes that capture direction, for example reversion toward range mid versus continued trend out of the range, favorable-minus-adverse move by side, and max favorable/adverse excursion, starting at decision_index+1.
-- Keep horizons 1, 3, 6, 12 and the 3-bar quick-invalidation window for comparability.
-- Emit compact CSV/JSON candidate, summary, and split-stability outputs under results/, plus a CLI flag, mirroring the existing audit modes.
-- Add focused tests for no-lookahead decision features, label-window start, support/resistance (toward-high vs toward-low) symmetry, hold-rule filtering, missing-future skipping, invalid config, deterministic sorting, and summary denominators.
-Do not add entries, exits, scoring, sizing, or strategy replacement. Do not add a durable verdict doc in the same session as the audit build; the next session reviews the outputs for whether a directional edge survives split-stably and net of an assumed cost before any entry trigger.
+Stay non-trading. Review the hold-inside directional edge outputs for split-stable directional edge before any entry trigger. Focus on:
+- hold_3_inside and hold_6_inside first; use hold_3_inside_mid_50 as a stricter comparison, not the primary sample.
+- Compare paper_side=toward_high vs paper_side=toward_low by horizon and decision close position bucket.
+- Prioritize stability rows over full-sample averages.
+- Look for worst-split evidence in label_avg_favorable_minus_adverse_pct, label_favorable_greater_than_adverse_rate, label_touched_mid_rate, label_closed_across_mid_rate, label_side_boundary_touch_rate, label_opposite_close_break_rate, and label_quick_invalidated_rate.
+- Treat broad positivity as insufficient unless it survives the three period splits and has adequate candidate counts.
+- If there is a clear verdict, add a durable review doc such as docs/HOLD_INSIDE_DIRECTIONAL_EDGE_REVIEW.md and update README.md docs order.
+- If there is no clear split-stable edge, record a no-promotion conclusion and pivot the next brief to a materially different non-trading hypothesis.
 
-Non-negotiables:
-- Offline BTCUSDT 5m research only.
-- Confirmed closed-candle decisions only.
-- No entries, exits, scoring, sizing, strategy replacement, live code, deploy scripts, API keys, grid, martingale, averaging down, or two-exchange execution.
-- Keep generated CSV/JSON outputs under results/.
-- Treat label_* columns as forward outcomes, not decision inputs.
-- Keep helper modules behind adapters and limited to feature extraction or audit outputs.
-- Update memory/PROGRESS.md with commands, result paths, and concise factual outcome after a completed milestone.
-- Update memory/DECISIONS.md only if a durable constraint changes.
-- After completing a brief or milestone, run closeout checks and commit the completed repo changes unless the user explicitly says not to commit.
+Do not add entries, exits, scoring, sizing, or strategy replacement in the review session. Do not convert paper-side labels into trades. Do not add live code, deploy scripts, API keys, grid, martingale, averaging down, or two-exchange execution.
 
-Suggested verification for an audit build:
-- env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
-- env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv -out-dir results/<new-audit-dir> -<new-audit-flag>
-- wc -l results/<new-audit-dir>/*.csv
+Suggested verification for the review:
+- wc -l results/hold-inside-directional-edge-audit/hold_inside_directional_edge_candidates.csv results/hold-inside-directional-edge-audit/hold_inside_directional_edge_summary.csv results/hold-inside-directional-edge-audit/hold_inside_directional_edge_stability.csv
 - rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
+- env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
 - git diff --check
+
+Closeout:
+- Update memory/PROGRESS.md with commands, result paths, row counts, and concise factual outcome.
+- Update memory/DECISIONS.md only if a durable constraint changes.
+- Refresh memory/NEXT_CODEX_BRIEF.md with the next session prompt.
+- Commit completed repo changes after closeout unless explicitly told not to.
 ```

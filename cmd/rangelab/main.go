@@ -33,6 +33,7 @@ func run() error {
 	detectorSweep := flag.Bool("detector-sweep", false, "write detector sweep/audit diagnostics")
 	detectorDurabilitySweep := flag.Bool("detector-durability-sweep", false, "write non-trading detector durability sweep diagnostics")
 	detectorContextRefinementAudit := flag.Bool("detector-context-refinement-audit", false, "write non-trading detector context refinement diagnostics")
+	holdInsideDirectionalEdgeAudit := flag.Bool("hold-inside-directional-edge-audit", false, "write non-trading hold-inside directional edge diagnostics")
 	srAudit := flag.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
 	srBoundaryAudit := flag.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
 	srBoundaryInspect := flag.Bool("sr-boundary-inspect", false, "write compact non-trading SR boundary candidate comparison diagnostics")
@@ -291,7 +292,7 @@ func run() error {
 			durabilityCfg.DetectorProfileID,
 		)
 	}
-	if *detector || *detectorSweep || *detectorDurabilitySweep || *detectorContextRefinementAudit {
+	if *detector || *detectorSweep || *detectorDurabilitySweep || *detectorContextRefinementAudit || *holdInsideDirectionalEdgeAudit {
 		if *detectorLookbackDays <= 0 {
 			return fmt.Errorf("detector lookback days must be positive")
 		}
@@ -437,6 +438,44 @@ func run() error {
 			len(stabilityRows),
 			refinementCfg.QuickInvalidationBars,
 			formatIntSlice(refinementCfg.HorizonsBars),
+		)
+	}
+	if *holdInsideDirectionalEdgeAudit {
+		detectorCfg := lab.DefaultCompressionRangeDetectorConfig()
+		detectorCfg.LookbackDays = *detectorLookbackDays
+		edgeDefaults := lab.DefaultHoldInsideDirectionalEdgeAuditConfig()
+
+		candidateRows, summaryRows, stabilityRows, err := lab.RunHoldInsideDirectionalEdgeAudit(candles, detectorCfg, lab.HoldInsideDirectionalEdgeAuditConfig{}, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "hold_inside_directional_edge_candidates.json"), candidateRows); err != nil {
+			return err
+		}
+		if err := writeHoldInsideDirectionalEdgeCandidatesCSV(filepath.Join(*outDir, "hold_inside_directional_edge_candidates.csv"), candidateRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "hold_inside_directional_edge_summary.json"), summaryRows); err != nil {
+			return err
+		}
+		if err := writeHoldInsideDirectionalEdgeSummaryCSV(filepath.Join(*outDir, "hold_inside_directional_edge_summary.csv"), summaryRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "hold_inside_directional_edge_stability.json"), stabilityRows); err != nil {
+			return err
+		}
+		if err := writeHoldInsideDirectionalEdgeStabilityCSV(filepath.Join(*outDir, "hold_inside_directional_edge_stability.csv"), stabilityRows); err != nil {
+			return err
+		}
+		fmt.Printf("hold_inside_directional_edge_audit profiles=%d rules=%d paper_sides=%d candidate_rows=%d summary_rows=%d stability_rows=%d quick_invalidation_bars=%d horizons=%s\n",
+			len(edgeDefaults.Profiles),
+			len(edgeDefaults.ContextRules),
+			2,
+			len(candidateRows),
+			len(summaryRows),
+			len(stabilityRows),
+			edgeDefaults.QuickInvalidationBars,
+			formatIntSlice(edgeDefaults.HorizonsBars),
 		)
 	}
 
@@ -1256,6 +1295,402 @@ func writeDetectorContextRefinementStabilityCSV(path string, rows []lab.Detector
 			formatFloat(row.LabelAvgCloseDriftPctMin),
 			formatFloat(row.LabelAvgCloseDriftPctMax),
 			formatFloat(row.LabelAvgCloseDriftPctDelta),
+		}); err != nil {
+			return err
+		}
+	}
+	return w.Error()
+}
+
+func writeHoldInsideDirectionalEdgeCandidatesCSV(path string, rows []lab.HoldInsideDirectionalEdgeCandidateRow) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	w := csv.NewWriter(f)
+	defer w.Flush()
+
+	if err := w.Write([]string{
+		"profile_id",
+		"is_balanced_baseline",
+		"is_adx_comparison",
+		"percentile",
+		"min_consecutive_bars",
+		"use_bollinger",
+		"use_adx",
+		"lookback_days",
+		"context_rule",
+		"hold_bars",
+		"require_mid_50",
+		"split",
+		"paper_side",
+		"source_episode_id",
+		"episode_start_index",
+		"episode_end_index",
+		"episode_start_time",
+		"episode_end_time",
+		"raw_length_bars",
+		"active_length_bars",
+		"raw_length_bucket",
+		"active_length_bucket",
+		"episode_high",
+		"episode_low",
+		"episode_mid",
+		"episode_end_close",
+		"episode_width_pct",
+		"episode_width_bucket",
+		"avg_normalized_atr",
+		"end_normalized_atr",
+		"width_to_atr_ratio",
+		"width_to_atr_bucket",
+		"decision_index",
+		"decision_time",
+		"decision_close",
+		"decision_close_position",
+		"decision_close_position_bucket",
+		"decision_mid_side",
+		"decision_distance_to_high_pct",
+		"decision_distance_to_low_pct",
+		"decision_distance_to_mid_pct",
+		"horizon_bars",
+		"label_window_start_index",
+		"label_window_end_index",
+		"label_window_start_time",
+		"label_window_end_time",
+		"label_favorable_move_pct",
+		"label_adverse_move_pct",
+		"label_favorable_minus_adverse_pct",
+		"label_favorable_greater_than_adverse",
+		"label_touched_mid",
+		"label_closed_across_mid",
+		"label_side_boundary_touch",
+		"label_opposite_close_break",
+		"label_reentered_range",
+		"label_persisted_inside_range",
+		"label_quick_invalidated",
+		"label_invalidated_up",
+		"label_invalidated_down",
+		"label_trended_up",
+		"label_trended_down",
+	}); err != nil {
+		return err
+	}
+	for _, row := range rows {
+		if err := w.Write([]string{
+			row.ProfileID,
+			strconv.FormatBool(row.IsBalancedBaseline),
+			strconv.FormatBool(row.IsADXComparison),
+			formatFloat(row.Percentile),
+			strconv.Itoa(row.MinConsecutiveBars),
+			strconv.FormatBool(row.UseBollinger),
+			strconv.FormatBool(row.UseADX),
+			strconv.Itoa(row.LookbackDays),
+			row.ContextRule,
+			strconv.Itoa(row.HoldBars),
+			strconv.FormatBool(row.RequireMid50),
+			row.Split,
+			row.PaperSide,
+			strconv.Itoa(row.SourceEpisodeID),
+			strconv.Itoa(row.EpisodeStartIndex),
+			strconv.Itoa(row.EpisodeEndIndex),
+			row.EpisodeStartTime,
+			row.EpisodeEndTime,
+			strconv.Itoa(row.RawLengthBars),
+			strconv.Itoa(row.ActiveLengthBars),
+			row.RawLengthBucket,
+			row.ActiveLengthBucket,
+			formatFloat(row.EpisodeHigh),
+			formatFloat(row.EpisodeLow),
+			formatFloat(row.EpisodeMid),
+			formatFloat(row.EpisodeEndClose),
+			formatFloat(row.EpisodeWidthPct),
+			row.EpisodeWidthBucket,
+			formatFloat(row.AvgNormalizedATR),
+			formatFloat(row.EndNormalizedATR),
+			formatFloat(row.WidthToATRRatio),
+			row.WidthToATRBucket,
+			strconv.Itoa(row.DecisionIndex),
+			row.DecisionTime,
+			formatFloat(row.DecisionClose),
+			formatFloat(row.DecisionClosePosition),
+			row.DecisionClosePositionBucket,
+			row.DecisionMidSide,
+			formatFloat(row.DecisionDistanceToHighPct),
+			formatFloat(row.DecisionDistanceToLowPct),
+			formatFloat(row.DecisionDistanceToMidPct),
+			strconv.Itoa(row.HorizonBars),
+			strconv.Itoa(row.LabelWindowStartIndex),
+			strconv.Itoa(row.LabelWindowEndIndex),
+			row.LabelWindowStartTime,
+			row.LabelWindowEndTime,
+			formatFloat(row.LabelFavorableMovePct),
+			formatFloat(row.LabelAdverseMovePct),
+			formatFloat(row.LabelFavorableMinusAdverse),
+			strconv.FormatBool(row.LabelFavorableGTAdverse),
+			strconv.FormatBool(row.LabelTouchedMid),
+			strconv.FormatBool(row.LabelClosedAcrossMid),
+			strconv.FormatBool(row.LabelSideBoundaryTouch),
+			strconv.FormatBool(row.LabelOppositeCloseBreak),
+			strconv.FormatBool(row.LabelReenteredRange),
+			strconv.FormatBool(row.LabelPersistedInsideRange),
+			strconv.FormatBool(row.LabelQuickInvalidated),
+			strconv.FormatBool(row.LabelInvalidatedUp),
+			strconv.FormatBool(row.LabelInvalidatedDown),
+			strconv.FormatBool(row.LabelTrendedUp),
+			strconv.FormatBool(row.LabelTrendedDown),
+		}); err != nil {
+			return err
+		}
+	}
+	return w.Error()
+}
+
+func writeHoldInsideDirectionalEdgeSummaryCSV(path string, rows []lab.HoldInsideDirectionalEdgeSummaryRow) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	w := csv.NewWriter(f)
+	defer w.Flush()
+
+	if err := w.Write([]string{
+		"profile_id",
+		"is_balanced_baseline",
+		"is_adx_comparison",
+		"percentile",
+		"min_consecutive_bars",
+		"use_bollinger",
+		"use_adx",
+		"lookback_days",
+		"context_rule",
+		"hold_bars",
+		"require_mid_50",
+		"split",
+		"horizon_bars",
+		"paper_side",
+		"decision_close_position_bucket",
+		"source_episode_count",
+		"candidate_count",
+		"candidate_rate",
+		"avg_raw_length_bars",
+		"avg_active_length_bars",
+		"avg_episode_width_pct",
+		"avg_normalized_atr",
+		"avg_end_normalized_atr",
+		"avg_width_to_atr_ratio",
+		"avg_decision_close_position",
+		"avg_decision_distance_to_high_pct",
+		"avg_decision_distance_to_low_pct",
+		"avg_decision_distance_to_mid_pct",
+		"label_favorable_greater_than_adverse_count",
+		"label_touched_mid_count",
+		"label_closed_across_mid_count",
+		"label_side_boundary_touch_count",
+		"label_opposite_close_break_count",
+		"label_quick_invalidated_count",
+		"label_invalidated_up_count",
+		"label_invalidated_down_count",
+		"label_trended_up_count",
+		"label_trended_down_count",
+		"label_avg_favorable_move_pct",
+		"label_avg_adverse_move_pct",
+		"label_avg_favorable_minus_adverse_pct",
+		"label_favorable_greater_than_adverse_rate",
+		"label_touched_mid_rate",
+		"label_closed_across_mid_rate",
+		"label_side_boundary_touch_rate",
+		"label_opposite_close_break_rate",
+		"label_quick_invalidated_rate",
+		"label_invalidated_up_rate",
+		"label_invalidated_down_rate",
+		"label_trended_up_rate",
+		"label_trended_down_rate",
+	}); err != nil {
+		return err
+	}
+	for _, row := range rows {
+		if err := w.Write([]string{
+			row.ProfileID,
+			strconv.FormatBool(row.IsBalancedBaseline),
+			strconv.FormatBool(row.IsADXComparison),
+			formatFloat(row.Percentile),
+			strconv.Itoa(row.MinConsecutiveBars),
+			strconv.FormatBool(row.UseBollinger),
+			strconv.FormatBool(row.UseADX),
+			strconv.Itoa(row.LookbackDays),
+			row.ContextRule,
+			strconv.Itoa(row.HoldBars),
+			strconv.FormatBool(row.RequireMid50),
+			row.Split,
+			strconv.Itoa(row.HorizonBars),
+			row.PaperSide,
+			row.DecisionClosePositionBucket,
+			strconv.Itoa(row.SourceEpisodeCount),
+			strconv.Itoa(row.CandidateCount),
+			formatFloat(row.CandidateRate),
+			formatFloat(row.AvgRawLengthBars),
+			formatFloat(row.AvgActiveLengthBars),
+			formatFloat(row.AvgEpisodeWidthPct),
+			formatFloat(row.AvgNormalizedATR),
+			formatFloat(row.AvgEndNormalizedATR),
+			formatFloat(row.AvgWidthToATRRatio),
+			formatFloat(row.AvgDecisionClosePosition),
+			formatFloat(row.AvgDecisionDistanceToHighPct),
+			formatFloat(row.AvgDecisionDistanceToLowPct),
+			formatFloat(row.AvgDecisionDistanceToMidPct),
+			strconv.Itoa(row.LabelFavorableGTAdverseCount),
+			strconv.Itoa(row.LabelTouchedMidCount),
+			strconv.Itoa(row.LabelClosedAcrossMidCount),
+			strconv.Itoa(row.LabelSideBoundaryTouchCount),
+			strconv.Itoa(row.LabelOppositeCloseBreakCount),
+			strconv.Itoa(row.LabelQuickInvalidatedCount),
+			strconv.Itoa(row.LabelInvalidatedUpCount),
+			strconv.Itoa(row.LabelInvalidatedDownCount),
+			strconv.Itoa(row.LabelTrendedUpCount),
+			strconv.Itoa(row.LabelTrendedDownCount),
+			formatFloat(row.LabelAvgFavorableMovePct),
+			formatFloat(row.LabelAvgAdverseMovePct),
+			formatFloat(row.LabelAvgFavorableMinusAdversePct),
+			formatFloat(row.LabelFavorableGTAdverseRate),
+			formatFloat(row.LabelTouchedMidRate),
+			formatFloat(row.LabelClosedAcrossMidRate),
+			formatFloat(row.LabelSideBoundaryTouchRate),
+			formatFloat(row.LabelOppositeCloseBreakRate),
+			formatFloat(row.LabelQuickInvalidatedRate),
+			formatFloat(row.LabelInvalidatedUpRate),
+			formatFloat(row.LabelInvalidatedDownRate),
+			formatFloat(row.LabelTrendedUpRate),
+			formatFloat(row.LabelTrendedDownRate),
+		}); err != nil {
+			return err
+		}
+	}
+	return w.Error()
+}
+
+func writeHoldInsideDirectionalEdgeStabilityCSV(path string, rows []lab.HoldInsideDirectionalEdgeStabilityRow) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	w := csv.NewWriter(f)
+	defer w.Flush()
+
+	if err := w.Write([]string{
+		"profile_id",
+		"is_balanced_baseline",
+		"is_adx_comparison",
+		"percentile",
+		"min_consecutive_bars",
+		"use_bollinger",
+		"use_adx",
+		"lookback_days",
+		"context_rule",
+		"hold_bars",
+		"require_mid_50",
+		"horizon_bars",
+		"paper_side",
+		"decision_close_position_bucket",
+		"period_splits",
+		"source_episode_count",
+		"source_episode_count_min",
+		"source_episode_count_max",
+		"source_episode_count_delta",
+		"candidate_count",
+		"candidate_count_min",
+		"candidate_count_max",
+		"candidate_count_delta",
+		"candidate_rate_min",
+		"candidate_rate_max",
+		"candidate_rate_delta",
+		"label_favorable_greater_than_adverse_rate_min",
+		"label_favorable_greater_than_adverse_rate_max",
+		"label_favorable_greater_than_adverse_rate_delta",
+		"label_avg_favorable_minus_adverse_pct_min",
+		"label_avg_favorable_minus_adverse_pct_max",
+		"label_avg_favorable_minus_adverse_pct_delta",
+		"label_avg_favorable_move_pct_min",
+		"label_avg_favorable_move_pct_max",
+		"label_avg_favorable_move_pct_delta",
+		"label_avg_adverse_move_pct_min",
+		"label_avg_adverse_move_pct_max",
+		"label_avg_adverse_move_pct_delta",
+		"label_touched_mid_rate_min",
+		"label_touched_mid_rate_max",
+		"label_touched_mid_rate_delta",
+		"label_closed_across_mid_rate_min",
+		"label_closed_across_mid_rate_max",
+		"label_closed_across_mid_rate_delta",
+		"label_side_boundary_touch_rate_min",
+		"label_side_boundary_touch_rate_max",
+		"label_side_boundary_touch_rate_delta",
+		"label_opposite_close_break_rate_min",
+		"label_opposite_close_break_rate_max",
+		"label_opposite_close_break_rate_delta",
+		"label_quick_invalidated_rate_min",
+		"label_quick_invalidated_rate_max",
+		"label_quick_invalidated_rate_delta",
+	}); err != nil {
+		return err
+	}
+	for _, row := range rows {
+		if err := w.Write([]string{
+			row.ProfileID,
+			strconv.FormatBool(row.IsBalancedBaseline),
+			strconv.FormatBool(row.IsADXComparison),
+			formatFloat(row.Percentile),
+			strconv.Itoa(row.MinConsecutiveBars),
+			strconv.FormatBool(row.UseBollinger),
+			strconv.FormatBool(row.UseADX),
+			strconv.Itoa(row.LookbackDays),
+			row.ContextRule,
+			strconv.Itoa(row.HoldBars),
+			strconv.FormatBool(row.RequireMid50),
+			strconv.Itoa(row.HorizonBars),
+			row.PaperSide,
+			row.DecisionClosePositionBucket,
+			strconv.Itoa(row.PeriodSplits),
+			strconv.Itoa(row.SourceEpisodeCount),
+			strconv.Itoa(row.SourceEpisodeCountMin),
+			strconv.Itoa(row.SourceEpisodeCountMax),
+			strconv.Itoa(row.SourceEpisodeCountDelta),
+			strconv.Itoa(row.CandidateCount),
+			strconv.Itoa(row.CandidateCountMin),
+			strconv.Itoa(row.CandidateCountMax),
+			strconv.Itoa(row.CandidateCountDelta),
+			formatFloat(row.CandidateRateMin),
+			formatFloat(row.CandidateRateMax),
+			formatFloat(row.CandidateRateDelta),
+			formatFloat(row.LabelFavorableGTAdverseRateMin),
+			formatFloat(row.LabelFavorableGTAdverseRateMax),
+			formatFloat(row.LabelFavorableGTAdverseRateDelta),
+			formatFloat(row.LabelAvgFavorableMinusAdversePctMin),
+			formatFloat(row.LabelAvgFavorableMinusAdversePctMax),
+			formatFloat(row.LabelAvgFavorableMinusAdversePctDelta),
+			formatFloat(row.LabelAvgFavorableMovePctMin),
+			formatFloat(row.LabelAvgFavorableMovePctMax),
+			formatFloat(row.LabelAvgFavorableMovePctDelta),
+			formatFloat(row.LabelAvgAdverseMovePctMin),
+			formatFloat(row.LabelAvgAdverseMovePctMax),
+			formatFloat(row.LabelAvgAdverseMovePctDelta),
+			formatFloat(row.LabelTouchedMidRateMin),
+			formatFloat(row.LabelTouchedMidRateMax),
+			formatFloat(row.LabelTouchedMidRateDelta),
+			formatFloat(row.LabelClosedAcrossMidRateMin),
+			formatFloat(row.LabelClosedAcrossMidRateMax),
+			formatFloat(row.LabelClosedAcrossMidRateDelta),
+			formatFloat(row.LabelSideBoundaryTouchRateMin),
+			formatFloat(row.LabelSideBoundaryTouchRateMax),
+			formatFloat(row.LabelSideBoundaryTouchRateDelta),
+			formatFloat(row.LabelOppositeCloseBreakRateMin),
+			formatFloat(row.LabelOppositeCloseBreakRateMax),
+			formatFloat(row.LabelOppositeCloseBreakRateDelta),
+			formatFloat(row.LabelQuickInvalidatedRateMin),
+			formatFloat(row.LabelQuickInvalidatedRateMax),
+			formatFloat(row.LabelQuickInvalidatedRateDelta),
 		}); err != nil {
 			return err
 		}
