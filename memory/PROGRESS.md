@@ -2,6 +2,96 @@
 
 ## 2026-06-15
 
+Hold-inside midline transition audit milestone:
+
+- Added CLI flag `-hold-inside-midline-transition-audit`.
+- Added compact non-trading hold-inside midline transition outputs:
+  - `hold_inside_midline_transition_candidates.csv`
+  - `hold_inside_midline_transition_candidates.json`
+  - `hold_inside_midline_transition_summary.csv`
+  - `hold_inside_midline_transition_summary.json`
+  - `hold_inside_midline_transition_stability.csv`
+  - `hold_inside_midline_transition_stability.json`
+- Added exported lab API:
+  - `DefaultHoldInsideMidlineTransitionAuditConfig`
+  - `RunHoldInsideMidlineTransitionAudit`
+  - `HoldInsideMidlineTransitionCandidateRow`
+  - `HoldInsideMidlineTransitionSummaryRow`
+  - `HoldInsideMidlineTransitionStabilityRow`
+- Audit semantics:
+  - uses balanced baseline detector `p30_c12_bollinger_on_adx_off`
+  - uses context rules `hold_3_inside`, `hold_6_inside`, and diagnostic
+    `hold_3_inside_mid_50`
+  - emits one candidate row per passed source episode, context rule, and
+    horizon
+  - records only decision-candle-known fields: frozen high/low/mid, decision
+    close position and bucket, decision mid side, distances to high/low/mid,
+    episode width, ATR, and width/ATR context
+  - records midline transition labels only; no `paper_side`, favorable/adverse
+    fields, entries, exits, scoring, sizing, or trade-side interpretation
+  - all forward `label_*` fields start at `decision_index + 1`
+  - missing first-delay labels use `-1`
+  - same-bar midline and boundary events do not satisfy "before"; ordering
+    labels require strict earlier occurrence
+  - summary rows aggregate by profile, context rule, split, horizon,
+    `decision_mid_side`, and decision close position bucket, including `all`
+  - source episode denominators remain independent of candidate rows across
+    mid-side and bucket aggregations
+  - stability rows compare only `2021_2022_stress`, `2023_2024_oos`, and
+    `2025_2026_recent`
+  - stability rows expose split min/max/delta rates for midline touch/cross,
+    strict-before ordering, reentry, persistence, quick invalidation,
+    invalidation up/down, and trend up/down labels
+- This milestone did not add entries, exits, scoring, sizing, strategy
+  replacement, live code, deploy scripts, API keys, grid, martingale,
+  averaging down, or two-exchange execution.
+- Strategy remains `lab.EmptyStrategy`.
+- Trades remain `0`.
+- No durable verdict doc was added; the next step should review the generated
+  outputs for split-stable midline transition evidence before any entry
+  trigger.
+- `memory/DECISIONS.md` was not changed because no durable constraint changed.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` with the next non-trading review
+  handoff.
+
+Latest hold-inside midline transition audit verification:
+
+```bash
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+  -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv \
+  -out-dir results/hold-inside-midline-transition-audit \
+  -hold-inside-midline-transition-audit
+
+wc -l results/hold-inside-midline-transition-audit/*.csv
+rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
+git diff --check
+```
+
+Result:
+
+- `go test ./...` passed.
+- New hold-inside midline transition audit printed:
+  - `hold_inside_midline_transition_audit profiles=1 rules=3 candidate_rows=7988 summary_rows=720 stability_rows=192 quick_invalidation_bars=3 horizons=1;3;6;12`
+  - `loaded 569451 candles from 2021-01-01T00:00:00Z to
+    2026-06-01T23:59:59Z`
+  - `strategy=empty trades=0`
+- New hold-inside midline transition CSV lines including header:
+  - `hold_inside_midline_transition_candidates.csv`: `7,989`
+  - `hold_inside_midline_transition_summary.csv`: `721`
+  - `hold_inside_midline_transition_stability.csv`: `193`
+  - base `summary.csv`: `13`
+- Result paths:
+  - `results/hold-inside-midline-transition-audit/hold_inside_midline_transition_candidates.csv`
+  - `results/hold-inside-midline-transition-audit/hold_inside_midline_transition_candidates.json`
+  - `results/hold-inside-midline-transition-audit/hold_inside_midline_transition_summary.csv`
+  - `results/hold-inside-midline-transition-audit/hold_inside_midline_transition_summary.json`
+  - `results/hold-inside-midline-transition-audit/hold_inside_midline_transition_stability.csv`
+  - `results/hold-inside-midline-transition-audit/hold_inside_midline_transition_stability.json`
+- `memory/NEXT_CODEX_BRIEF.md` remains the only canonical next-session prompt.
+- `git diff --check` passed.
+
 Hold-inside directional edge review milestone:
 
 - Added durable review report:
