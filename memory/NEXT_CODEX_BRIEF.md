@@ -1,4 +1,4 @@
-# Next Codex Brief: Review Hold-Inside Midline Transition Audit
+# Next Codex Brief: Build Hold-Inside Midline Reaction Audit
 
 ```text
 We are in /home/lance/range-strategy-lab, a standalone Go project named range-strategy-lab.
@@ -7,13 +7,11 @@ Before work:
 - Read AGENTS.md.
 - Read memory/README.md, memory/PROGRESS.md, and memory/DECISIONS.md.
 - Read README.md as the docs index.
-- Read only the docs relevant to this review:
+- Read only the docs relevant to this task:
+  - docs/HOLD_INSIDE_MIDLINE_TRANSITION_REVIEW.md
   - docs/HOLD_INSIDE_DIRECTIONAL_EDGE_REVIEW.md
   - docs/DETECTOR_CONTEXT_REFINEMENT_REVIEW.md
-  - docs/DETECTOR_DURABILITY_SWEEP_REVIEW.md
-  - docs/RANGE_REGIME_DURABILITY_REVIEW.md
-  - docs/RESEARCH_HELPERS.md and docs/VERIFICATION.md only if implementation or verification questions arise
-- Do not read every historical review doc by default; open older SR/compression docs only if the current review needs that comparison.
+  - docs/VERIFICATION.md
 - Check git status before editing.
 
 Current verdict:
@@ -23,76 +21,76 @@ Current verdict:
 - Compression breakout audit was not entry-ready.
 - Range regime durability review says the balanced detector regimes are not durable enough as context for future entry hypotheses.
 - Detector durability sweep review says no current DefaultDetectorSweepProfiles profile is approved as future entry context; p30_c12_bollinger_on_adx_on is diagnostic only.
-- Detector context refinement review says delayed hold_3_inside and hold_6_inside are the first context refinement that materially and split-stably reduces quick invalidation and trend leakage with adequate candidates. They are leading decision-candle context, but NOT promoted to entry context.
-- Hold-inside directional edge review says hold_3_inside/hold_6_inside do not show a split-stable directional edge toward the frozen range high or low. No all-bucket row passed the review gate, and no non-all decision-close-position bucket reached 100 candidates in every period split.
-- Hold-inside midline transition audit is built and generated, but not reviewed yet.
+- Detector context refinement review says delayed hold_3_inside and hold_6_inside materially improve range-survival context, but are not entry context.
+- Hold-inside directional edge review says hold_3_inside/hold_6_inside do not show a split-stable edge toward frozen high or low.
+- Hold-inside midline transition review says hold_3_inside/hold_6_inside do show split-stable midline touch and close-across behavior by 12 bars, but current midline labels are not entry context or strategy inputs.
 - Keep lab.EmptyStrategy.
 - Trades remain 0.
 - Do not add entries, exits, scoring, sizing, strategy replacement, live code, deploy scripts, API keys, grid, martingale, averaging down, or two-exchange execution unless the user explicitly changes scope.
 
-Latest hold-inside midline transition audit:
-- CLI flag:
-  - -hold-inside-midline-transition-audit
+Latest reviewed midline-transition facts:
 - Result directory:
   - results/hold-inside-midline-transition-audit/
-- Outputs:
-  - hold_inside_midline_transition_candidates.csv/json
-  - hold_inside_midline_transition_summary.csv/json
-  - hold_inside_midline_transition_stability.csv/json
-- Audit size:
-  - profiles: 1
-  - context rules: 3
-  - candidate rows: 7,988
-  - summary rows: 720
-  - stability rows: 192
-  - candidate CSV lines including header: 7,989
-  - summary CSV lines including header: 721
-  - stability CSV lines including header: 193
-  - base summary CSV lines including header: 13
-  - horizons: 1, 3, 6, 12
-  - quick invalidation window: 3 bars after the decision candle
-- Scope:
-  - profile p30_c12_bollinger_on_adx_off
-  - primary context rules hold_3_inside and hold_6_inside
-  - hold_3_inside_mid_50 included as diagnostic output only
-  - no paper_side labels and no favorable/adverse fields
-  - missing first-delay labels use -1
-  - same-bar midline and boundary events do not satisfy before-ordering labels
-  - stability rows compare only 2021_2022_stress, 2023_2024_oos, and 2025_2026_recent
-  - stability rows include min/max/delta rates for reentry, persistence, quick invalidation, invalidation up/down, and trend up/down labels
-- Last run printed:
-  - hold_inside_midline_transition_audit profiles=1 rules=3 candidate_rows=7988 summary_rows=720 stability_rows=192 quick_invalidation_bars=3 horizons=1;3;6;12
-  - loaded 569451 candles from 2021-01-01T00:00:00Z to 2026-06-01T23:59:59Z
-  - strategy=empty trades=0
+- Review doc:
+  - docs/HOLD_INSIDE_MIDLINE_TRANSITION_REVIEW.md
+- Broad h12 all-bucket facts:
+  - hold_3_inside: 222 minimum split candidates, 52.25% minimum mid touch, 45.05% minimum close-across, 37.84% minimum cross-before-boundary-break, 25.32% maximum quick invalidation, 40.09% maximum trend leakage.
+  - hold_6_inside: 170 minimum split candidates, 52.35% minimum mid touch, 46.47% minimum close-across, 40.00% minimum cross-before-boundary-break, 21.46% maximum quick invalidation, 35.88% maximum trend leakage.
+  - mid-position h12 rows are cleaner but diagnostic because weakest split counts are 94 for hold_3_inside and 98 for hold_6_inside.
 
 Recommended next task:
-Stay non-trading. Review existing results/hold-inside-midline-transition-audit/ outputs only; do not add Go code, strategy logic, entries, exits, scoring, sizing, or live wiring.
+Stay non-trading. Add a hold-inside midline reaction audit that re-indexes the first closed-candle midline event as the decision candle, then labels what happens after that event.
 
-Review order:
-- Start with hold_inside_midline_transition_stability.csv.
-- Use summary/candidate rows only to explain notable slices.
-- Prioritize hold_3_inside and hold_6_inside.
-- Treat hold_3_inside_mid_50 as diagnostic unless the review later justifies promoting it as context.
-- Focus on split-stable behavior across 2021_2022_stress, 2023_2024_oos, and 2025_2026_recent.
+Implementation outline:
+- Add CLI flag:
+  - -hold-inside-midline-reaction-audit
+- Default output directory for validation:
+  - results/hold-inside-midline-reaction-audit/
+- Emit compact CSV/JSON outputs:
+  - hold_inside_midline_reaction_candidates.csv/json
+  - hold_inside_midline_reaction_summary.csv/json
+  - hold_inside_midline_reaction_stability.csv/json
+- Reuse the balanced detector profile p30_c12_bollinger_on_adx_off.
+- Use context rules:
+  - hold_3_inside
+  - hold_6_inside
+  - hold_3_inside_mid_50 as diagnostic only
+- For each source episode/context rule, search after the hold decision candle for the first midline event within max_midline_event_delay_bars=12.
+- Include two event types as separate candidate families:
+  - mid_touch: first candle whose high/low touches the frozen episode mid
+  - mid_close_across: first candle whose close crosses to the opposite side of the frozen episode mid
+- The midline event candle is the new decision candle. All forward label_* fields must start at event_index + 1.
+- Record decision-candle-known fields only: source hold decision time, event delay bars, event type, frozen high/low/mid, event close position and bucket, event mid side, distances to high/low/mid, episode width, ATR, and width/ATR context.
+- Add forward labels over horizons 1, 3, 6, and 12 bars:
+  - label_reentered_range
+  - label_persisted_inside_range
+  - label_quick_invalidated
+  - label_invalidated_up/down
+  - label_trended_up/down
+  - label_touched_high/low
+  - label_touched_opposite_half
+  - label_closed_back_across_mid
+  - label_mid_rejection_before_boundary_touch
+  - label_boundary_touch_before_mid_rejection
+- Keep labels outcome-only; do not add paper_side, favorable/adverse, entries, exits, scoring, sizing, or strategy replacement.
+- Summary rows should aggregate by profile, context rule, event type, split, horizon, event_mid_side, and event close-position bucket, including all.
+- Stability rows should compare only 2021_2022_stress, 2023_2024_oos, and 2025_2026_recent.
 
-Suggested review questions:
-- Do all-bucket hold_3_inside or hold_6_inside rows show stable rates for label_touched_mid and label_closed_across_mid?
-- Do label_mid_touch_before_boundary_touch and label_mid_cross_before_boundary_close_break hold up in worst split with adequate candidate_count_min?
-- Are persisted-inside, quick-invalidated, invalidated-up/down, and trended-up/down rates consistent with a useful non-trading context?
-- Are any positive rows dependent on sparse decision_mid_side or close-position buckets?
-- Do first-delay averages suggest a practical closed-candle observation window, or are they too slow/noisy?
-
-Expected review deliverables if the evidence supports a clear verdict:
-- Add docs/HOLD_INSIDE_MIDLINE_TRANSITION_REVIEW.md.
-- Update README.md docs order if the review doc is added.
+Expected deliverables:
+- Add the audit implementation and focused tests for no-lookahead event selection, touch/cross event separation, label-window start, missing-event skipping, missing-future skipping, deterministic sorting, summary denominators, and stability aggregation.
+- Run the audit on BTCUSDT 5m and record result paths and row counts.
 - Update memory/PROGRESS.md with commands, result paths, row counts, and concise factual outcome.
-- Update memory/DECISIONS.md only if a durable constraint or no-promotion rule changes.
-- Refresh memory/NEXT_CODEX_BRIEF.md with the next materially different non-trading hypothesis or review follow-up.
+- Update memory/DECISIONS.md only if a durable constraint changes.
+- Refresh memory/NEXT_CODEX_BRIEF.md with the next review task for the generated outputs.
 
 Verification:
-- wc -l results/hold-inside-midline-transition-audit/hold_inside_midline_transition_candidates.csv results/hold-inside-midline-transition-audit/hold_inside_midline_transition_summary.csv results/hold-inside-midline-transition-audit/hold_inside_midline_transition_stability.csv
+- env GOCACHE=/tmp/range-strategy-lab-go-build GOPATH=/tmp/range-strategy-lab-go GOMODCACHE=/tmp/range-strategy-lab-go/pkg/mod /usr/local/go/bin/go test ./...
+- env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+    -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv \
+    -out-dir results/hold-inside-midline-reaction-audit \
+    -hold-inside-midline-reaction-audit
+- wc -l results/hold-inside-midline-reaction-audit/*.csv
 - rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
-- env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
 - git diff --check
 
 Closeout:

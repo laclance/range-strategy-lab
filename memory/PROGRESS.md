@@ -13,9 +13,8 @@ git history.
 - No live code, API keys, deploy scripts, grid, martingale, averaging down, or
   two-exchange execution is allowed.
 - `memory/NEXT_CODEX_BRIEF.md` is the only canonical next-session prompt.
-- Current next task: review existing
-  `results/hold-inside-midline-transition-audit/` outputs for split-stable
-  non-trading midline-transition evidence.
+- Current next task: implement a non-trading hold-inside midline reaction audit
+  that re-indexes the first midline event as the decision candle.
 
 ## 2026-06-15
 
@@ -38,6 +37,55 @@ Context budget cleanup milestone:
   - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`:
     passed.
   - `git diff --check`: passed.
+
+Hold-inside midline transition review milestone:
+
+- Added durable review report:
+  - `docs/HOLD_INSIDE_MIDLINE_TRANSITION_REVIEW.md`
+- Updated `README.md` docs order to include the hold-inside midline transition
+  review.
+- Updated `memory/DECISIONS.md` with a durable no-promotion rule: current
+  midline transition labels are not entry context or strategy inputs.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` with the next non-trading reindexed
+  midline-event audit handoff.
+- Review verdict:
+  - hold-inside midline transition audit is not entry-ready
+  - broad `hold_3_inside`/`hold_6_inside` rows show split-stable midline touch
+    and close-across behavior by `12` bars
+  - the midline is a promising observation point, but not a trade trigger
+  - keep `lab.EmptyStrategy`
+  - trades remain `0`
+- Inputs reviewed:
+  - `results/hold-inside-midline-transition-audit/hold_inside_midline_transition_candidates.csv`
+  - `results/hold-inside-midline-transition-audit/hold_inside_midline_transition_candidates.json`
+  - `results/hold-inside-midline-transition-audit/hold_inside_midline_transition_summary.csv`
+  - `results/hold-inside-midline-transition-audit/hold_inside_midline_transition_summary.json`
+  - `results/hold-inside-midline-transition-audit/hold_inside_midline_transition_stability.csv`
+  - `results/hold-inside-midline-transition-audit/hold_inside_midline_transition_stability.json`
+- Audit size:
+  - candidate rows: `7,988`
+  - summary rows: `720`
+  - stability rows: `192`
+  - CSV lines including header: `7,989` / `721` / `193`
+- Compact evidence:
+  - `hold_3_inside`, h12 all-bucket: `222` minimum split candidates,
+    `52.25%` minimum mid touch, `45.05%` minimum close-across, `37.84%`
+    minimum cross-before-boundary-break, `25.32%` maximum quick invalidation,
+    and `40.09%` maximum trend leakage
+  - `hold_6_inside`, h12 all-bucket: `170` minimum split candidates,
+    `52.35%` minimum mid touch, `46.47%` minimum close-across, `40.00%`
+    minimum cross-before-boundary-break, `21.46%` maximum quick invalidation,
+    and `35.88%` maximum trend leakage
+  - mid-position h12 rows are cleaner but diagnostic: weakest split counts are
+    `94` for `hold_3_inside` and `98` for `hold_6_inside`
+- Verification:
+  - `wc -l results/hold-inside-midline-transition-audit/hold_inside_midline_transition_candidates.csv results/hold-inside-midline-transition-audit/hold_inside_midline_transition_summary.csv results/hold-inside-midline-transition-audit/hold_inside_midline_transition_stability.csv`:
+    `7,989` / `721` / `193` lines including headers
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`:
+    `memory/NEXT_CODEX_BRIEF.md` remains the only canonical next-session prompt
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build GOPATH=/tmp/range-strategy-lab-go GOMODCACHE=/tmp/range-strategy-lab-go/pkg/mod /usr/local/go/bin/go test ./...`:
+    passed
+  - `git diff --check`: passed
 
 Hold-inside midline transition audit milestone:
 

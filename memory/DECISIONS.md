@@ -59,6 +59,12 @@
   candidate counts; no decision-close-position bucket reaches `100` candidates
   in every period split. Do not promote `paper_side=toward_high` or
   `paper_side=toward_low` into entry context; keep `lab.EmptyStrategy`.
+- The hold-inside midline transition audit has been reviewed. Broad
+  `hold_3_inside`/`hold_6_inside` rows show split-stable midline touch and
+  close-across behavior by `12` bars, but the labels are not entry context or
+  strategy inputs. Treat the midline as a non-trading observation point for a
+  follow-up reindexed midline-event audit; do not promote current midline
+  transition labels into entries, exits, scoring, sizing, or strategy logic.
 - External helper modules may be used for feature extraction and audit outputs
   only; strategy hypotheses, entries, exits, scoring, sizing, and backtest
   behavior stay inside this lab.
