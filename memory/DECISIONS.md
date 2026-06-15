@@ -65,6 +65,13 @@
   strategy inputs. Treat the midline as a non-trading observation point for a
   follow-up reindexed midline-event audit; do not promote current midline
   transition labels into entries, exits, scoring, sizing, or strategy logic.
+- The hold-inside midline reaction audit has been reviewed. Only
+  `hold_3_inside` + first `mid_touch` within `12` bars, with event close in the
+  frozen range `mid_50` bucket, is approved for a first minimal offline entry
+  prototype. This is not strategy promotion or live approval; the prototype
+  must report side splits and stress splits before any further promotion claim.
+  `hold_6_inside`, `mid_close_across`, side-specific cohorts, and
+  `hold_3_inside_mid_50` remain diagnostic after this review.
 - External helper modules may be used for feature extraction and audit outputs
   only; strategy hypotheses, entries, exits, scoring, sizing, and backtest
   behavior stay inside this lab.

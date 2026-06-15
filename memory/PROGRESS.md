@@ -13,11 +13,41 @@ git history.
 - No live code, API keys, deploy scripts, grid, martingale, averaging down, or
   two-exchange execution is allowed.
 - `memory/NEXT_CODEX_BRIEF.md` is the only canonical next-session prompt.
-- Current next task: review the generated hold-inside midline reaction audit
-  outputs and decide whether stable post-event evidence supports a first
-  minimal entry prototype or closes this detector family.
+- Current next task: build a first minimal offline entry prototype for only the
+  reviewed `hold_3_inside` + `mid_touch` + event-close `mid_50` reaction
+  surface.
 
 ## 2026-06-15
+
+Hold-inside midline reaction review milestone:
+
+- Review doc: `docs/HOLD_INSIDE_MIDLINE_REACTION_REVIEW.md`.
+- Inputs: `results/hold-inside-midline-reaction-audit/`.
+- Verdict: one first minimal offline entry prototype is justified, but only for
+  `hold_3_inside` + first `mid_touch` within `12` bars + event close-position
+  bucket `mid_50`.
+- Not promoted: live use, strategy promotion, broad detector-family entries,
+  `hold_6_inside`, `mid_close_across`, side-specific cohorts, and
+  `hold_3_inside_mid_50`.
+- Key evidence:
+  - funnel pass: `hold_3_inside` + `mid_touch` has weakest-split event rate
+    `52.25%` with `116` event candidates
+  - `hold_3_inside` + `mid_touch`, h6 all-bucket: weakest split `116`
+    candidates, `55.17%` minimum close-back, `45.69%` minimum mid-rejection
+    before boundary, `28.25%` maximum boundary-before-rejection, `18.39%`
+    maximum quick invalidation, `22.22%` maximum trend
+  - `hold_3_inside` + `mid_touch` + event-close `mid_50`, h6: weakest split
+    `104` candidates, `58.65%` minimum close-back, `50.96%` minimum
+    mid-rejection before boundary, `22.12%` maximum boundary-before-rejection,
+    `11.54%` maximum quick invalidation, `19.23%` maximum trend
+- Updated `README.md`, `memory/DECISIONS.md`, and
+  `memory/NEXT_CODEX_BRIEF.md` so the next task is the bounded offline
+  prototype.
+- Verification passed:
+  - `wc -l results/hold-inside-midline-reaction-audit/*.csv`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build GOPATH=/tmp/range-strategy-lab-go GOMODCACHE=/tmp/range-strategy-lab-go/pkg/mod /usr/local/go/bin/go test ./...`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
 
 Hold-inside midline reaction audit milestone:
 
@@ -80,84 +110,19 @@ Context budget cleanup milestone:
 
 Hold-inside midline transition review milestone:
 
-- Added durable review report:
-  - `docs/HOLD_INSIDE_MIDLINE_TRANSITION_REVIEW.md`
-- Updated `README.md` docs order to include the hold-inside midline transition
-  review.
-- Updated `memory/DECISIONS.md` with a durable no-promotion rule: current
-  midline transition labels are not entry context or strategy inputs.
-- Refreshed `memory/NEXT_CODEX_BRIEF.md` with the next non-trading reindexed
-  midline-event audit handoff.
-- Review verdict:
-  - hold-inside midline transition audit is not entry-ready
-  - broad `hold_3_inside`/`hold_6_inside` rows show split-stable midline touch
-    and close-across behavior by `12` bars
-  - the midline is a promising observation point, but not a trade trigger
-  - keep `lab.EmptyStrategy`
-  - trades remain `0`
-- Inputs reviewed:
-  - `results/hold-inside-midline-transition-audit/hold_inside_midline_transition_candidates.csv`
-  - `results/hold-inside-midline-transition-audit/hold_inside_midline_transition_candidates.json`
-  - `results/hold-inside-midline-transition-audit/hold_inside_midline_transition_summary.csv`
-  - `results/hold-inside-midline-transition-audit/hold_inside_midline_transition_summary.json`
-  - `results/hold-inside-midline-transition-audit/hold_inside_midline_transition_stability.csv`
-  - `results/hold-inside-midline-transition-audit/hold_inside_midline_transition_stability.json`
-- Audit size:
-  - candidate rows: `7,988`
-  - summary rows: `720`
-  - stability rows: `192`
-  - CSV lines including header: `7,989` / `721` / `193`
-- Compact evidence:
-  - `hold_3_inside`, h12 all-bucket: `222` minimum split candidates,
-    `52.25%` minimum mid touch, `45.05%` minimum close-across, `37.84%`
-    minimum cross-before-boundary-break, `25.32%` maximum quick invalidation,
-    and `40.09%` maximum trend leakage
-  - `hold_6_inside`, h12 all-bucket: `170` minimum split candidates,
-    `52.35%` minimum mid touch, `46.47%` minimum close-across, `40.00%`
-    minimum cross-before-boundary-break, `21.46%` maximum quick invalidation,
-    and `35.88%` maximum trend leakage
-  - mid-position h12 rows are cleaner but diagnostic: weakest split counts are
-    `94` for `hold_3_inside` and `98` for `hold_6_inside`
-- Verification:
-  - `wc -l results/hold-inside-midline-transition-audit/hold_inside_midline_transition_candidates.csv results/hold-inside-midline-transition-audit/hold_inside_midline_transition_summary.csv results/hold-inside-midline-transition-audit/hold_inside_midline_transition_stability.csv`:
-    `7,989` / `721` / `193` lines including headers
-  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`:
-    `memory/NEXT_CODEX_BRIEF.md` remains the only canonical next-session prompt
-  - `env GOCACHE=/tmp/range-strategy-lab-go-build GOPATH=/tmp/range-strategy-lab-go GOMODCACHE=/tmp/range-strategy-lab-go/pkg/mod /usr/local/go/bin/go test ./...`:
-    passed
-  - `git diff --check`: passed
+- Review doc: `docs/HOLD_INSIDE_MIDLINE_TRANSITION_REVIEW.md`.
+- Inputs: `results/hold-inside-midline-transition-audit/`; `7,988`
+  candidate rows, `720` summary rows, `192` stability rows.
+- Verdict: not entry-ready; broad `hold_3_inside`/`hold_6_inside` rows show
+  split-stable midline touch/close-across behavior by `12` bars, but current
+  midline labels are not entry context or strategy inputs.
 
 Hold-inside midline transition audit milestone:
 
 - Commit: `277ce49 Add hold-inside midline transition audit`.
-- Added CLI flag `-hold-inside-midline-transition-audit`.
-- Result directory: `results/hold-inside-midline-transition-audit/`.
-- Outputs:
-  - `hold_inside_midline_transition_candidates.csv/json`
-  - `hold_inside_midline_transition_summary.csv/json`
-  - `hold_inside_midline_transition_stability.csv/json`
-- Audit size:
-  - profiles: `1`
-  - rules: `3`
-  - candidate rows: `7,988`
-  - summary rows: `720`
-  - stability rows: `192`
-  - CSV lines including header: `7,989` / `721` / `193`
-  - horizons: `1`, `3`, `6`, `12`
-  - quick invalidation window: `3` bars
-- Scope:
-  - profile `p30_c12_bollinger_on_adx_off`
-  - primary rules `hold_3_inside` and `hold_6_inside`
-  - diagnostic rule `hold_3_inside_mid_50`
-  - no entries, exits, scoring, sizing, paper side, favorable/adverse fields,
-    strategy replacement, or live wiring
-- Last run printed `strategy=empty trades=0`.
-- Verification passed:
-  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
-  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -csv ../binance-bot/data/btcusdt_spot_5m_2021_2026.csv -out-dir results/hold-inside-midline-transition-audit -hold-inside-midline-transition-audit`
-  - `wc -l results/hold-inside-midline-transition-audit/*.csv`
-  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
-  - `git diff --check`
+- Added `-hold-inside-midline-transition-audit`; result dir
+  `results/hold-inside-midline-transition-audit/`; `7,988` candidate rows,
+  `720` summary rows, `192` stability rows; `strategy=empty trades=0`.
 
 Hold-inside directional edge review milestone:
 
