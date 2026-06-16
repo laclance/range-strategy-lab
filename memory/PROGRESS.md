@@ -17,6 +17,15 @@ git history.
   reviewed `hold_3_inside` + `mid_touch` + event-close `mid_50` reaction
   surface.
 
+## 2026-06-16
+
+Memory context-budget wording adjustment:
+
+- Updated `AGENTS.md`, `memory/README.md`, and `memory/DECISIONS.md` so the
+  size guidance for all always-read memory files is a soft `300-350` line
+  judgment band, not a hard threshold. Compact or split memory when it feels
+  bulky or repetitive, not merely because one file crosses `300` lines.
+
 ## 2026-06-15
 
 Hold-inside midline reaction review milestone:

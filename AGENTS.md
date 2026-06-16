@@ -22,8 +22,10 @@ Context budget:
 - Treat tracked memory as a compact working index, not a full transcript.
 - Do not make future sessions read every historical doc by default; use
   `README.md` as an index and open only docs relevant to the current task.
-- When `memory/PROGRESS.md` grows past roughly 300 lines, compact older
-  milestones to date, artifact/doc paths, row counts or verdict, and commit.
+- Treat always-read memory file size targets as soft judgment bands, not hard
+  triggers. Around `300-350` lines can be fine when the extra detail is
+  genuinely useful; compact or split memory once an always-read file starts
+  feeling bulky or repetitive.
 - Put detailed evidence in focused docs, generated artifacts under `results/`,
   or git history instead of expanding always-read memory files.
 
