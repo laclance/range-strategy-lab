@@ -8,16 +8,42 @@ git history.
 ## Current State
 
 - Scope remains offline BTCUSDT 5m range-strategy research only.
+- Active market target is Binance USDT-M futures, not spot. Prior generated
+  audits/reviews were run on spot CSVs and are no longer authoritative for
+  promotion or entry decisions until rerun/reviewed on futures data.
 - Strategy remains `lab.EmptyStrategy`; trades remain `0`.
 - Closed-candle decision semantics remain required.
 - No live code, API keys, deploy scripts, grid, martingale, averaging down, or
   two-exchange execution is allowed.
 - `memory/NEXT_CODEX_BRIEF.md` is the only canonical next-session prompt.
-- Current next task: build a first minimal offline entry prototype for only the
-  reviewed `hold_3_inside` + `mid_touch` + event-close `mid_50` reaction
-  surface.
+- Current next task: assess the spot-to-futures data-source impact before any
+  entries. The previously planned hold-inside midline touch prototype is paused.
 
 ## 2026-06-16
+
+Futures data-source correction:
+
+- User clarified the real trading target is Binance futures rather than spot.
+- Previous audit/review outputs used the spot path
+  `../binance-bot/data/btcusdt_spot_5m_2021_2026.csv`; treat all promotion
+  implications from those results as suspended until futures revalidation.
+- Local sibling data currently visible:
+  - `../binance-bot/data/btcusdt_spot_5m_2021_2026.csv`: `573,697` CSV lines
+    including header, spanning `2021-01-01T00:00:00Z` through
+    `2026-06-15T23:59:59Z`
+  - `../binance-bot/data/btcusdt_futures_um_5m_2026-06-13_2026-06-15.csv`:
+    `865` CSV lines including header
+  - `../binance-bot/data/btcusdt_futures_um_5m_2026-06-14_2026-06-15.csv`:
+    `577` CSV lines including header
+  - `../binance-bot/data/btcusdt_futures_um_5m_2026-06-15.csv`: `289` CSV
+    lines including header
+- Updated memory and docs so the next brief is an impact assessment, not entry
+  implementation. If full-history futures data is unavailable, the next verdict
+  should be "data gap first," not a prototype.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build GOPATH=/tmp/range-strategy-lab-go GOMODCACHE=/tmp/range-strategy-lab-go/pkg/mod /usr/local/go/bin/go test ./...`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
 
 Memory context-budget wording adjustment:
 
@@ -32,9 +58,11 @@ Hold-inside midline reaction review milestone:
 
 - Review doc: `docs/HOLD_INSIDE_MIDLINE_REACTION_REVIEW.md`.
 - Inputs: `results/hold-inside-midline-reaction-audit/`.
-- Verdict: one first minimal offline entry prototype is justified, but only for
-  `hold_3_inside` + first `mid_touch` within `12` bars + event close-position
-  bucket `mid_50`.
+- Original spot-data verdict: one first minimal offline entry prototype was
+  justified, but only for `hold_3_inside` + first `mid_touch` within `12` bars
+  + event close-position bucket `mid_50`.
+- Current status after futures correction: suspended pending futures rerun and
+  impact review.
 - Not promoted: live use, strategy promotion, broad detector-family entries,
   `hold_6_inside`, `mid_close_across`, side-specific cohorts, and
   `hold_3_inside_mid_50`.

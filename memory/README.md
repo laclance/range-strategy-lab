@@ -19,6 +19,9 @@ Use it before nontrivial work so each Codex session starts from the current proj
 - Keep generated CSV/JSON under `results/`; `results/` is ignored by Git.
 - Update `PROGRESS.md` after each completed milestone.
 - Update `DECISIONS.md` only when a durable decision changes or is added.
+- Record candle source, market type, coverage, and row counts for data-dependent
+  milestones. If the candle source changes, treat prior promotion evidence as
+  suspended until an impact review is complete.
 - Remove stale next-step text when a newer milestone supersedes it.
 - Treat always-read memory file size targets as soft judgment bands, not hard
   triggers. Around `300-350` lines can be fine when the extra detail is

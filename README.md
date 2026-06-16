@@ -1,6 +1,8 @@
 # Range Strategy Lab
 
-Standalone BTCUSDT range-strategy starter project.
+Standalone BTCUSDT range-strategy starter project. The current trading target is
+Binance USDT-M futures 5m data; older spot-data outputs are historical context
+until rerun and reviewed on futures data.
 
 ## Purpose
 
@@ -49,7 +51,7 @@ From inside this folder:
 go test ./...
 
 go run ./cmd/rangelab \
-  -csv ../data/btcusdt_spot_5m_2021_2026.csv \
+  -csv /absolute/path/to/btcusdt_futures_um_5m_2021_2026.csv \
   -out-dir results/smoke
 ```
 
@@ -75,6 +77,11 @@ The strategy receives a confirmed candle index and returns an optional signal.
 The engine enters on the next candle open and manages stop/target exits.
 
 ## Data
+
+Use Binance USDT-M futures BTCUSDT 5m data for current research. A source
+change between spot and futures is a research break: record the CSV path,
+coverage, and row count, then rerun/review affected audits before trusting a
+verdict for entries.
 
 The CLI accepts either:
 

@@ -1,6 +1,7 @@
 # Agent Instructions
 
 This is a standalone offline Go research project for BTCUSDT 5m range-strategy work.
+The active trading target is Binance USDT-M futures candles, not spot candles.
 
 Before nontrivial work:
 
@@ -16,6 +17,9 @@ Keep project memory current:
 - Keep generated CSV/JSON outputs under `results/`; do not paste bulky generated output into memory.
 - Record verification commands, result paths, and short factual outcomes.
 - Keep notes dated and concise so future sessions can trust them quickly.
+- Record candle source, market type, coverage, and row counts whenever a run or
+  verdict depends on a CSV. A spot/futures source change invalidates promotion
+  conclusions until a futures impact review is done.
 
 Context budget:
 
@@ -34,5 +38,7 @@ Hard boundaries:
 - Offline research only.
 - No live orders, exchange API keys, deploy scripts, grid, martingale, averaging down, or two-exchange execution.
 - BTCUSDT only until the project explicitly changes scope.
+- Use Binance USDT-M futures 5m data for current research; legacy spot-based
+  evidence is historical context only until rerun/reviewed on futures data.
 - Use confirmed closed-candle decisions only.
 - Keep results explainable and reproducible.

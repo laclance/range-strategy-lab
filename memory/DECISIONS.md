@@ -6,6 +6,7 @@
 - Do not add live orders, exchange API keys, deploy scripts, grid, martingale, averaging down, or two-exchange execution.
 - BTCUSDT only until project scope explicitly changes.
 - Use 5m candles first.
+- The active research market is Binance USDT-M futures, not Binance spot.
 - Use confirmed closed-candle decisions only.
 - When entries are eventually added, enter on the next bar open.
 - Keep one open position max.
@@ -18,6 +19,10 @@
 - Generated outputs belong under `results/`, which remains ignored by Git.
 - Project memory is tracked under `memory/`.
 - Future Codex sessions should read `AGENTS.md` and `memory/` before nontrivial work.
+- Candle data source is part of the experiment definition. Record CSV path,
+  market type, date coverage, and row counts for any data-dependent verdict.
+  Spot-based results are not a promotion basis for the futures trading target
+  unless a futures impact review explicitly revalidates them.
 - The canonical next-session prompt is `memory/NEXT_CODEX_BRIEF.md`; do not
   keep a duplicate root `CODEX_BRIEF.md`.
 - Keep tracked memory context-budgeted: always-read memory files are a compact
@@ -66,13 +71,14 @@
   strategy inputs. Treat the midline as a non-trading observation point for a
   follow-up reindexed midline-event audit; do not promote current midline
   transition labels into entries, exits, scoring, sizing, or strategy logic.
-- The hold-inside midline reaction audit has been reviewed. Only
-  `hold_3_inside` + first `mid_touch` within `12` bars, with event close in the
-  frozen range `mid_50` bucket, is approved for a first minimal offline entry
-  prototype. This is not strategy promotion or live approval; the prototype
-  must report side splits and stress splits before any further promotion claim.
-  `hold_6_inside`, `mid_close_across`, side-specific cohorts, and
-  `hold_3_inside_mid_50` remain diagnostic after this review.
+- The hold-inside midline reaction audit was reviewed on spot data. That review
+  had approved only `hold_3_inside` + first `mid_touch` within `12` bars, with
+  event close in the frozen range `mid_50` bucket, for a first minimal offline
+  entry prototype. This was not strategy promotion or live approval. Because
+  the approval was spot-based, it is suspended until the same surface is rerun
+  and reviewed on Binance USDT-M futures data. `hold_6_inside`,
+  `mid_close_across`, side-specific cohorts, and `hold_3_inside_mid_50` remain
+  diagnostic after the spot review.
 - External helper modules may be used for feature extraction and audit outputs
   only; strategy hypotheses, entries, exits, scoring, sizing, and backtest
   behavior stay inside this lab.

@@ -14,7 +14,9 @@ The folder contains everything needed to compile and run the lab code:
 - `memory/NEXT_CODEX_BRIEF.md`
 
 The only external input needed for a real run is a candle CSV passed with
-`-csv`.
+`-csv`. For current research, use Binance USDT-M futures BTCUSDT 5m candles,
+not legacy spot candles, unless the task is explicitly a spot/futures
+comparison.
 
 ## Local Verification
 
@@ -24,7 +26,7 @@ From inside `range-strategy-lab`:
 /usr/local/go/bin/go test ./...
 
 /usr/local/go/bin/go run ./cmd/rangelab \
-  -csv ../data/btcusdt_spot_5m_2021_2026.csv \
+  -csv /absolute/path/to/btcusdt_futures_um_5m_2021_2026.csv \
   -out-dir results/smoke
 ```
 
@@ -48,7 +50,7 @@ Example:
 
 ```bash
 /usr/local/go/bin/go run ./cmd/rangelab \
-  -csv /absolute/path/to/btcusdt_spot_5m_2021_2026.csv \
+  -csv /absolute/path/to/btcusdt_futures_um_5m_2021_2026.csv \
   -out-dir results/smoke
 ```
 
@@ -56,6 +58,8 @@ Example:
 
 - Tests pass.
 - Smoke run loads the expected number of candles.
+- The CSV market type, path, row count, first candle, and last candle match the
+  intended experiment.
 - The strategy does not inspect future candles.
 - Entries happen on the next bar open.
 - Stop and target prices are on the correct side of entry.
