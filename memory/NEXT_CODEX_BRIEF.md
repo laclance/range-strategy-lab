@@ -70,7 +70,7 @@ Required implementation:
   - evaluate forward-selection folds without adding grid dimensions;
   - always include a row for the frozen replay config;
   - keep default runs on lab.EmptyStrategy;
-  - keep normal trades.json and summary.* either zero-trade or frozen ETH/SOL authority-only, but document the choice in the review.
+  - keep normal trades.json and summary.* frozen ETH/SOL authority-only, matching the replay milestone; BTCUSDT rows may appear only in strategy-specific diagnostic artifacts.
 
 Walk-forward folds:
 - wf_2021_2022_train__2023_2024_test:
@@ -91,7 +91,8 @@ Selection rule:
   - stop buffer 0.0,0.10;
   - symbol sets BTC_ETH_SOL, ETH_SOL, and BTC_DIAGNOSTIC_ETH_SOL.
 - A fold-selected config must pass the same training adequacy basics used by optimization:
-  - enough training trades for its authority set;
+  - at least 100 aggregate authority training trades when the train set contains multiple period splits;
+  - at least 25 authority training trades in each individual train split segment used by the fold;
   - positive training net after costs;
   - training PF at least 1.2;
   - no side or authority symbol weakness dominating.
