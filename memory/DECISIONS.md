@@ -112,6 +112,12 @@
   process, or exclusion evidence. Non-range trend/volatility paths, broad
   multi-pair mining, and cross-exchange execution are not authorized by a
   range-only pivot review.
+- The futures scope pivot review paused further BTCUSDT 5m range mining. The
+  next authorized range-only move is a docs/source-spec task for BTCUSDT
+  higher-timeframe futures bars derived from the accepted 5m source, with
+  `15m`, `1h`, and `4h` as candidate intervals, before any audit or prototype.
+  BTC/ETH expansion stays deferred until that higher-timeframe BTCUSDT
+  source/premise review is complete or the user explicitly changes scope.
 - External helper modules may be used for feature extraction and audit outputs
   only; strategy hypotheses, entries, exits, scoring, sizing, and backtest
   behavior stay inside this lab.
