@@ -26,12 +26,69 @@ git history.
   `hold_3_inside` + first `mid_touch` within `12` bars + event close-position
   bucket `mid_50` surface has been built and reviewed. The close-back
   boundary-target template failed P&L and is not promoted.
-- Futures hypothesis pivot inventory is complete. The next materially different
-  non-trading premise has been selected: futures impulse absorption after
-  abnormal OHLCV impulse candles. The canonical next brief now asks for a
-  futures-only `-futures-impulse-absorption-audit`.
+- Futures impulse absorption after abnormal OHLCV impulse candles has been
+  implemented, run, and reviewed on Binance USDT-M futures data. It failed the
+  non-trading review gate: continuation-first and quick continuation dominated
+  midpoint reclaim-first across all period splits and horizons. No prototype or
+  promotion is approved.
+- The canonical next brief now asks for a new materially different futures
+  hypothesis or data premise before any further audit.
 
 ## 2026-06-25
+
+Futures impulse absorption audit:
+
+- Review doc: `docs/FUTURES_IMPULSE_ABSORPTION_AUDIT_REVIEW.md`.
+- Stop state: `impulse_absorption_no_viable_edge`.
+- Added explicit non-trading CLI flag:
+  `-futures-impulse-absorption-audit`.
+- Default runs still use `lab.EmptyStrategy`; this audit writes labels and
+  summaries only and produced `0` trades.
+- Source path:
+  `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`.
+- Market type: Binance USDT-M futures BTCUSDT 5m.
+- Source manifest:
+  - loaded candles / manifest `row_count`: `573,984`
+  - open-time coverage: `2021-01-01T00:00:00Z` through
+    `2026-06-16T23:55:00Z`
+  - `gap_count=0`, `duplicate_count=0`, `zero_volume_count=66`,
+    `comparison_only=false`, `validation_status=accepted`
+- Result dir:
+  `results/futures-impulse-absorption-audit/`.
+- Outputs:
+  - `futures_impulse_absorption_candidates.csv/json`
+  - `futures_impulse_absorption_summary.csv/json`
+  - `futures_impulse_absorption_stability.csv/json`
+  - common `summary.csv/json`, `trades.json`, and `source_manifest.json`
+- CSV line counts including headers:
+  - candidates `13,737`
+  - summary `949`
+  - stability `241`
+  - common summary `13`
+- Audit result:
+  - `3,434` distinct impulse events
+  - `13,736` event/horizon candidate rows
+  - `1,838` up impulse events and `1,596` down impulse events
+  - no missing future windows
+  - all period splits have at least `1,003` all-direction/all-bucket events
+    at every horizon
+- Gate failure:
+  - midpoint reclaim-first never beats continuation-first in any period split
+    at horizons `3`, `6`, `12`, or `24`
+  - all-direction/all-bucket continuation-first rates are roughly
+    `57.74%` to `59.58%`
+  - reclaim-first rates are only roughly `24.13%` to `25.43%`
+  - maximum quick-continuation rate is `80.76%`
+  - minimum reclaim-minus-continuation margin stays negative at every horizon
+- No entry, exit, scoring, sizing, strategy replacement, paper/testnet/live
+  wiring, exchange API use, deploy files, grid, martingale, averaging down, or
+  two-exchange logic was added.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -csv ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv -source-product binance-usdm-futures -futures-impulse-absorption-audit -out-dir results/futures-impulse-absorption-audit`
+  - `wc -l results/futures-impulse-absorption-audit/*.csv`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
 
 Futures impulse absorption next-brief refresh:
 

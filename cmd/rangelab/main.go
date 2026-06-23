@@ -51,6 +51,7 @@ func runWithArgs(args []string) error {
 	holdInsideMidlineTransitionAudit := fs.Bool("hold-inside-midline-transition-audit", false, "write non-trading hold-inside midline transition diagnostics")
 	holdInsideMidlineReactionAudit := fs.Bool("hold-inside-midline-reaction-audit", false, "write non-trading hold-inside midline reaction diagnostics")
 	holdInsideMidlineTouchPrototype := fs.Bool("hold-inside-midline-touch-prototype", false, "run offline hold-inside midline touch prototype")
+	futuresImpulseAbsorptionAudit := fs.Bool("futures-impulse-absorption-audit", false, "write non-trading futures impulse absorption diagnostics")
 	srAudit := fs.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
 	srBoundaryAudit := fs.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
 	srBoundaryInspect := fs.Bool("sr-boundary-inspect", false, "write compact non-trading SR boundary candidate comparison diagnostics")
@@ -121,6 +122,11 @@ func runWithArgs(args []string) error {
 		}
 		strategy = prototypeStrategy
 	}
+	if *futuresImpulseAbsorptionAudit {
+		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
+			return fmt.Errorf("-futures-impulse-absorption-audit requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
+		}
+	}
 	result := lab.RunBacktest(candles, strategy, cfg)
 	summaries := lab.SummarizeSplits(result.Trades, *startBalance, lab.DefaultSplits())
 
@@ -166,6 +172,39 @@ func runWithArgs(args []string) error {
 			len(tradeRows),
 			len(prototypeSummaryRows),
 			lab.HoldInsideMidlineTouchPrototypeStopState(prototypeSummaryRows),
+		)
+	}
+	if *futuresImpulseAbsorptionAudit {
+		absorptionCfg := lab.DefaultFuturesImpulseAbsorptionAuditConfig()
+		candidateRows, summaryRows, stabilityRows, err := lab.RunFuturesImpulseAbsorptionAudit(candles, absorptionCfg, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_impulse_absorption_candidates.json"), candidateRows); err != nil {
+			return err
+		}
+		if err := writeFuturesImpulseAbsorptionCandidatesCSV(filepath.Join(*outDir, "futures_impulse_absorption_candidates.csv"), candidateRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_impulse_absorption_summary.json"), summaryRows); err != nil {
+			return err
+		}
+		if err := writeFuturesImpulseAbsorptionSummaryCSV(filepath.Join(*outDir, "futures_impulse_absorption_summary.csv"), summaryRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_impulse_absorption_stability.json"), stabilityRows); err != nil {
+			return err
+		}
+		if err := writeFuturesImpulseAbsorptionStabilityCSV(filepath.Join(*outDir, "futures_impulse_absorption_stability.csv"), stabilityRows); err != nil {
+			return err
+		}
+		fmt.Printf("futures_impulse_absorption_audit candidate_rows=%d summary_rows=%d stability_rows=%d warmup_bars=%d horizons=%s stop_state=%s\n",
+			len(candidateRows),
+			len(summaryRows),
+			len(stabilityRows),
+			absorptionCfg.WarmupBars,
+			formatIntSlice(absorptionCfg.HorizonsBars),
+			lab.FuturesImpulseAbsorptionReviewStopState(summaryRows, lab.DefaultSplits()),
 		)
 	}
 	var srRows []lab.SRAuditRow
@@ -1967,6 +2006,18 @@ func writeHoldInsideMidlineTouchPrototypeTradesCSV(path string, rows []lab.HoldI
 }
 
 func writeHoldInsideMidlineTouchPrototypeSummaryCSV(path string, rows []lab.HoldInsideMidlineTouchPrototypeSummaryRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesImpulseAbsorptionCandidatesCSV(path string, rows []lab.FuturesImpulseAbsorptionCandidateRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesImpulseAbsorptionSummaryCSV(path string, rows []lab.FuturesImpulseAbsorptionSummaryRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesImpulseAbsorptionStabilityCSV(path string, rows []lab.FuturesImpulseAbsorptionStabilityRow) error {
 	return writeJSONTaggedCSV(path, rows)
 }
 

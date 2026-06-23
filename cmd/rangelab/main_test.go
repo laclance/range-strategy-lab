@@ -116,6 +116,53 @@ func TestRunWithArgsPrototypeFlagWritesArtifactsAndRejectsSpotComparison(t *test
 	}
 }
 
+func TestRunWithArgsFuturesImpulseAbsorptionFlagWritesArtifactsAndRejectsSpotComparison(t *testing.T) {
+	dir := t.TempDir()
+	futuresPath := writeCLITestCSV(t, dir, "btcusdt_futures_um_5m_test.csv")
+	defaultOutDir := filepath.Join(dir, "default")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-out-dir", defaultOutDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(defaultOutDir, "futures_impulse_absorption_candidates.csv")); !os.IsNotExist(err) {
+		t.Fatalf("default run should not write impulse absorption artifacts, stat err=%v", err)
+	}
+
+	outDir := filepath.Join(dir, "impulse")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-impulse-absorption-audit",
+		"-out-dir", outDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{
+		"futures_impulse_absorption_candidates.csv",
+		"futures_impulse_absorption_summary.csv",
+		"futures_impulse_absorption_stability.csv",
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, name)); err != nil {
+			t.Fatalf("expected impulse absorption artifact %s: %v", name, err)
+		}
+	}
+
+	spotPath := writeCLITestCSV(t, dir, "btcusdt_spot_5m_test.csv")
+	err := runWithArgs([]string{
+		"-csv", spotPath,
+		"-source-product", lab.SourceProductBinanceSpot,
+		"-allow-spot-comparison",
+		"-futures-impulse-absorption-audit",
+		"-out-dir", filepath.Join(dir, "spot-impulse"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "requires Binance USDT-M futures source") {
+		t.Fatalf("expected impulse absorption futures-source error, got %v", err)
+	}
+}
+
 func writeCLITestCSV(t *testing.T, dir string, name string) string {
 	t.Helper()
 	path := filepath.Join(dir, name)

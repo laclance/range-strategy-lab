@@ -100,6 +100,12 @@
   entries without a materially new futures hypothesis or data premise. Legacy
   spot-only evidence cannot promote futures work. The reviewed families are now
   an exclusion map plus reusable infrastructure until a new premise is supplied.
+- The futures impulse absorption audit has been reviewed. Abnormal OHLCV
+  impulse candles on Binance USDT-M futures data are continuation-dominant
+  rather than midpoint-reclaim-dominant across every period split and tested
+  horizon. Do not convert this impulse absorption surface into an entry
+  prototype, retune, paper/testnet/live path, or strategy replacement without a
+  materially new futures hypothesis or data premise.
 - External helper modules may be used for feature extraction and audit outputs
   only; strategy hypotheses, entries, exits, scoring, sizing, and backtest
   behavior stay inside this lab.
