@@ -44,11 +44,98 @@ git history.
   baseline.
 - The local BTC/ETH/SOL range-universe discovery audit has been implemented,
   run, and reviewed. It passed the universe gate for structured compression
-  expansion and breakout retest/acceptance rows. The next approved task is a
-  fixed-rule offline baseline backtest for the top non-duplicative structured
-  compression surfaces only: `4h all h6` and `1h all h12`.
+  expansion and breakout retest/acceptance rows. The fixed-rule structured
+  compression universe baseline has now been built and reviewed. The `4h all
+  h6` aggregate passed after costs and is approved for a bounded offline
+  optimization/robustness brief only; BTCUSDT was weak, and the result depends
+  on ETH/SOL strength. The `1h all h12` surface failed and is not promoted.
 
 ## 2026-06-26
+
+Futures range universe structured compression baseline backtest:
+
+- Review doc:
+  `docs/FUTURES_RANGE_UNIVERSE_STRUCTURED_COMPRESSION_BASELINE_REVIEW.md`.
+- Stop state: `structured_compression_baseline_passed_needs_optimization_brief`.
+- Added explicit offline CLI flag:
+  `-futures-range-universe-structured-compression-baseline-backtest`.
+- Default runs still use `lab.EmptyStrategy`; this baseline runs only when the
+  explicit flag is passed and rejects spot/comparison sources through the
+  futures source guard. Universe sources remain limited to local BTCUSDT,
+  ETHUSDT, and SOLUSDT Binance USDT-M futures files.
+- Normal source manifest:
+  - path:
+    `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`
+  - product: Binance USDT-M futures
+  - symbol / interval: `BTCUSDT` / `5m`
+  - row count: `573,984`
+  - first / last open: `2021-01-01T00:00:00Z` /
+    `2026-06-16T23:55:00Z`
+  - `gap_count=0`, `duplicate_count=0`, `zero_volume_count=66`,
+    `comparison_only=false`, `validation_status=accepted`
+- Universe source facts:
+  - each of `BTCUSDT`, `ETHUSDT`, and `SOLUSDT` loaded `573,984` candles from
+    `2021-01-01T00:00:00Z` through `2026-06-16T23:55:00Z`;
+  - gaps / duplicates were `0` / `0` for every symbol;
+  - zero-volume counts: `BTCUSDT=66`, `ETHUSDT=47`, `SOLUSDT=47`;
+  - physical non-monotonic counts: `BTCUSDT=0`, `ETHUSDT=0`,
+    `SOLUSDT=1`;
+  - the SOL source was sorted before downstream validation and accepted.
+- Closed UTC resamples used:
+  - `1h`: `47,832` rows per symbol, last open `2026-06-16T23:00:00Z`
+  - `4h`: `11,958` rows per symbol, last open `2026-06-16T20:00:00Z`
+  - all coverage rows had `gap_count=0`, `duplicate_count=0`,
+    `missing_child_open_count=0`, `complete=true`,
+    `validation_status=accepted`.
+- Result dir:
+  `results/futures-range-universe-structured-compression-baseline-backtest/`.
+- Outputs:
+  - `futures_range_universe_structured_compression_baseline_sources.csv/json`
+  - `futures_range_universe_structured_compression_baseline_coverage.csv/json`
+  - `futures_range_universe_structured_compression_baseline_signals.csv/json`
+  - `futures_range_universe_structured_compression_baseline_trades.csv/json`
+  - `futures_range_universe_structured_compression_baseline_summary.csv/json`
+  - common `summary.csv/json`, `trades.json`, and `source_manifest.json`
+- CSV line counts including headers:
+  - coverage `7`
+  - signals `926`
+  - sources `4`
+  - baseline summary `97`
+  - baseline trades `913`
+  - common summary `13`
+- Baseline result:
+  - `925` signal rows, `912` executed trades, `6` skipped signals;
+  - `structured_compression_4h_all_h6`: `186` signals, `185` trades,
+    gross P&L `395.68`, net P&L `302.92`, PF `1.3598`, max drawdown
+    `12.92%`;
+  - `structured_compression_1h_all_h12`: `739` signals, `727` trades,
+    gross P&L `239.01`, net P&L `-200.13`, PF `0.9362`, max drawdown
+    `35.46%`;
+  - common combined compatibility view: `912` trades, gross P&L `634.69`,
+    net P&L `102.79`, PF `1.0258`.
+- Important verdict facts:
+  - the `4h` aggregate passed after costs and in `2023_2024_oos` plus
+    `2025_2026_recent`;
+  - the `4h` aggregate `2021_2022_stress` split was slightly negative after
+    costs at net P&L `-4.82`;
+  - `BTCUSDT` was negative on the `4h` surface: `56` trades, net P&L
+    `-92.27`, PF `0.6404`;
+  - `ETHUSDT` and `SOLUSDT` carried the `4h` result: net P&L `243.61` and
+    `151.58`;
+  - the `1h` surface failed and is not promoted.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to implement a bounded offline
+  optimization/robustness pass for `4h structured_compression_4h_all_h6` only,
+  with BTC weakness and symbol inclusion constraints explicit.
+- Added a durable decision that the `4h` aggregate is authorized for bounded
+  offline optimization only, while `1h` is closed from this baseline.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -futures-range-universe-structured-compression-baseline-backtest -out-dir results/futures-range-universe-structured-compression-baseline-backtest`
+  - `wc -l results/futures-range-universe-structured-compression-baseline-backtest/*.csv`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short` showed only intended implementation, doc, and memory
+    changes before commit.
 
 Futures range universe discovery audit:
 

@@ -142,6 +142,15 @@
   `failed_breakout_reentry`, and `mature_balance_persistence` are not approved
   for baseline backtest from this audit. This is not optimization, live wiring,
   paper/testnet, broader symbol mining, data download, or strategy promotion.
+- The futures range universe structured-compression baseline has been reviewed.
+  The `4h structured_compression_expansion all h6` aggregate passed after costs
+  and is authorized for bounded offline optimization/robustness only, with BTC
+  weakness, stress-split fragility, and ETH/SOL dependence treated as explicit
+  constraints. The `1h structured_compression_expansion all h12` surface failed
+  after costs and is not approved for optimization or promotion from this
+  result. No live, paper/testnet, exchange API, deployment, data download,
+  broad symbol mining, grid, martingale, averaging down, or two-exchange path
+  is approved.
 - The futures impulse absorption audit has been reviewed. Abnormal OHLCV
   impulse candles on Binance USDT-M futures data are continuation-dominant
   rather than midpoint-reclaim-dominant across every period split and tested
