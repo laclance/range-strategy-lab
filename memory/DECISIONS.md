@@ -131,6 +131,17 @@
   downloads, broad symbol mining, sibling repo mutation, or importing sibling
   strategy results as evidence. Any passing surface must still earn a fixed-rule
   baseline backtest before optimization.
+- The futures range universe discovery audit has been reviewed. The next
+  authorized fixed-rule baseline backtest is limited to the top
+  non-duplicative structured-compression surfaces:
+  `4h structured_compression_expansion all h6` and
+  `1h structured_compression_expansion all h12`, evaluated across local
+  BTCUSDT, ETHUSDT, and SOLUSDT Binance USDT-M futures sources.
+  `breakout_retest_acceptance` is secondary evidence only for now, and
+  `boundary_touch_rejection`, `single_candle_wick_rejection`,
+  `failed_breakout_reentry`, and `mature_balance_persistence` are not approved
+  for baseline backtest from this audit. This is not optimization, live wiring,
+  paper/testnet, broader symbol mining, data download, or strategy promotion.
 - The futures impulse absorption audit has been reviewed. Abnormal OHLCV
   impulse candles on Binance USDT-M futures data are continuation-dominant
   rather than midpoint-reclaim-dominant across every period split and tested

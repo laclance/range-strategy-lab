@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -223,6 +224,85 @@ func TestRunWithArgsFuturesRangeDiscoveryFlagWritesArtifactsAndRejectsSpotCompar
 	}
 }
 
+func TestRunWithArgsFuturesRangeUniverseDiscoveryFlagWritesArtifactsAndRejectsSpotComparison(t *testing.T) {
+	dir := t.TempDir()
+	futuresPath := writeCLITestCSV(t, dir, "btcusdt_futures_um_5m_test.csv")
+	btcPath := writeCLITestCSVN(t, dir, "btcusdt_futures_um_5m_universe.csv", 3)
+	ethPath := writeCLITestCSVN(t, dir, "ethusdt_futures_um_5m_universe.csv", 3)
+	solPath := writeCLITestCSVN(t, dir, "solusdt_futures_um_5m_universe.csv", 3)
+	oldUniverseConfig := futuresRangeUniverseDiscoveryConfigForRun
+	futuresRangeUniverseDiscoveryConfigForRun = func() lab.FuturesRangeUniverseDiscoveryAuditConfig {
+		cfg := lab.DefaultFuturesRangeUniverseDiscoveryAuditConfig()
+		cfg.Sources = []lab.FuturesRangeUniverseSourceConfig{
+			{Symbol: lab.RangeUniverseSymbolBTCUSDT, Path: btcPath, ApprovedPath: btcPath, SkipSplitEligibilityCheck: true},
+			{Symbol: lab.RangeUniverseSymbolETHUSDT, Path: ethPath, ApprovedPath: ethPath, SkipSplitEligibilityCheck: true},
+			{Symbol: lab.RangeUniverseSymbolSOLUSDT, Path: solPath, ApprovedPath: solPath, SkipSplitEligibilityCheck: true},
+		}
+		cfg.Discovery.DetectorLookbackBarsOverride = 2
+		cfg.Discovery.DetectorMinConsecutiveBars = 1
+		cfg.Discovery.MinCandidatesPerSplit = 1
+		return cfg
+	}
+	defer func() { futuresRangeUniverseDiscoveryConfigForRun = oldUniverseConfig }()
+
+	defaultOutDir := filepath.Join(dir, "default")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-out-dir", defaultOutDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(defaultOutDir, "futures_range_universe_sources.csv")); !os.IsNotExist(err) {
+		t.Fatalf("default run should not write universe artifacts, stat err=%v", err)
+	}
+
+	outDir := filepath.Join(dir, "universe")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-range-universe-discovery-audit",
+		"-out-dir", outDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{
+		"futures_range_universe_sources.csv",
+		"futures_range_universe_coverage.csv",
+		"futures_range_universe_candidates.csv",
+		"futures_range_universe_summary.csv",
+		"futures_range_universe_rankings.csv",
+		"futures_range_universe_stability.csv",
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, name)); err != nil {
+			t.Fatalf("expected universe artifact %s: %v", name, err)
+		}
+	}
+	data, err := os.ReadFile(filepath.Join(outDir, "trades.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var trades []lab.Trade
+	if err := json.Unmarshal(data, &trades); err != nil {
+		t.Fatal(err)
+	}
+	if len(trades) != 0 {
+		t.Fatalf("range universe audit must remain zero-trade, got %d", len(trades))
+	}
+
+	spotPath := writeCLITestCSV(t, dir, "btcusdt_spot_5m_test.csv")
+	err = runWithArgs([]string{
+		"-csv", spotPath,
+		"-source-product", lab.SourceProductBinanceSpot,
+		"-allow-spot-comparison",
+		"-futures-range-universe-discovery-audit",
+		"-out-dir", filepath.Join(dir, "spot-universe"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "requires Binance USDT-M futures source") {
+		t.Fatalf("expected universe futures-source error, got %v", err)
+	}
+}
+
 func TestRunWithArgsFuturesCleanBreakoutBaselineFlagWritesArtifactsAndRejectsSpotComparison(t *testing.T) {
 	dir := t.TempDir()
 	futuresPath := writeCLITestCSV(t, dir, "btcusdt_futures_um_5m_test.csv")
@@ -275,11 +355,25 @@ func TestRunWithArgsFuturesCleanBreakoutBaselineFlagWritesArtifactsAndRejectsSpo
 }
 
 func writeCLITestCSV(t *testing.T, dir string, name string) string {
+	return writeCLITestCSVN(t, dir, name, 2)
+}
+
+func writeCLITestCSVN(t *testing.T, dir string, name string, rows int) string {
 	t.Helper()
 	path := filepath.Join(dir, name)
-	data := "open_time,open,high,low,close,volume,close_time\n" +
-		"1609459200000,100,110,90,105,1,1609459499999\n" +
-		"1609459500000,105,112,100,108,2,1609459799999\n"
+	data := "open_time,open,high,low,close,volume,close_time\n"
+	for i := 0; i < rows; i++ {
+		open := int64(1609459200000 + i*300000)
+		closeTime := open + 299999
+		openPrice := 100 + i
+		data += strconv.FormatInt(open, 10) + "," +
+			strconv.Itoa(openPrice) + "," +
+			strconv.Itoa(openPrice+10) + "," +
+			strconv.Itoa(openPrice-10) + "," +
+			strconv.Itoa(openPrice+5) + "," +
+			strconv.Itoa(i+1) + "," +
+			strconv.FormatInt(closeTime, 10) + "\n"
+	}
 	if err := os.WriteFile(path, []byte(data), 0o644); err != nil {
 		t.Fatal(err)
 	}

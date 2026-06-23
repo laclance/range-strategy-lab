@@ -1,10 +1,10 @@
 # Range Strategy Lab
 
 Standalone Binance USDT-M futures range-strategy starter project. The current
-implemented CLI default remains BTCUSDT futures 5m data; the next approved
-research scope is a local BTC/ETH/SOL futures range-universe discovery spec.
-Older spot-data outputs are historical context unless a futures rerun
-explicitly revalidates a specific conclusion.
+implemented CLI default remains BTCUSDT futures 5m data; the active approved
+research path is a local BTC/ETH/SOL futures range-universe funnel toward fixed
+offline baselines. Older spot-data outputs are historical context unless a
+futures rerun explicitly revalidates a specific conclusion.
 
 ## Purpose
 
@@ -54,7 +54,8 @@ review, read the docs in this order:
 25. [docs/FUTURES_RANGE_CANDIDATE_DISCOVERY_REVIEW.md](docs/FUTURES_RANGE_CANDIDATE_DISCOVERY_REVIEW.md)
 26. [docs/FUTURES_CLEAN_BREAKOUT_BASELINE_REVIEW.md](docs/FUTURES_CLEAN_BREAKOUT_BASELINE_REVIEW.md)
 27. [docs/FUTURES_RANGE_UNIVERSE_DISCOVERY_SPEC.md](docs/FUTURES_RANGE_UNIVERSE_DISCOVERY_SPEC.md)
-28. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+28. [docs/FUTURES_RANGE_UNIVERSE_DISCOVERY_REVIEW.md](docs/FUTURES_RANGE_UNIVERSE_DISCOVERY_REVIEW.md)
+29. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 
@@ -92,8 +93,8 @@ The engine enters on the next candle open and manages stop/target exits.
 ## Data
 
 Use Binance USDT-M futures data for current research. The implemented CLI still
-defaults to BTCUSDT 5m; `docs/FUTURES_RANGE_UNIVERSE_DISCOVERY_SPEC.md`
-authorizes a future local BTC/ETH/SOL futures source-validation and discovery
+defaults to BTCUSDT 5m; `docs/FUTURES_RANGE_UNIVERSE_DISCOVERY_REVIEW.md`
+records the first local BTC/ETH/SOL futures source-validation and discovery
 audit. A source change between spot and futures is a research break: record the
 CSV path, coverage, and row count, then rerun/review affected audits before
 trusting a verdict for entries.

@@ -8,8 +8,8 @@ git history.
 ## Current State
 
 - Scope is now offline Binance USDT-M futures range-strategy discovery. The
-  implemented CLI default remains BTCUSDT `5m`, but the next approved research
-  scope is a local BTC/ETH/SOL range-universe discovery spec. BTCUSDT `5m`,
+  implemented CLI default remains BTCUSDT `5m`, and the active approved
+  research path is a local BTC/ETH/SOL range-universe funnel. BTCUSDT `5m`,
   buy/sell-touch, and single-candle reaction ideas remain available when they
   are materially reframed and compared inside a discovery-to-backtest funnel.
 - Active market target is Binance USDT-M futures, not spot. Spot-generated
@@ -42,12 +42,88 @@ git history.
   and reviewed. Both candidates failed after costs; no optimization,
   portfolio-style stream, or automatic `15m` expansion is approved from that
   baseline.
-- The current next task is a non-trading local universe discovery audit across
-  BTCUSDT, ETHUSDT, and SOLUSDT Binance USDT-M futures `5m` sources. It must
-  validate sources first, rank range-first surfaces, and route quickly to a
-  fixed-rule baseline backtest only if one or two surfaces pass.
+- The local BTC/ETH/SOL range-universe discovery audit has been implemented,
+  run, and reviewed. It passed the universe gate for structured compression
+  expansion and breakout retest/acceptance rows. The next approved task is a
+  fixed-rule offline baseline backtest for the top non-duplicative structured
+  compression surfaces only: `4h all h6` and `1h all h12`.
 
 ## 2026-06-26
+
+Futures range universe discovery audit:
+
+- Review doc: `docs/FUTURES_RANGE_UNIVERSE_DISCOVERY_REVIEW.md`.
+- Stop state: `range_universe_audit_ready_for_baseline_backtest`.
+- Added explicit non-trading CLI flag:
+  `-futures-range-universe-discovery-audit`.
+- Default runs still use `lab.EmptyStrategy`; this audit writes source,
+  coverage, candidate, summary, ranking, and stability artifacts only and
+  produced `0` trades.
+- V1 local universe:
+  - `BTCUSDT`:
+    `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`
+  - `ETHUSDT`:
+    `../binance-bot/data/ethusdt_futures_um_5m_2021_2026.csv`
+  - `SOLUSDT`:
+    `../binance-bot/data/solusdt_futures_um_5m_2021_2026.csv`
+- Source facts:
+  - each source loaded `573,984` candles from `2021-01-01T00:00:00Z`
+    through `2026-06-16T23:55:00Z`;
+  - gaps / duplicates were `0` / `0` for every symbol;
+  - zero-volume counts: `BTCUSDT=66`, `ETHUSDT=47`, `SOLUSDT=47`;
+  - physical non-monotonic counts: `BTCUSDT=0`, `ETHUSDT=0`,
+    `SOLUSDT=1`;
+  - the SOL source was explicitly sorted before downstream validation, then
+    accepted as monotonic with no gaps or duplicates.
+- Resample coverage per symbol:
+  - `5m`: `573,984` rows, last open `2026-06-16T23:55:00Z`
+  - `15m`: `191,328` rows, last open `2026-06-16T23:45:00Z`
+  - `1h`: `47,832` rows, last open `2026-06-16T23:00:00Z`
+  - `4h`: `11,958` rows, last open `2026-06-16T20:00:00Z`
+  - every resample had `gap_count=0`, `duplicate_count=0`,
+    `missing_child_open_count=0`, `complete=true`,
+    `validation_status=accepted`.
+- Result dir:
+  `results/futures-range-universe-discovery-audit/`.
+- Outputs:
+  - `futures_range_universe_sources.csv/json`
+  - `futures_range_universe_coverage.csv/json`
+  - `futures_range_universe_candidates.csv/json`
+  - `futures_range_universe_summary.csv/json`
+  - `futures_range_universe_rankings.csv/json`
+  - `futures_range_universe_stability.csv/json`
+  - common `summary.csv/json`, `trades.json`, and `source_manifest.json`
+- CSV line counts including headers:
+  - candidates `415,954`
+  - coverage `13`
+  - rankings `148`
+  - sources `4`
+  - stability `442`
+  - universe summary `1,765`
+  - common summary `13`
+- Audit result:
+  - `415,953` candidate rows;
+  - candidate rows by symbol: `BTCUSDT=134,379`, `ETHUSDT=138,324`,
+    `SOLUSDT=143,250`;
+  - `147` ranked universe surfaces;
+  - `35` passing rows: `21` structured compression expansion and `14`
+    breakout retest/acceptance rows.
+- Top next baseline surfaces:
+  - `4h structured_compression_expansion all h6`
+  - `1h structured_compression_expansion all h12`
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to implement a fixed-rule offline
+  structured-compression universe baseline backtest for those two surfaces.
+- Added a durable decision that only those two top structured-compression
+  surfaces are authorized for the next baseline from this audit; no
+  optimization or live-adjacent path is approved.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -futures-range-universe-discovery-audit -out-dir results/futures-range-universe-discovery-audit`
+  - `wc -l results/futures-range-universe-discovery-audit/*.csv`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short` showed only intended implementation, doc, and memory
+    changes before commit.
 
 Futures range universe discovery spec:
 

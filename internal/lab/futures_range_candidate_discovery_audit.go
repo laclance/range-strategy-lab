@@ -961,14 +961,14 @@ func directionalFavorableMove(candle Candle, event rangeDiscoveryEvent) float64 
 	switch event.expectedDirection {
 	case "up":
 		switch event.family {
-		case RangeDiscoveryFamilyCleanBreakout:
+		case RangeDiscoveryFamilyCleanBreakout, RangeUniverseFamilyBreakoutRetestAcceptance, RangeUniverseFamilyStructuredCompressionBreak:
 			return candle.High - event.episode.High
 		default:
 			return candle.High - event.episode.EndClose
 		}
 	case "down":
 		switch event.family {
-		case RangeDiscoveryFamilyCleanBreakout:
+		case RangeDiscoveryFamilyCleanBreakout, RangeUniverseFamilyBreakoutRetestAcceptance, RangeUniverseFamilyStructuredCompressionBreak:
 			return event.episode.Low - candle.Low
 		default:
 			return event.episode.EndClose - candle.Low
@@ -991,7 +991,7 @@ func directionalAdverseMove(candle Candle, event rangeDiscoveryEvent) float64 {
 
 func rangeDiscoveryAdverseClose(candle Candle, event rangeDiscoveryEvent) bool {
 	switch event.family {
-	case RangeDiscoveryFamilyCleanBreakout:
+	case RangeDiscoveryFamilyCleanBreakout, RangeUniverseFamilyBreakoutRetestAcceptance, RangeUniverseFamilyStructuredCompressionBreak:
 		if event.expectedDirection == "up" {
 			return candle.Close <= event.episode.High
 		}
@@ -1428,14 +1428,18 @@ func rangeDiscoveryFamilySortKey(family string) int {
 	switch family {
 	case RangeDiscoveryFamilyBalancePersistence:
 		return 0
-	case RangeDiscoveryFamilyBoundaryTouch:
+	case RangeUniverseFamilyBreakoutRetestAcceptance:
 		return 1
-	case RangeDiscoveryFamilyWickRejection:
+	case RangeDiscoveryFamilyBoundaryTouch:
 		return 2
-	case RangeDiscoveryFamilyFailedBreakReentry:
+	case RangeDiscoveryFamilyWickRejection:
 		return 3
-	case RangeDiscoveryFamilyCleanBreakout:
+	case RangeDiscoveryFamilyFailedBreakReentry:
 		return 4
+	case RangeUniverseFamilyStructuredCompressionBreak:
+		return 5
+	case RangeDiscoveryFamilyCleanBreakout:
+		return 6
 	default:
 		return 99
 	}

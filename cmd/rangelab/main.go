@@ -18,6 +18,8 @@ import (
 
 const defaultCSVPath = "../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv"
 
+var futuresRangeUniverseDiscoveryConfigForRun = lab.DefaultFuturesRangeUniverseDiscoveryAuditConfig
+
 func main() {
 	if err := run(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -53,6 +55,7 @@ func runWithArgs(args []string) error {
 	holdInsideMidlineTouchPrototype := fs.Bool("hold-inside-midline-touch-prototype", false, "run offline hold-inside midline touch prototype")
 	futuresImpulseAbsorptionAudit := fs.Bool("futures-impulse-absorption-audit", false, "write non-trading futures impulse absorption diagnostics")
 	futuresRangeCandidateDiscoveryAudit := fs.Bool("futures-range-candidate-discovery-audit", false, "write non-trading futures range candidate discovery diagnostics")
+	futuresRangeUniverseDiscoveryAudit := fs.Bool("futures-range-universe-discovery-audit", false, "write non-trading futures range universe discovery diagnostics")
 	futuresCleanBreakoutBaselineBacktest := fs.Bool("futures-clean-breakout-baseline-backtest", false, "run offline futures clean breakout baseline backtest")
 	srAudit := fs.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
 	srBoundaryAudit := fs.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
@@ -137,6 +140,14 @@ func runWithArgs(args []string) error {
 	if *futuresRangeCandidateDiscoveryAudit {
 		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
 			return fmt.Errorf("-futures-range-candidate-discovery-audit requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
+		}
+	}
+	if *futuresRangeUniverseDiscoveryAudit {
+		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
+			return fmt.Errorf("-futures-range-universe-discovery-audit requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
+		}
+		if *holdInsideMidlineTouchPrototype || *futuresCleanBreakoutBaselineBacktest {
+			return fmt.Errorf("-futures-range-universe-discovery-audit cannot be combined with trade-producing prototype/backtest flags")
 		}
 	}
 	if *futuresCleanBreakoutBaselineBacktest {
@@ -281,6 +292,59 @@ func runWithArgs(args []string) error {
 			len(stabilityRows),
 			formatIntSlice(discoveryCfg.HorizonsBars),
 			lab.FuturesRangeDiscoveryReviewStopState(rankingRows),
+		)
+	}
+	if *futuresRangeUniverseDiscoveryAudit {
+		universeCfg := futuresRangeUniverseDiscoveryConfigForRun()
+		universeResult, err := lab.RunFuturesRangeUniverseDiscoveryAudit(universeCfg, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_universe_sources.json"), universeResult.SourceRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeUniverseSourcesCSV(filepath.Join(*outDir, "futures_range_universe_sources.csv"), universeResult.SourceRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_universe_coverage.json"), universeResult.CoverageRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeUniverseCoverageCSV(filepath.Join(*outDir, "futures_range_universe_coverage.csv"), universeResult.CoverageRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_universe_candidates.json"), universeResult.CandidateRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeUniverseCandidatesCSV(filepath.Join(*outDir, "futures_range_universe_candidates.csv"), universeResult.CandidateRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_universe_summary.json"), universeResult.SummaryRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeUniverseSummaryCSV(filepath.Join(*outDir, "futures_range_universe_summary.csv"), universeResult.SummaryRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_universe_rankings.json"), universeResult.RankingRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeUniverseRankingsCSV(filepath.Join(*outDir, "futures_range_universe_rankings.csv"), universeResult.RankingRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_universe_stability.json"), universeResult.StabilityRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeUniverseStabilityCSV(filepath.Join(*outDir, "futures_range_universe_stability.csv"), universeResult.StabilityRows); err != nil {
+			return err
+		}
+		fmt.Printf("futures_range_universe_discovery_audit source_rows=%d coverage_rows=%d candidate_rows=%d summary_rows=%d ranking_rows=%d stability_rows=%d horizons=%s stop_state=%s\n",
+			len(universeResult.SourceRows),
+			len(universeResult.CoverageRows),
+			len(universeResult.CandidateRows),
+			len(universeResult.SummaryRows),
+			len(universeResult.RankingRows),
+			len(universeResult.StabilityRows),
+			formatIntSlice(universeCfg.Discovery.HorizonsBars),
+			lab.FuturesRangeUniverseReviewStopState(universeResult.RankingRows),
 		)
 	}
 	if *futuresCleanBreakoutBaselineBacktest {
@@ -819,22 +883,10 @@ func writeJSONTaggedCSV[T any](path string, rows []T) error {
 	if rowType.Kind() == reflect.Pointer {
 		rowType = rowType.Elem()
 	}
-	fieldIndexes := make([]int, 0, rowType.NumField())
-	headers := make([]string, 0, rowType.NumField())
-	for i := 0; i < rowType.NumField(); i++ {
-		field := rowType.Field(i)
-		if field.PkgPath != "" {
-			continue
-		}
-		header := strings.Split(field.Tag.Get("json"), ",")[0]
-		if header == "" {
-			header = field.Name
-		}
-		if header == "-" {
-			continue
-		}
-		fieldIndexes = append(fieldIndexes, i)
-		headers = append(headers, header)
+	fields := csvTaggedFields(rowType, nil)
+	headers := make([]string, 0, len(fields))
+	for _, field := range fields {
+		headers = append(headers, field.header)
 	}
 	if err := w.Write(headers); err != nil {
 		return err
@@ -847,15 +899,70 @@ func writeJSONTaggedCSV[T any](path string, rows []T) error {
 			}
 			value = value.Elem()
 		}
-		record := make([]string, 0, len(fieldIndexes))
-		for _, index := range fieldIndexes {
-			record = append(record, csvScalar(value.Field(index)))
+		record := make([]string, 0, len(fields))
+		for _, field := range fields {
+			record = append(record, csvScalar(csvFieldByIndex(value, field.index)))
 		}
 		if err := w.Write(record); err != nil {
 			return err
 		}
 	}
 	return w.Error()
+}
+
+type csvTaggedField struct {
+	header string
+	index  []int
+}
+
+func csvTaggedFields(rowType reflect.Type, prefix []int) []csvTaggedField {
+	fields := []csvTaggedField{}
+	if rowType.Kind() == reflect.Pointer {
+		rowType = rowType.Elem()
+	}
+	if rowType.Kind() != reflect.Struct {
+		return fields
+	}
+	for i := 0; i < rowType.NumField(); i++ {
+		field := rowType.Field(i)
+		if field.PkgPath != "" {
+			continue
+		}
+		index := append(append([]int(nil), prefix...), i)
+		header := strings.Split(field.Tag.Get("json"), ",")[0]
+		if header == "-" {
+			continue
+		}
+		fieldType := field.Type
+		if fieldType.Kind() == reflect.Pointer {
+			fieldType = fieldType.Elem()
+		}
+		if field.Anonymous && fieldType.Kind() == reflect.Struct && header == "" {
+			fields = append(fields, csvTaggedFields(fieldType, index)...)
+			continue
+		}
+		if header == "" {
+			header = field.Name
+		}
+		fields = append(fields, csvTaggedField{header: header, index: index})
+	}
+	return fields
+}
+
+func csvFieldByIndex(value reflect.Value, index []int) reflect.Value {
+	for _, part := range index {
+		if value.Kind() == reflect.Pointer {
+			if value.IsNil() {
+				return reflect.Value{}
+			}
+			value = value.Elem()
+		}
+		if value.Kind() != reflect.Struct || part >= value.NumField() {
+			return reflect.Value{}
+		}
+		value = value.Field(part)
+	}
+	return value
 }
 
 func csvScalar(value reflect.Value) string {
@@ -2142,6 +2249,30 @@ func writeFuturesRangeDiscoveryRankingsCSV(path string, rows []lab.FuturesRangeD
 }
 
 func writeFuturesRangeDiscoveryStabilityCSV(path string, rows []lab.FuturesRangeDiscoveryStabilityRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeUniverseSourcesCSV(path string, rows []lab.FuturesRangeUniverseSourceRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeUniverseCoverageCSV(path string, rows []lab.FuturesRangeUniverseCoverageRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeUniverseCandidatesCSV(path string, rows []lab.FuturesRangeUniverseCandidateRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeUniverseSummaryCSV(path string, rows []lab.FuturesRangeUniverseSummaryRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeUniverseRankingsCSV(path string, rows []lab.FuturesRangeUniverseRankingRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeUniverseStabilityCSV(path string, rows []lab.FuturesRangeUniverseStabilityRow) error {
 	return writeJSONTaggedCSV(path, rows)
 }
 
