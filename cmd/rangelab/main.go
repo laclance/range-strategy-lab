@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -15,6 +16,8 @@ import (
 	"range-strategy-lab/internal/lab"
 )
 
+const defaultCSVPath = "../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv"
+
 func main() {
 	if err := run(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -23,37 +26,66 @@ func main() {
 }
 
 func run() error {
-	csvPath := flag.String("csv", "data/btcusdt_spot_5m_2021_2026.csv", "5m BTCUSDT candle CSV")
-	outDir := flag.String("out-dir", "results/smoke", "output directory")
-	startBalance := flag.Float64("start-balance", 1000, "starting balance")
-	riskPct := flag.Float64("risk-pct", 0.01, "fraction of equity risked at stop")
-	maxNotionalPct := flag.Float64("max-notional-pct", 1.0, "maximum entry notional as fraction of equity")
-	feePct := flag.Float64("fee-pct", 0.0004, "fee fraction per side")
-	slippagePct := flag.Float64("slippage-pct", 0.000116, "slippage fraction per side")
-	maxHoldBars := flag.Int("max-hold-bars", 24, "default max hold bars stamped on placeholder signals")
-	detector := flag.Bool("detector", false, "write detector-only range diagnostics")
-	detectorSweep := flag.Bool("detector-sweep", false, "write detector sweep/audit diagnostics")
-	detectorDurabilitySweep := flag.Bool("detector-durability-sweep", false, "write non-trading detector durability sweep diagnostics")
-	detectorContextRefinementAudit := flag.Bool("detector-context-refinement-audit", false, "write non-trading detector context refinement diagnostics")
-	holdInsideDirectionalEdgeAudit := flag.Bool("hold-inside-directional-edge-audit", false, "write non-trading hold-inside directional edge diagnostics")
-	holdInsideMidlineTransitionAudit := flag.Bool("hold-inside-midline-transition-audit", false, "write non-trading hold-inside midline transition diagnostics")
-	holdInsideMidlineReactionAudit := flag.Bool("hold-inside-midline-reaction-audit", false, "write non-trading hold-inside midline reaction diagnostics")
-	srAudit := flag.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
-	srBoundaryAudit := flag.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
-	srBoundaryInspect := flag.Bool("sr-boundary-inspect", false, "write compact non-trading SR boundary candidate comparison diagnostics")
-	srRejectionTimingAudit := flag.Bool("sr-rejection-timing-audit", false, "write compact non-trading SR rejection timing diagnostics")
-	srConfirmationTimingAudit := flag.Bool("sr-confirmation-timing-audit", false, "write compact non-trading SR confirmation timing diagnostics")
-	srFalseBreakReclaimTimingAudit := flag.Bool("sr-false-break-reclaim-timing-audit", false, "write compact non-trading SR false-break reclaim timing diagnostics")
-	compressionBreakoutAudit := flag.Bool("compression-breakout-audit", false, "write compact non-trading compression breakout diagnostics")
-	rangeRegimeDurabilityAudit := flag.Bool("range-regime-durability-audit", false, "write compact non-trading range regime durability diagnostics")
-	detectorLookbackDays := flag.Int("detector-lookback-days", 20, "range detector trailing lookback in days")
-	detectorPercentile := flag.Float64("detector-percentile", 0.30, "range detector low-compression percentile threshold")
-	detectorMinConsecutiveBars := flag.Int("detector-min-consecutive-bars", 12, "range detector confirmed raw-active bars before active")
-	detectorUseBollinger := flag.Bool("detector-use-bollinger", true, "include Bollinger20 width in range detector")
-	detectorUseADX := flag.Bool("detector-use-adx", false, "include ADX14 in range detector")
-	flag.Parse()
+	return runWithArgs(os.Args[1:])
+}
 
-	candles, err := lab.LoadCSV(*csvPath)
+func runWithArgs(args []string) error {
+	fs := flag.NewFlagSet("rangelab", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+
+	csvPath := fs.String("csv", defaultCSVPath, "5m BTCUSDT candle CSV")
+	sourceProduct := fs.String("source-product", "", "source product: binance-usdm-futures or binance-spot")
+	allowSpotComparison := fs.Bool("allow-spot-comparison", false, "allow an explicitly labeled Binance spot comparison run")
+	outDir := fs.String("out-dir", "results/smoke", "output directory")
+	startBalance := fs.Float64("start-balance", 1000, "starting balance")
+	riskPct := fs.Float64("risk-pct", 0.01, "fraction of equity risked at stop")
+	maxNotionalPct := fs.Float64("max-notional-pct", 1.0, "maximum entry notional as fraction of equity")
+	feePct := fs.Float64("fee-pct", 0.0004, "fee fraction per side")
+	slippagePct := fs.Float64("slippage-pct", 0.000116, "slippage fraction per side")
+	maxHoldBars := fs.Int("max-hold-bars", 24, "default max hold bars stamped on placeholder signals")
+	detector := fs.Bool("detector", false, "write detector-only range diagnostics")
+	detectorSweep := fs.Bool("detector-sweep", false, "write detector sweep/audit diagnostics")
+	detectorDurabilitySweep := fs.Bool("detector-durability-sweep", false, "write non-trading detector durability sweep diagnostics")
+	detectorContextRefinementAudit := fs.Bool("detector-context-refinement-audit", false, "write non-trading detector context refinement diagnostics")
+	holdInsideDirectionalEdgeAudit := fs.Bool("hold-inside-directional-edge-audit", false, "write non-trading hold-inside directional edge diagnostics")
+	holdInsideMidlineTransitionAudit := fs.Bool("hold-inside-midline-transition-audit", false, "write non-trading hold-inside midline transition diagnostics")
+	holdInsideMidlineReactionAudit := fs.Bool("hold-inside-midline-reaction-audit", false, "write non-trading hold-inside midline reaction diagnostics")
+	srAudit := fs.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
+	srBoundaryAudit := fs.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
+	srBoundaryInspect := fs.Bool("sr-boundary-inspect", false, "write compact non-trading SR boundary candidate comparison diagnostics")
+	srRejectionTimingAudit := fs.Bool("sr-rejection-timing-audit", false, "write compact non-trading SR rejection timing diagnostics")
+	srConfirmationTimingAudit := fs.Bool("sr-confirmation-timing-audit", false, "write compact non-trading SR confirmation timing diagnostics")
+	srFalseBreakReclaimTimingAudit := fs.Bool("sr-false-break-reclaim-timing-audit", false, "write compact non-trading SR false-break reclaim timing diagnostics")
+	compressionBreakoutAudit := fs.Bool("compression-breakout-audit", false, "write compact non-trading compression breakout diagnostics")
+	rangeRegimeDurabilityAudit := fs.Bool("range-regime-durability-audit", false, "write compact non-trading range regime durability diagnostics")
+	detectorLookbackDays := fs.Int("detector-lookback-days", 20, "range detector trailing lookback in days")
+	detectorPercentile := fs.Float64("detector-percentile", 0.30, "range detector low-compression percentile threshold")
+	detectorMinConsecutiveBars := fs.Int("detector-min-consecutive-bars", 12, "range detector confirmed raw-active bars before active")
+	detectorUseBollinger := fs.Bool("detector-use-bollinger", true, "include Bollinger20 width in range detector")
+	detectorUseADX := fs.Bool("detector-use-adx", false, "include ADX14 in range detector")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+
+	sourceProductWasSet := false
+	fs.Visit(func(f *flag.Flag) {
+		if f.Name == "source-product" {
+			sourceProductWasSet = true
+		}
+	})
+
+	product := *sourceProduct
+	if *csvPath == defaultCSVPath && !sourceProductWasSet {
+		product = lab.SourceProductBinanceUSDMFutures
+	}
+	if *csvPath != defaultCSVPath && !sourceProductWasSet {
+		return fmt.Errorf("non-default -csv path requires explicit -source-product=%s or -source-product=%s", lab.SourceProductBinanceUSDMFutures, lab.SourceProductBinanceSpot)
+	}
+
+	candles, sourceManifest, err := lab.LoadResearchSourceCSV(*csvPath, lab.SourceValidationOptions{
+		Product:             product,
+		AllowSpotComparison: *allowSpotComparison,
+	})
 	if err != nil {
 		return err
 	}
@@ -75,6 +107,9 @@ func run() error {
 	summaries := lab.SummarizeSplits(result.Trades, *startBalance, lab.DefaultSplits())
 
 	if err := os.MkdirAll(*outDir, 0o755); err != nil {
+		return err
+	}
+	if err := writeJSON(filepath.Join(*outDir, "source_manifest.json"), sourceManifest); err != nil {
 		return err
 	}
 	if err := writeJSON(filepath.Join(*outDir, "trades.json"), result.Trades); err != nil {

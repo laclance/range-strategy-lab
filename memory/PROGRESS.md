@@ -13,11 +13,54 @@ git history.
   promotion or entry decisions until rerun/reviewed on futures data.
 - Strategy remains `lab.EmptyStrategy`; trades remain `0`.
 - Closed-candle decision semantics remain required.
+- `cmd/rangelab` now enforces source identity before audits/backtests. The
+  default `-csv` is the full-history Binance USDT-M futures file
+  `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`; non-default CSVs
+  require `-source-product`; spot CSVs require explicit comparison flags; every
+  accepted run writes `source_manifest.json`.
 - No live code, API keys, deploy scripts, grid, martingale, averaging down, or
   two-exchange execution is allowed.
 - `memory/NEXT_CODEX_BRIEF.md` is the only canonical next-session prompt.
-- Current next task: assess the spot-to-futures data-source impact before any
-  entries. The previously planned hold-inside midline touch prototype is paused.
+- Current next task: run the futures data impact review on the full-history
+  Binance USDT-M futures CSV before any entries. The previously planned
+  hold-inside midline touch prototype remains paused.
+
+## 2026-06-25
+
+Futures source guard and next-brief refresh:
+
+- Added CLI source enforcement:
+  - default CSV:
+    `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`
+  - valid `-source-product` values: `binance-usdm-futures` and `binance-spot`
+  - non-default CSV paths must pass `-source-product`
+  - spot paths require `-source-product binance-spot` plus
+    `-allow-spot-comparison`
+  - accepted runs write `source_manifest.json`
+- Added Go-native source validation inspired by `crypto-trading-bot` source
+  contract discipline, without importing its Python helpers or strategy
+  evidence.
+- Real futures smoke manifest:
+  - path:
+    `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`
+  - market type: Binance USDT-M futures
+  - CSV lines including header: `573,985`
+  - loaded candles / manifest `row_count`: `573,984`
+  - open-time coverage: `2021-01-01T00:00:00Z` through
+    `2026-06-16T23:55:00Z`
+  - close-time end from smoke output: `2026-06-16T23:59:59Z`
+  - `gap_count=0`, `duplicate_count=0`, `zero_volume_count=66`,
+    `comparison_only=false`, `validation_status=accepted`
+- Updated `README.md`, `docs/VERIFICATION.md`, `memory/DECISIONS.md`, and
+  `memory/NEXT_CODEX_BRIEF.md`. The next brief now starts from the full-history
+  futures CSV and asks for `docs/FUTURES_DATA_IMPACT_REVIEW.md` plus the three
+  paused futures audit reruns.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -csv ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv -source-product binance-usdm-futures -out-dir results/source-guard-smoke`
+  - `wc -l results/source-guard-smoke/*.json results/source-guard-smoke/*.csv`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
 
 ## 2026-06-16
 

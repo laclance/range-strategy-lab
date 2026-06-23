@@ -51,7 +51,7 @@ From inside this folder:
 go test ./...
 
 go run ./cmd/rangelab \
-  -csv /absolute/path/to/btcusdt_futures_um_5m_2021_2026.csv \
+  -source-product binance-usdm-futures \
   -out-dir results/smoke
 ```
 
@@ -83,6 +83,34 @@ change between spot and futures is a research break: record the CSV path,
 coverage, and row count, then rerun/review affected audits before trusting a
 verdict for entries.
 
+The default CLI source is:
+
+```text
+../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv
+```
+
+That file is the current full-history Binance USDT-M futures 5m source visible
+from this checkout: `573,985` CSV lines including header, `573,984` loaded
+candles, spanning open times `2021-01-01T00:00:00Z` through
+`2026-06-16T23:55:00Z`. The accepted manifest has `gap_count=0`,
+`duplicate_count=0`, and `zero_volume_count=66`.
+
+When passing any non-default CSV path, also pass `-source-product`. Valid
+values are:
+
+- `binance-usdm-futures`
+- `binance-spot`
+
+Spot CSVs are rejected unless the run is explicitly marked as a comparison with
+both `-source-product binance-spot` and `-allow-spot-comparison`. A spot
+comparison cannot satisfy futures promotion or entry gates.
+
+Source validation rejects non-BTCUSDT/non-5m paths, spot-looking paths in
+futures runs, gaps, duplicates, irregular 5m cadence, non-positive prices,
+non-finite values, negative volume, and invalid high/low containment. Zero
+volume is allowed and counted because official exchange archives can contain
+closed flat candles with no trades.
+
 The CLI accepts either:
 
 - Binance archive shape:
@@ -96,9 +124,15 @@ Timestamps may be Unix milliseconds or RFC3339.
 
 Each run writes:
 
+- `source_manifest.json`
 - `summary.json`
 - `summary.csv`
 - `trades.json`
+
+`source_manifest.json` records the source path, venue, product, symbol,
+interval, row count, first/last open time, schema, timestamp semantics, finality
+rule, gap/duplicate/zero-volume counts, comparison-only status, and validation
+status.
 
 Metrics are split by trade close time:
 

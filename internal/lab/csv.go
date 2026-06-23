@@ -11,9 +11,14 @@ import (
 )
 
 func LoadCSV(path string) ([]Candle, error) {
+	candles, _, err := LoadCSVWithHeader(path)
+	return candles, err
+}
+
+func LoadCSVWithHeader(path string) ([]Candle, []string, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer f.Close()
 
@@ -21,13 +26,13 @@ func LoadCSV(path string) ([]Candle, error) {
 	r.FieldsPerRecord = -1
 	header, err := r.Read()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	cols := columnMap(header)
 	required := []string{"open_time", "open", "high", "low", "close", "volume"}
 	for _, name := range required {
 		if _, ok := cols[name]; !ok {
-			return nil, fmt.Errorf("missing required column %q", name)
+			return nil, header, fmt.Errorf("missing required column %q", name)
 		}
 	}
 
@@ -38,15 +43,15 @@ func LoadCSV(path string) ([]Candle, error) {
 			break
 		}
 		if err != nil {
-			return nil, err
+			return nil, header, err
 		}
 		c, err := parseCandle(rec, cols)
 		if err != nil {
-			return nil, err
+			return nil, header, err
 		}
 		candles = append(candles, c)
 	}
-	return candles, nil
+	return candles, header, nil
 }
 
 func columnMap(header []string) map[string]int {

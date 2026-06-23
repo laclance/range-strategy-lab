@@ -23,6 +23,15 @@
   market type, date coverage, and row counts for any data-dependent verdict.
   Spot-based results are not a promotion basis for the futures trading target
   unless a futures impact review explicitly revalidates them.
+- `cmd/rangelab` enforces the active source contract before running audits or
+  backtests. The default CSV is
+  `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`; non-default CSV
+  paths must pass `-source-product`; spot paths require both
+  `-source-product binance-spot` and `-allow-spot-comparison`; every accepted
+  run writes `source_manifest.json`. The source guard rejects gaps, duplicates,
+  irregular 5m cadence, non-positive OHLC prices, non-finite values, negative
+  volume, and invalid high/low containment; zero-volume closed candles are
+  allowed and counted in the manifest.
 - The canonical next-session prompt is `memory/NEXT_CODEX_BRIEF.md`; do not
   keep a duplicate root `CODEX_BRIEF.md`.
 - Keep tracked memory context-budgeted: always-read memory files are a compact
