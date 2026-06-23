@@ -58,10 +58,54 @@ git history.
   is exclusion evidence. The post-fragility pivot review authorized one
   bounded offline breakout-retest/acceptance baseline from existing
   range-universe discovery evidence; that baseline also failed after costs and
-  is not promoted. No automatic next implementation premise is currently
-  authorized without user input.
+  is not promoted.
+- The user selected a review-only higher-timeframe premise-spec route after the
+  no-automatic-implementation stop. The resulting spec authorizes only a
+  future non-trading BTCUSDT nested range-rotation audit using closed UTC `1h`
+  child ranges inside frozen mature `4h` parent ranges. No baseline backtest,
+  optimizer, replay, walk-forward, source expansion, or strategy package is
+  approved until that audit exists and passes review.
 
 ## 2026-06-26
+
+Futures higher-timeframe nested range rotation premise spec:
+
+- Review doc:
+  `docs/FUTURES_HIGHER_TIMEFRAME_NESTED_RANGE_ROTATION_PREMISE_SPEC.md`.
+- Stop state:
+  `higher_tf_nested_range_rotation_premise_ready_for_audit`.
+- This was review-only. No code, CLI flag, generated result directory,
+  strategy, optimizer, replay, walk-forward, data download, live/paper/testnet
+  path, exchange API, credential, deploy file, martingale, averaging down, or
+  two-exchange logic was added.
+- Premise:
+  - use the accepted BTCUSDT Binance USDT-M futures `5m` parent source;
+  - derive closed UTC `4h` parent ranges and `1h` child ranges;
+  - after a mature `1h` child range forms fully inside one half of a frozen
+    mature `4h` parent range, measure whether the first closed `1h`
+    displacement toward the parent interior reaches parent midpoint / far
+    quartile before child-range invalidation.
+- Source facts carried forward from the higher-timeframe source spec:
+  - parent `5m` source:
+    `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`;
+  - loaded candles: `573,984`;
+  - open-time coverage: `2021-01-01T00:00:00Z` through
+    `2026-06-16T23:55:00Z`;
+  - accepted manifest facts:
+    `gap_count=0`, `duplicate_count=0`, `zero_volume_count=66`,
+    `comparison_only=false`, `validation_status=accepted`;
+  - expected closed UTC resamples: `1h=47,832` rows through
+    `2026-06-16T23:00:00Z`, `4h=11,958` rows through
+    `2026-06-16T20:00:00Z`.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` toward the bounded non-trading audit
+  behind `-futures-higher-tf-nested-range-rotation-audit`.
+- Added a durable decision limiting this premise to a non-trading audit until
+  source/resample, candidate-count, split-stability, side-balance, and outcome
+  gates pass.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
 
 Futures range universe breakout retest acceptance baseline:
 

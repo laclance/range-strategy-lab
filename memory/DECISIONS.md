@@ -201,6 +201,14 @@
   retune, robustness-review, live-wire, paper/testnet, promote BTCUSDT, add
   symbols, or package this breakout-retest baseline without a materially
   different user-approved premise and fresh review.
+- The user-approved higher-timeframe nested range rotation premise authorizes
+  only a future non-trading BTCUSDT audit using closed UTC `1h` child ranges
+  inside frozen mature `4h` parent ranges. It does not authorize a baseline
+  backtest, optimizer, replay, walk-forward, source expansion, symbol
+  expansion, strategy package, live/paper/testnet path, exchange API,
+  deployment, martingale, averaging down, or two-exchange work. A later
+  baseline brief requires the nested range-rotation audit to pass source,
+  resample, candidate-count, split-stability, side-balance, and outcome gates.
 - The futures impulse absorption audit has been reviewed. Abnormal OHLCV
   impulse candles on Binance USDT-M futures data are continuation-dominant
   rather than midpoint-reclaim-dominant across every period split and tested
