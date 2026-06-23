@@ -184,6 +184,14 @@
   Do not retune around this result, relax gates, promote BTCUSDT, add new grid
   dimensions, or move to live/paper/testnet/deploy from this stream without a
   materially new user-approved premise and fresh review.
+- The post-structured-compression pivot review treats the failed
+  walk-forward result as exclusion evidence. The only next automatic
+  range-universe premise authorized from current docs is a bounded offline
+  `breakout_retest_acceptance` fixed-rule baseline selected from existing
+  range-universe discovery evidence. If existing discovery artifacts do not
+  contain a passing non-duplicative row, stop for user input; do not rescue
+  structured compression by retuning, reopening the failed `1h` surface,
+  relaxing gates, adding symbols, or moving to live/paper/testnet/deploy.
 - The futures impulse absorption audit has been reviewed. Abnormal OHLCV
   impulse candles on Binance USDT-M futures data are continuation-dominant
   rather than midpoint-reclaim-dominant across every period split and tested

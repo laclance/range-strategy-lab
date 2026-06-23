@@ -55,10 +55,61 @@ git history.
   it, and the fixed offline replay/backtest passed. The bounded offline
   walk-forward robustness pass has now run and is fragile: no candidate
   strategy package is approved, and the structured-compression ETH/SOL stream
-  should stay review-only unless the user explicitly approves a materially new
-  premise.
+  is exclusion evidence. The post-fragility pivot review authorizes only a
+  bounded offline breakout-retest/acceptance baseline from existing
+  range-universe discovery evidence as the next materially different premise.
 
 ## 2026-06-26
+
+Futures range universe post structured compression pivot review:
+
+- Review doc:
+  `docs/FUTURES_RANGE_UNIVERSE_POST_STRUCTURED_COMPRESSION_PIVOT_REVIEW.md`.
+- Stop state:
+  `post_structured_compression_pivot_ready_for_breakout_retest_acceptance_baseline`.
+- This was review-only. No strategy, optimizer, replay, result rerun, data
+  download, live/paper/testnet path, exchange API, credential, deploy file,
+  martingale, averaging down, or two-exchange logic was added.
+- The structured-compression walk-forward result is now exclusion evidence for
+  candidate packaging:
+  - fold `wf_2021_2022_train__2023_2024_test` selected
+    `sc4h_btc_diagnostic_eth_sol_cw2_h12_t0_75_sb0_10`, but selected test net
+    P&L was `92.68` versus frozen test net P&L `229.02`;
+  - fold `wf_2021_2024_train__2025_2026_test` selected no config because the
+    combined train period had `97` authority trades, below the `100`
+    multi-split train gate;
+  - fold `wf_2023_2024_train__2025_2026_test` selected the exact frozen
+    config and passed, but this was only one of three folds.
+- Artifact sanity check, without rerunning walk-forward:
+  `wc -l results/futures-range-universe-structured-compression-walk-forward-robustness/*.csv`
+  matched the documented line counts: coverage `4`, folds `4`, grid `217`,
+  rankings `649`, sources `4`, walk-forward summary `9,505`,
+  walk-forward trades `35,881`, common summary `13`, total `46,277`.
+- Source/resample facts carried forward from the walk-forward review:
+  BTCUSDT, ETHUSDT, and SOLUSDT each had `573,984` accepted Binance USDT-M
+  futures `5m` candles from `2021-01-01T00:00:00Z` through
+  `2026-06-16T23:55:00Z`; closed UTC `4h` resamples had `11,958` rows per
+  symbol through `2026-06-16T20:00:00Z`.
+- Inventory outcome:
+  - the `4h` ETH/SOL structured-compression stream is not package-ready;
+  - the failed `1h` structured-compression surface stays closed;
+  - boundary touch rejection, single-candle wick rejection, failed breakout
+    re-entry, and mature balance persistence still have no baseline approval
+    from current docs;
+  - `breakout_retest_acceptance` remains the only open range-universe premise
+    because the universe discovery review recorded `14` passing rows as
+    secondary evidence.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` toward a bounded offline
+  breakout-retest/acceptance fixed-rule baseline selected from existing
+  range-universe discovery artifacts.
+- Added a durable decision authorizing only that next automatic premise and
+  blocking structured-compression rescue retunes.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short` showed only intended review doc, README, and memory
+    changes before commit.
 
 Futures range universe structured compression walk-forward robustness:
 
