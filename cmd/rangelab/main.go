@@ -50,6 +50,7 @@ func runWithArgs(args []string) error {
 	holdInsideDirectionalEdgeAudit := fs.Bool("hold-inside-directional-edge-audit", false, "write non-trading hold-inside directional edge diagnostics")
 	holdInsideMidlineTransitionAudit := fs.Bool("hold-inside-midline-transition-audit", false, "write non-trading hold-inside midline transition diagnostics")
 	holdInsideMidlineReactionAudit := fs.Bool("hold-inside-midline-reaction-audit", false, "write non-trading hold-inside midline reaction diagnostics")
+	holdInsideMidlineTouchPrototype := fs.Bool("hold-inside-midline-touch-prototype", false, "run offline hold-inside midline touch prototype")
 	srAudit := fs.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
 	srBoundaryAudit := fs.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
 	srBoundaryInspect := fs.Bool("sr-boundary-inspect", false, "write compact non-trading SR boundary candidate comparison diagnostics")
@@ -102,7 +103,24 @@ func runWithArgs(args []string) error {
 		MaxHoldBars:    *maxHoldBars,
 	}
 
-	strategy := lab.EmptyStrategy{}
+	var strategy lab.Strategy = lab.EmptyStrategy{}
+	var prototypeStrategy lab.HoldInsideMidlineTouchPrototypeStrategy
+	if *holdInsideMidlineTouchPrototype {
+		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
+			return fmt.Errorf("-hold-inside-midline-touch-prototype requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
+		}
+		if *detectorLookbackDays <= 0 {
+			return fmt.Errorf("detector lookback days must be positive")
+		}
+		detectorCfg := lab.DefaultCompressionRangeDetectorConfig()
+		detectorCfg.LookbackDays = *detectorLookbackDays
+		var err error
+		prototypeStrategy, err = lab.NewHoldInsideMidlineTouchPrototypeStrategy(candles, detectorCfg, lab.HoldInsideMidlineTouchPrototypeConfig{}, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+		strategy = prototypeStrategy
+	}
 	result := lab.RunBacktest(candles, strategy, cfg)
 	summaries := lab.SummarizeSplits(result.Trades, *startBalance, lab.DefaultSplits())
 
@@ -120,6 +138,35 @@ func runWithArgs(args []string) error {
 	}
 	if err := writeSummaryCSV(filepath.Join(*outDir, "summary.csv"), summaries); err != nil {
 		return err
+	}
+	if *holdInsideMidlineTouchPrototype {
+		signalRows := prototypeStrategy.SignalRows()
+		tradeRows := prototypeStrategy.TradeRows(result.Trades, lab.DefaultSplits())
+		prototypeSummaryRows := lab.SummarizeHoldInsideMidlineTouchPrototype(tradeRows, *startBalance, lab.DefaultSplits())
+		if err := writeJSON(filepath.Join(*outDir, "hold_inside_midline_touch_prototype_signals.json"), signalRows); err != nil {
+			return err
+		}
+		if err := writeHoldInsideMidlineTouchPrototypeSignalsCSV(filepath.Join(*outDir, "hold_inside_midline_touch_prototype_signals.csv"), signalRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "hold_inside_midline_touch_prototype_trades.json"), tradeRows); err != nil {
+			return err
+		}
+		if err := writeHoldInsideMidlineTouchPrototypeTradesCSV(filepath.Join(*outDir, "hold_inside_midline_touch_prototype_trades.csv"), tradeRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "hold_inside_midline_touch_prototype_summary.json"), prototypeSummaryRows); err != nil {
+			return err
+		}
+		if err := writeHoldInsideMidlineTouchPrototypeSummaryCSV(filepath.Join(*outDir, "hold_inside_midline_touch_prototype_summary.csv"), prototypeSummaryRows); err != nil {
+			return err
+		}
+		fmt.Printf("hold_inside_midline_touch_prototype signal_rows=%d trades=%d summary_rows=%d stop_state=%s\n",
+			len(signalRows),
+			len(tradeRows),
+			len(prototypeSummaryRows),
+			lab.HoldInsideMidlineTouchPrototypeStopState(prototypeSummaryRows),
+		)
 	}
 	var srRows []lab.SRAuditRow
 	srCfg := lab.DefaultSRAuditConfig()
@@ -331,7 +378,7 @@ func runWithArgs(args []string) error {
 			durabilityCfg.DetectorProfileID,
 		)
 	}
-	if *detector || *detectorSweep || *detectorDurabilitySweep || *detectorContextRefinementAudit || *holdInsideDirectionalEdgeAudit || *holdInsideMidlineTransitionAudit || *holdInsideMidlineReactionAudit {
+	if *detector || *detectorSweep || *detectorDurabilitySweep || *detectorContextRefinementAudit || *holdInsideDirectionalEdgeAudit || *holdInsideMidlineTransitionAudit || *holdInsideMidlineReactionAudit || *holdInsideMidlineTouchPrototype {
 		if *detectorLookbackDays <= 0 {
 			return fmt.Errorf("detector lookback days must be positive")
 		}
@@ -1908,6 +1955,18 @@ func writeHoldInsideMidlineReactionSummaryCSV(path string, rows []lab.HoldInside
 }
 
 func writeHoldInsideMidlineReactionStabilityCSV(path string, rows []lab.HoldInsideMidlineReactionStabilityRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeHoldInsideMidlineTouchPrototypeSignalsCSV(path string, rows []lab.HoldInsideMidlineTouchPrototypeSignalRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeHoldInsideMidlineTouchPrototypeTradesCSV(path string, rows []lab.HoldInsideMidlineTouchPrototypeTradeRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeHoldInsideMidlineTouchPrototypeSummaryCSV(path string, rows []lab.HoldInsideMidlineTouchPrototypeSummaryRow) error {
 	return writeJSONTaggedCSV(path, rows)
 }
 

@@ -11,7 +11,8 @@ git history.
 - Active market target is Binance USDT-M futures, not spot. Spot-generated
   audits/reviews are historical context only unless a futures rerun explicitly
   revalidates a specific conclusion.
-- Strategy remains `lab.EmptyStrategy`; trades remain `0`.
+- Default strategy remains `lab.EmptyStrategy`; trades remain `0` unless an
+  explicit offline prototype flag is passed.
 - Closed-candle decision semantics remain required.
 - `cmd/rangelab` now enforces source identity before audits/backtests. The
   default `-csv` is the full-history Binance USDT-M futures file
@@ -21,14 +22,69 @@ git history.
 - No live code, API keys, deploy scripts, grid, martingale, averaging down, or
   two-exchange execution is allowed.
 - `memory/NEXT_CODEX_BRIEF.md` is the only canonical next-session prompt.
-- The futures data impact review revalidated only the first minimal offline
-  prototype surface: `hold_3_inside` + first `mid_touch` within `12` bars +
-  event close-position bucket `mid_50`.
-- Current next task: build that first minimal offline prototype on the
-  full-history Binance USDT-M futures CSV. This is still not strategy
-  promotion, live use, or a change to the default empty strategy.
+- The first minimal offline prototype for the futures-revalidated
+  `hold_3_inside` + first `mid_touch` within `12` bars + event close-position
+  bucket `mid_50` surface has been built and reviewed. The close-back
+  boundary-target template failed P&L and is not promoted.
+- Current next task: stop mining the hold-inside/midline entry family and
+  produce a compact futures hypothesis inventory before choosing any new
+  non-trading audit.
 
 ## 2026-06-25
+
+Minimal futures midline touch prototype:
+
+- Review doc: `docs/FUTURES_MIDLINE_TOUCH_PROTOTYPE_REVIEW.md`.
+- Stop state: `prototype_failed_no_promotion`.
+- Added explicit offline CLI flag:
+  `-hold-inside-midline-touch-prototype`.
+- Default runs still use `lab.EmptyStrategy`; the prototype runs only when the
+  flag is passed.
+- Prototype source path:
+  `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`.
+- Market type: Binance USDT-M futures BTCUSDT 5m.
+- Source manifest:
+  - loaded candles / manifest `row_count`: `573,984`
+  - open-time coverage: `2021-01-01T00:00:00Z` through
+    `2026-06-16T23:55:00Z`
+  - `gap_count=0`, `duplicate_count=0`, `zero_volume_count=66`,
+    `comparison_only=false`, `validation_status=accepted`
+- Result dir:
+  `results/futures-hold-inside-midline-touch-prototype/`.
+- Prototype outputs:
+  - `hold_inside_midline_touch_prototype_signals.csv/json`
+  - `hold_inside_midline_touch_prototype_trades.csv/json`
+  - `hold_inside_midline_touch_prototype_summary.csv/json`
+  - common `summary.csv/json`, `trades.json`, and `source_manifest.json`
+- CSV line counts including headers:
+  - signals `533`
+  - prototype trades `532`
+  - prototype summary `13`
+  - common summary `13`
+- Run output:
+  - `signal_rows=532`
+  - `trades=531`
+  - `summary_rows=12`
+  - one exact-mid skip
+  - exit reasons: `140` stop losses, `82` take profits, `309` time stops
+- Full-sample result:
+  - `531` trades, win rate `29.94%`
+  - gross P&L `-95.54`, net P&L `-418.99`
+  - profit factor `0.3409`, average net R `-0.4276`
+  - max drawdown `42.11%`
+- Period splits all failed:
+  - `2021_2022_stress`: net P&L `-226.03`, PF `0.3824`
+  - `2023_2024_oos`: net P&L `-116.58`, PF `0.3165`
+  - `2025_2026_recent`: net P&L `-76.38`, PF `0.2298`
+- Side splits both failed:
+  - long: `248` trades, net P&L `-234.50`, PF `0.2805`
+  - short: `283` trades, net P&L `-184.49`, PF `0.4045`
+- Added engine entry-geometry guard so next-bar entries are skipped when the
+  stop/target would be on the wrong side of the actual entry.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -csv ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv -source-product binance-usdm-futures -hold-inside-midline-touch-prototype -out-dir results/futures-hold-inside-midline-touch-prototype`
+  - `wc -l results/futures-hold-inside-midline-touch-prototype/*.csv`
 
 Futures data impact review:
 

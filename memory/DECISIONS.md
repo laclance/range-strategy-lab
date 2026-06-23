@@ -88,6 +88,13 @@
   spot-based approval is historical comparison only. `hold_6_inside`,
   `mid_close_across`, side-specific cohorts, and `hold_3_inside_mid_50` remain
   diagnostic after the futures review.
+- The minimal futures midline touch prototype has been reviewed. The exact
+  close-back template for `hold_3_inside` + first `mid_touch` within `12` bars
+  + event close-position bucket `mid_50`, with same-side boundary stop,
+  opposite-boundary target, next-bar-open entry, and `6` bar time stop, failed
+  on Binance USDT-M futures data. Do not promote, parameter-tune, broaden, or
+  live-wire this hold-inside/midline entry family without a materially new
+  non-trading premise and fresh review.
 - External helper modules may be used for feature extraction and audit outputs
   only; strategy hypotheses, entries, exits, scoring, sizing, and backtest
   behavior stay inside this lab.

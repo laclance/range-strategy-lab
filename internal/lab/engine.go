@@ -80,6 +80,9 @@ func RunBacktest(candles []Candle, strategy Strategy, cfg BacktestConfig) Backte
 		entryBar := candles[i+1]
 		entryRaw := entryBar.Open
 		entry := applySlippage(entryRaw, cfg.SlippagePct, sig.Side, true)
+		if !validEntryGeometry(sig, entry) {
+			continue
+		}
 		stopDist := math.Abs(entry - sig.Stop)
 		size := positionSize(balance, entry, stopDist, cfg)
 		if size <= 0 {
@@ -126,6 +129,16 @@ func validSignal(sig Signal) bool {
 		return sig.Target > sig.Stop
 	}
 	return sig.Stop > sig.Target
+}
+
+func validEntryGeometry(sig Signal, entry float64) bool {
+	if entry <= 0 {
+		return false
+	}
+	if sig.Side == Long {
+		return sig.Stop < entry && sig.Target > entry
+	}
+	return sig.Stop > entry && sig.Target < entry
 }
 
 func maybeExit(pos Position, bar Candle, idx int, cfg BacktestConfig) (Trade, bool) {

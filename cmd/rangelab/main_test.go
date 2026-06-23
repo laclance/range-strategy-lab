@@ -81,6 +81,41 @@ func TestRunWithArgsRejectsSpotFilenameDuringFuturesRun(t *testing.T) {
 	}
 }
 
+func TestRunWithArgsPrototypeFlagWritesArtifactsAndRejectsSpotComparison(t *testing.T) {
+	dir := t.TempDir()
+	futuresPath := writeCLITestCSV(t, dir, "btcusdt_futures_um_5m_test.csv")
+	outDir := filepath.Join(dir, "prototype")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-hold-inside-midline-touch-prototype",
+		"-out-dir", outDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{
+		"hold_inside_midline_touch_prototype_signals.csv",
+		"hold_inside_midline_touch_prototype_trades.csv",
+		"hold_inside_midline_touch_prototype_summary.csv",
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, name)); err != nil {
+			t.Fatalf("expected prototype artifact %s: %v", name, err)
+		}
+	}
+
+	spotPath := writeCLITestCSV(t, dir, "btcusdt_spot_5m_test.csv")
+	err := runWithArgs([]string{
+		"-csv", spotPath,
+		"-source-product", lab.SourceProductBinanceSpot,
+		"-allow-spot-comparison",
+		"-hold-inside-midline-touch-prototype",
+		"-out-dir", filepath.Join(dir, "spot-prototype"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "requires Binance USDT-M futures source") {
+		t.Fatalf("expected prototype futures-source error, got %v", err)
+	}
+}
+
 func writeCLITestCSV(t *testing.T, dir string, name string) string {
 	t.Helper()
 	path := filepath.Join(dir, name)

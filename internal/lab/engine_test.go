@@ -133,6 +133,23 @@ func TestRunBacktestSkipsInvalidSignalsAndZeroSizing(t *testing.T) {
 	}
 }
 
+func TestRunBacktestSkipsSignalsWithInvalidEntryGeometry(t *testing.T) {
+	candles := []Candle{
+		testCandle(0, 100, 101, 99, 100),
+		testCandle(1, 106, 107, 105, 106),
+		testCandle(2, 106, 108, 104, 105),
+	}
+	strategy := fixedStrategy{signal: Signal{Side: Long, Stop: 95, Target: 105, MaxHoldBars: 2, Reason: "bad_entry"}}
+	result := RunBacktest(candles, strategy, BacktestConfig{
+		StartBalance:   1000,
+		RiskPct:        0.01,
+		MaxNotionalPct: 1,
+	})
+	if len(result.Trades) != 0 {
+		t.Fatalf("invalid entry geometry produced trades %+v", result.Trades)
+	}
+}
+
 func TestSizingCapsNotionalAtOneTimesEquity(t *testing.T) {
 	size := positionSize(1000, 100, 1, BacktestConfig{RiskPct: 0.02, MaxNotionalPct: 1})
 	if size != 10 {
