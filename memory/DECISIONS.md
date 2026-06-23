@@ -118,6 +118,12 @@
   `15m`, `1h`, and `4h` as candidate intervals, before any audit or prototype.
   BTC/ETH expansion stays deferred until that higher-timeframe BTCUSDT
   source/premise review is complete or the user explicitly changes scope.
+- Higher-timeframe BTCUSDT range work must derive `15m`, `1h`, and `4h`
+  candidate bars from the accepted Binance USDT-M futures BTCUSDT 5m parent
+  source by closed UTC resampling until an explicit source or scope change is
+  reviewed. No higher-timeframe audit may start until generated coverage and
+  row counts are documented and a materially different range premise with a
+  closed-candle event and falsification rule is explicit.
 - External helper modules may be used for feature extraction and audit outputs
   only; strategy hypotheses, entries, exits, scoring, sizing, and backtest
   behavior stay inside this lab.

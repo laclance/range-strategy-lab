@@ -35,10 +35,59 @@ git history.
   midpoint reclaim-first across all period splits and horizons. No prototype or
   promotion is approved.
 - The canonical next brief now asks for
-  `docs/FUTURES_HIGHER_TIMEFRAME_RANGE_SOURCE_SPEC.md` before any further
-  audit. It remains docs/source-spec-only and range-only.
+  a materially different higher-timeframe BTCUSDT range premise before any
+  further audit. It remains docs/source-spec-only and range-only.
 
 ## 2026-06-26
+
+Futures higher-timeframe range source spec:
+
+- Spec doc: `docs/FUTURES_HIGHER_TIMEFRAME_RANGE_SOURCE_SPEC.md`.
+- Stop state: `higher_tf_range_source_spec_no_viable_range_premise`.
+- Outcome: the parent source and closed UTC resampling contract are specified,
+  but no higher-timeframe audit is ready until the user supplies a materially
+  different range premise, closed-candle candidate event, and falsification
+  rule.
+- Current lab authority remains Binance USDT-M futures BTCUSDT 5m:
+  - path:
+    `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`
+  - required CLI product: `-source-product binance-usdm-futures`
+  - CSV lines including header: `573,985`
+  - loaded candles / manifest `row_count`: `573,984`
+  - open-time coverage: `2021-01-01T00:00:00Z` through
+    `2026-06-16T23:55:00Z`
+  - accepted manifest facts: `gap_count=0`, `duplicate_count=0`,
+    `zero_volume_count=66`, `comparison_only=false`,
+    `validation_status=accepted`
+- Candidate higher-timeframe bars from the current parent:
+  - `15m`: `3` child bars, expected complete bars `191,328`, first open
+    `2021-01-01T00:00:00Z`, last open `2026-06-16T23:45:00Z`
+  - `1h`: `12` child bars, expected complete bars `47,832`, first open
+    `2021-01-01T00:00:00Z`, last open `2026-06-16T23:00:00Z`
+  - `4h`: `48` child bars, expected complete bars `11,958`, first open
+    `2021-01-01T00:00:00Z`, last open `2026-06-16T20:00:00Z`
+- Resampling contract: UTC bucket start as higher-timeframe open; complete
+  buckets only; open first child open, high max child high, low min child low,
+  close last child close, volume sum; reject partial, missing-child,
+  duplicate, synthetic, forward-filled, spot/comparison, non-UTC, or
+  future-looking bars.
+- Added README docs-index entry for the new source spec.
+- Added a durable decision that higher-timeframe range work must derive from
+  the accepted BTCUSDT futures 5m parent source until an explicit source/scope
+  change.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` into a premise-request brief, not an
+  audit brief.
+- This was docs/memory-only: no code, CLI flags, audits, generated results,
+  source mutation, entries, exits, scoring, sizing, strategy replacement,
+  paper/testnet/live wiring, exchange API use, deploy files, grid,
+  martingale, averaging down, two-exchange logic, data download, or sibling
+  repo mutation was added.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short` showed only intended doc/memory changes before
+    commit.
 
 Futures scope pivot review, range-only:
 
