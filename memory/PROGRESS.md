@@ -26,11 +26,46 @@ git history.
   `hold_3_inside` + first `mid_touch` within `12` bars + event close-position
   bucket `mid_50` surface has been built and reviewed. The close-back
   boundary-target template failed P&L and is not promoted.
-- Futures hypothesis pivot inventory is complete. No materially different
-  futures-authoritative hypothesis is ready for an automatic new audit; the next
-  step needs a user-supplied hypothesis or data premise.
+- Futures hypothesis pivot inventory is complete. The next materially different
+  non-trading premise has been selected: futures impulse absorption after
+  abnormal OHLCV impulse candles. The canonical next brief now asks for a
+  futures-only `-futures-impulse-absorption-audit`.
 
 ## 2026-06-25
+
+Futures impulse absorption next-brief refresh:
+
+- Stop state: `impulse_absorption_audit_ready`.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` from the open-ended
+  new-hypothesis prompt into a scoped non-trading audit brief for
+  `-futures-impulse-absorption-audit`.
+- Chosen premise: after a liquidation-like abnormal Binance USDT-M futures 5m
+  impulse candle, BTCUSDT may show absorption by reclaiming the event candle
+  midpoint before extending beyond the event extreme.
+- Candidate event definition for the next audit:
+  - closed BTCUSDT 5m futures candle after a `30` day prior rolling warmup
+  - true-range percentile rank at least `p99`
+  - volume percentile rank at least `p95`
+  - close position `<=0.25` for down impulses or `>=0.75` for up impulses
+- Required next-audit source remains Binance USDT-M futures BTCUSDT 5m:
+  - path:
+    `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`
+  - CSV lines including header: `573,985`
+  - loaded candles / manifest `row_count`: `573,984`
+  - open-time coverage: `2021-01-01T00:00:00Z` through
+    `2026-06-16T23:55:00Z`
+  - expected accepted manifest facts: `gap_count=0`, `duplicate_count=0`,
+    `zero_volume_count=66`, `comparison_only=false`,
+    `validation_status=accepted`
+- This was docs/memory-only handoff work: no code, CLI flags, audits, result
+  directories, entries, exits, scoring, sizing, paper/testnet/live wiring,
+  exchange API use, deploy files, grid, martingale, averaging down, or
+  two-exchange logic was added.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short` before commit showed only intended memory changes.
 
 Futures hypothesis pivot inventory:
 
