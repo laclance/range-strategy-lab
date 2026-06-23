@@ -114,6 +114,14 @@
   rejection, single-candle wick rejection, failed breakout re-entry, and mature
   balance persistence did not pass this discovery gate and should not be
   backtested from this milestone.
+- The futures clean breakout baseline has been reviewed. The independent
+  `4h` up-breakout `h12` and `1h` all-side clean-breakout `h12` candidates
+  both failed after costs on Binance USDT-M futures data, with negative full
+  net P&L and negative `2023_2024_oos` plus `2025_2026_recent` splits. Do not
+  optimize, live-wire, paper/testnet, automatically expand to `15m`, or combine
+  these clean breakout candidates into a portfolio-style stream from this
+  result. A portfolio stream or `15m` comparison requires a new user-approved
+  premise.
 - The futures impulse absorption audit has been reviewed. Abnormal OHLCV
   impulse candles on Binance USDT-M futures data are continuation-dominant
   rather than midpoint-reclaim-dominant across every period split and tested

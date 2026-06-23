@@ -223,6 +223,57 @@ func TestRunWithArgsFuturesRangeDiscoveryFlagWritesArtifactsAndRejectsSpotCompar
 	}
 }
 
+func TestRunWithArgsFuturesCleanBreakoutBaselineFlagWritesArtifactsAndRejectsSpotComparison(t *testing.T) {
+	dir := t.TempDir()
+	futuresPath := writeCLITestCSV(t, dir, "btcusdt_futures_um_5m_test.csv")
+	defaultOutDir := filepath.Join(dir, "default")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-out-dir", defaultOutDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(defaultOutDir, "futures_clean_breakout_baseline_signals.csv")); !os.IsNotExist(err) {
+		t.Fatalf("default run should not write clean breakout artifacts, stat err=%v", err)
+	}
+
+	outDir := filepath.Join(dir, "clean-breakout")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-clean-breakout-baseline-backtest",
+		"-out-dir", outDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{
+		"source_manifest.json",
+		"summary.csv",
+		"summary.json",
+		"trades.json",
+		"futures_clean_breakout_baseline_signals.csv",
+		"futures_clean_breakout_baseline_trades.csv",
+		"futures_clean_breakout_baseline_summary.csv",
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, name)); err != nil {
+			t.Fatalf("expected clean breakout artifact %s: %v", name, err)
+		}
+	}
+
+	spotPath := writeCLITestCSV(t, dir, "btcusdt_spot_5m_test.csv")
+	err := runWithArgs([]string{
+		"-csv", spotPath,
+		"-source-product", lab.SourceProductBinanceSpot,
+		"-allow-spot-comparison",
+		"-futures-clean-breakout-baseline-backtest",
+		"-out-dir", filepath.Join(dir, "spot-clean-breakout"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "requires Binance USDT-M futures source") {
+		t.Fatalf("expected clean breakout futures-source error, got %v", err)
+	}
+}
+
 func writeCLITestCSV(t *testing.T, dir string, name string) string {
 	t.Helper()
 	path := filepath.Join(dir, name)

@@ -53,6 +53,7 @@ func runWithArgs(args []string) error {
 	holdInsideMidlineTouchPrototype := fs.Bool("hold-inside-midline-touch-prototype", false, "run offline hold-inside midline touch prototype")
 	futuresImpulseAbsorptionAudit := fs.Bool("futures-impulse-absorption-audit", false, "write non-trading futures impulse absorption diagnostics")
 	futuresRangeCandidateDiscoveryAudit := fs.Bool("futures-range-candidate-discovery-audit", false, "write non-trading futures range candidate discovery diagnostics")
+	futuresCleanBreakoutBaselineBacktest := fs.Bool("futures-clean-breakout-baseline-backtest", false, "run offline futures clean breakout baseline backtest")
 	srAudit := fs.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
 	srBoundaryAudit := fs.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
 	srBoundaryInspect := fs.Bool("sr-boundary-inspect", false, "write compact non-trading SR boundary candidate comparison diagnostics")
@@ -106,8 +107,12 @@ func runWithArgs(args []string) error {
 	}
 
 	var strategy lab.Strategy = lab.EmptyStrategy{}
+	strategyName := strategy.Name()
 	var prototypeStrategy lab.HoldInsideMidlineTouchPrototypeStrategy
 	if *holdInsideMidlineTouchPrototype {
+		if *futuresCleanBreakoutBaselineBacktest {
+			return fmt.Errorf("-hold-inside-midline-touch-prototype cannot be combined with -futures-clean-breakout-baseline-backtest")
+		}
 		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
 			return fmt.Errorf("-hold-inside-midline-touch-prototype requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
 		}
@@ -122,6 +127,7 @@ func runWithArgs(args []string) error {
 			return err
 		}
 		strategy = prototypeStrategy
+		strategyName = strategy.Name()
 	}
 	if *futuresImpulseAbsorptionAudit {
 		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
@@ -133,7 +139,25 @@ func runWithArgs(args []string) error {
 			return fmt.Errorf("-futures-range-candidate-discovery-audit requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
 		}
 	}
-	result := lab.RunBacktest(candles, strategy, cfg)
+	if *futuresCleanBreakoutBaselineBacktest {
+		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
+			return fmt.Errorf("-futures-clean-breakout-baseline-backtest requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
+		}
+	}
+
+	var cleanBreakoutResult lab.FuturesCleanBreakoutBaselineResult
+	var result lab.BacktestResult
+	if *futuresCleanBreakoutBaselineBacktest {
+		var err error
+		cleanBreakoutResult, err = lab.RunFuturesCleanBreakoutBaselineBacktest(candles, lab.DefaultFuturesCleanBreakoutBaselineConfig(), cfg, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+		result = lab.BacktestResult{Trades: cleanBreakoutResult.Trades}
+		strategyName = lab.FuturesCleanBreakoutBaselineName
+	} else {
+		result = lab.RunBacktest(candles, strategy, cfg)
+	}
 	summaries := lab.SummarizeSplits(result.Trades, *startBalance, lab.DefaultSplits())
 
 	if err := os.MkdirAll(*outDir, 0o755); err != nil {
@@ -257,6 +281,34 @@ func runWithArgs(args []string) error {
 			len(stabilityRows),
 			formatIntSlice(discoveryCfg.HorizonsBars),
 			lab.FuturesRangeDiscoveryReviewStopState(rankingRows),
+		)
+	}
+	if *futuresCleanBreakoutBaselineBacktest {
+		if err := writeJSON(filepath.Join(*outDir, "futures_clean_breakout_baseline_signals.json"), cleanBreakoutResult.SignalRows); err != nil {
+			return err
+		}
+		if err := writeFuturesCleanBreakoutBaselineSignalsCSV(filepath.Join(*outDir, "futures_clean_breakout_baseline_signals.csv"), cleanBreakoutResult.SignalRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_clean_breakout_baseline_trades.json"), cleanBreakoutResult.TradeRows); err != nil {
+			return err
+		}
+		if err := writeFuturesCleanBreakoutBaselineTradesCSV(filepath.Join(*outDir, "futures_clean_breakout_baseline_trades.csv"), cleanBreakoutResult.TradeRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_clean_breakout_baseline_summary.json"), cleanBreakoutResult.SummaryRows); err != nil {
+			return err
+		}
+		if err := writeFuturesCleanBreakoutBaselineSummaryCSV(filepath.Join(*outDir, "futures_clean_breakout_baseline_summary.csv"), cleanBreakoutResult.SummaryRows); err != nil {
+			return err
+		}
+		coverage := formatCleanBreakoutCoverage(cleanBreakoutResult.CoverageRows)
+		fmt.Printf("futures_clean_breakout_baseline signal_rows=%d trades=%d summary_rows=%d coverage=%s stop_state=%s\n",
+			len(cleanBreakoutResult.SignalRows),
+			len(cleanBreakoutResult.TradeRows),
+			len(cleanBreakoutResult.SummaryRows),
+			coverage,
+			lab.FuturesCleanBreakoutBaselineStopState(cleanBreakoutResult.SummaryRows, lab.DefaultFuturesCleanBreakoutBaselineConfig(), *startBalance, lab.DefaultSplits()),
 		)
 	}
 	var srRows []lab.SRAuditRow
@@ -742,7 +794,7 @@ func runWithArgs(args []string) error {
 	first := candles[0].OpenTime.Format(time.RFC3339)
 	last := candles[len(candles)-1].CloseTime.Format(time.RFC3339)
 	fmt.Printf("loaded %d candles from %s to %s\n", len(candles), first, last)
-	fmt.Printf("strategy=%s trades=%d output=%s\n", strategy.Name(), len(result.Trades), *outDir)
+	fmt.Printf("strategy=%s trades=%d output=%s\n", strategyName, len(result.Trades), *outDir)
 	return nil
 }
 
@@ -2091,6 +2143,29 @@ func writeFuturesRangeDiscoveryRankingsCSV(path string, rows []lab.FuturesRangeD
 
 func writeFuturesRangeDiscoveryStabilityCSV(path string, rows []lab.FuturesRangeDiscoveryStabilityRow) error {
 	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesCleanBreakoutBaselineSignalsCSV(path string, rows []lab.FuturesCleanBreakoutBaselineSignalRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesCleanBreakoutBaselineTradesCSV(path string, rows []lab.FuturesCleanBreakoutBaselineTradeRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesCleanBreakoutBaselineSummaryCSV(path string, rows []lab.FuturesCleanBreakoutBaselineSummaryRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func formatCleanBreakoutCoverage(rows []lab.FuturesRangeDiscoveryCoverageRow) string {
+	parts := make([]string, 0, len(rows))
+	for _, row := range rows {
+		parts = append(parts, fmt.Sprintf("%s:%d", row.Timeframe, row.RowCount))
+	}
+	if len(parts) == 0 {
+		return "none"
+	}
+	return strings.Join(parts, ",")
 }
 
 func writeHoldInsideMidlineTransitionCandidatesCSV(path string, rows []lab.HoldInsideMidlineTransitionCandidateRow) error {

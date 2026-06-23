@@ -36,11 +36,72 @@ git history.
   promotion is approved.
 - Futures range candidate discovery has been implemented, run, and reviewed.
   It passed the discovery gate only for clean breakout continuation surfaces.
-  The canonical next brief now implements a fixed-rule offline baseline
-  backtest for the top non-duplicative `4h` up-breakout and `1h` all-side
-  clean-breakout candidates.
+  The fixed-rule offline baseline backtest for the top non-duplicative `4h`
+  up-breakout and `1h` all-side clean-breakout candidates has now been built
+  and reviewed. Both candidates failed after costs; no optimization,
+  portfolio-style stream, or automatic `15m` expansion is approved from that
+  baseline.
 
 ## 2026-06-26
+
+Futures clean breakout baseline backtest:
+
+- Review doc: `docs/FUTURES_CLEAN_BREAKOUT_BASELINE_REVIEW.md`.
+- Stop state: `clean_breakout_baseline_failed_no_promotion`.
+- Added explicit offline CLI flag:
+  `-futures-clean-breakout-baseline-backtest`.
+- Default runs still use `lab.EmptyStrategy`; this baseline runs only when the
+  explicit flag is passed and rejects spot/comparison sources.
+- First baseline evaluated candidates independently, per user direction. The
+  user-approved portfolio-stream routing rule was checked and did not trigger:
+  neither candidate was near-viable after costs.
+- Source path:
+  `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`.
+- Market type: Binance USDT-M futures BTCUSDT `5m`.
+- Source manifest:
+  - loaded candles / manifest `row_count`: `573,984`
+  - open-time coverage: `2021-01-01T00:00:00Z` through
+    `2026-06-16T23:55:00Z`
+  - `gap_count=0`, `duplicate_count=0`, `zero_volume_count=66`,
+    `comparison_only=false`, `validation_status=accepted`
+- Resample coverage used by the baseline:
+  - `1h`: `47,832` rows, first open `2021-01-01T00:00:00Z`, last open
+    `2026-06-16T23:00:00Z`
+  - `4h`: `11,958` rows, first open `2021-01-01T00:00:00Z`, last open
+    `2026-06-16T20:00:00Z`
+- Result dir:
+  `results/futures-clean-breakout-baseline-backtest/`.
+- Outputs:
+  - `futures_clean_breakout_baseline_signals.csv/json`
+  - `futures_clean_breakout_baseline_trades.csv/json`
+  - `futures_clean_breakout_baseline_summary.csv/json`
+  - common `summary.csv/json`, `trades.json`, and `source_manifest.json`
+- CSV line counts including headers:
+  - signals `4,849`
+  - trades `1,186`
+  - baseline summary `25`
+  - common summary `13`
+- Baseline result:
+  - `4,848` signal rows
+  - `1,185` executed trades
+  - `clean_breakout_4h_up_h12`: `496` signals, `121` trades, gross P&L
+    `2.55`, net P&L `-69.29`, PF `0.8386`
+  - `clean_breakout_1h_all_h12`: `4,352` signals, `47` skipped signals,
+    `1,064` trades, gross P&L `272.63`, net P&L `-320.25`, PF `0.8846`
+  - aggregate compatibility summary: `1,185` trades, gross P&L `275.18`,
+    net P&L `-389.54`, PF `0.8784`
+- Failure facts:
+  - both candidates had negative full net P&L after costs;
+  - both had full PF below `1.2`;
+  - both were negative in `2023_2024_oos` and `2025_2026_recent`;
+  - the `1h` all-side candidate was negative on both long and short sides.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to request a new futures premise or
+  explicit scope choice before another backtest; do not optimize this clean
+  breakout baseline.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -csv ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv -source-product binance-usdm-futures -futures-clean-breakout-baseline-backtest -out-dir results/futures-clean-breakout-baseline-backtest`
+  - `wc -l results/futures-clean-breakout-baseline-backtest/*.csv`
 
 Futures range candidate discovery audit:
 
