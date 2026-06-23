@@ -100,6 +100,13 @@
   entries without a materially new futures hypothesis or data premise. Legacy
   spot-only evidence cannot promote futures work. The reviewed families are now
   an exclusion map plus reusable infrastructure until a new premise is supplied.
+- The project is now range-first broad rather than narrowly range-only. Do not
+  treat prior no-promotion reviews as permanent bans on `5m`, buy/sell-touch,
+  single-candle reaction, boundary rejection, failed-break re-entry, or
+  breakout-continuation ideas. The banned action is rerunning the exact failed
+  template under a new name; materially reframed BTCUSDT futures range ideas
+  may compete in a broad discovery audit and should move quickly to a baseline
+  backtest brief if the discovery gate passes.
 - The futures impulse absorption audit has been reviewed. Abnormal OHLCV
   impulse candles on Binance USDT-M futures data are continuation-dominant
   rather than midpoint-reclaim-dominant across every period split and tested
@@ -112,12 +119,11 @@
   process, or exclusion evidence. Non-range trend/volatility paths, broad
   multi-pair mining, and cross-exchange execution are not authorized by a
   range-only pivot review.
-- The futures scope pivot review paused further BTCUSDT 5m range mining. The
-  next authorized range-only move is a docs/source-spec task for BTCUSDT
-  higher-timeframe futures bars derived from the accepted 5m source, with
-  `15m`, `1h`, and `4h` as candidate intervals, before any audit or prototype.
-  BTC/ETH expansion stays deferred until that higher-timeframe BTCUSDT
-  source/premise review is complete or the user explicitly changes scope.
+- The futures scope pivot review paused automatic narrow BTCUSDT 5m mining and
+  produced the higher-timeframe source spec. That source contract remains valid
+  for `15m`, `1h`, and `4h` resamples, but the active next move is now the
+  range-first broad candidate discovery audit. BTC/ETH expansion stays
+  deferred until the user explicitly changes scope.
 - Higher-timeframe BTCUSDT range work must derive `15m`, `1h`, and `4h`
   candidate bars from the accepted Binance USDT-M futures BTCUSDT 5m parent
   source by closed UTC resampling until an explicit source or scope change is

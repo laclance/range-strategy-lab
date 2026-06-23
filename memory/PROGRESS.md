@@ -7,10 +7,10 @@ git history.
 
 ## Current State
 
-- Scope remains offline BTCUSDT range-strategy research. BTCUSDT 5m range
-  mining is paused; the selected next lane is a docs/source-spec review for
-  higher-timeframe BTCUSDT futures range bars derived from the accepted 5m
-  source.
+- Scope remains offline BTCUSDT futures range-strategy research, now
+  range-first broad rather than narrow range-only. BTCUSDT `5m`,
+  buy/sell-touch, and single-candle reaction ideas remain available when they
+  are materially reframed and compared inside a discovery-to-backtest funnel.
 - Active market target is Binance USDT-M futures, not spot. Spot-generated
   audits/reviews are historical context only unless a futures rerun explicitly
   revalidates a specific conclusion.
@@ -34,11 +34,58 @@ git history.
   non-trading review gate: continuation-first and quick continuation dominated
   midpoint reclaim-first across all period splits and horizons. No prototype or
   promotion is approved.
-- The canonical next brief now asks for
-  a materially different higher-timeframe BTCUSDT range premise before any
-  further audit. It remains docs/source-spec-only and range-only.
+- The canonical next brief now implements a non-trading futures range candidate
+  discovery audit across BTCUSDT futures `5m`, `15m`, `1h`, and `4h`. The
+  intended path is discovery ranking first, then a baseline backtest brief for
+  one or two candidates only if the gate passes.
 
 ## 2026-06-26
+
+Futures range candidate discovery spec:
+
+- Spec doc: `docs/FUTURES_RANGE_CANDIDATE_DISCOVERY_SPEC.md`.
+- Stop state: `range_discovery_spec_ready_for_audit_implementation`.
+- Outcome: the repo scope is corrected from overly narrow range-only gating to
+  range-first broad discovery. `5m`, buy/sell touch, single-candle reactions,
+  boundary rejection, failed-break re-entry, and breakout continuation remain
+  open when materially reframed and tied to a fast baseline-backtest gate.
+- Current lab authority remains Binance USDT-M futures BTCUSDT `5m`:
+  - path:
+    `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`
+  - required CLI product: `-source-product binance-usdm-futures`
+  - CSV lines including header: `573,985`
+  - loaded candles / manifest `row_count`: `573,984`
+  - open-time coverage: `2021-01-01T00:00:00Z` through
+    `2026-06-16T23:55:00Z`
+  - accepted manifest facts: `gap_count=0`, `duplicate_count=0`,
+    `zero_volume_count=66`, `comparison_only=false`,
+    `validation_status=accepted`
+- Discovery menu for the next audit:
+  - mature balance persistence on `1h`/`4h` with optional `15m` cross-check;
+  - boundary touch rejection on `5m`/`15m`/`1h`;
+  - single-candle wick rejection on `5m`/`15m`/`1h`;
+  - failed breakout re-entry on `5m`/`15m`/`1h`;
+  - clean breakout continuation after mature range compression on
+    `15m`/`1h`/`4h`.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to implement
+  `-futures-range-candidate-discovery-audit` as a non-trading discovery audit.
+  If one or two candidates clear the gate, the following brief should be a
+  baseline offline backtest, not another review-only loop.
+- Added README docs-index entry for the new spec.
+- Added a durable decision that closed families are not permanently banned;
+  exact failed templates are banned, but materially reframed range-first ideas
+  may compete in a broad futures discovery funnel.
+- This was docs/memory-only: no code, CLI flags, audits, generated results,
+  source mutation, entries, exits, scoring, sizing, strategy replacement,
+  paper/testnet/live wiring, exchange API use, deploy files, grid,
+  martingale, averaging down, two-exchange logic, data download, spot
+  comparison, symbol expansion, or sibling repo mutation was added.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short` showed only intended doc/memory changes before
+    commit.
 
 Futures higher-timeframe range source spec:
 
