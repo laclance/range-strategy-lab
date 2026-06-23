@@ -160,6 +160,14 @@
   additional grid search, live wiring, paper/testnet, exchange API, deployment,
   data download, broad symbol mining, martingale, averaging down, or
   two-exchange work.
+- The futures range universe structured-compression strategy spec freezes the
+  selected ETH/SOL authority stream for one fixed offline replay/backtest:
+  closed UTC `4h`, detector `p30_c12_bollinger_on_adx_off`, first closed
+  breakout within `24` bars, confirmation window `2`, max hold `12`, target
+  `1.0` range width, stop buffer `0.0`, next-bar-open entry, ETHUSDT and
+  SOLUSDT authority only, BTCUSDT diagnostic-only. The replay must stop for
+  review on source mismatch, material result mismatch, BTC promotion, or any
+  grid-style retuning.
 - The futures impulse absorption audit has been reviewed. Abnormal OHLCV
   impulse candles on Binance USDT-M futures data are continuation-dominant
   rather than midpoint-reclaim-dominant across every period split and tested

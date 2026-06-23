@@ -9,9 +9,10 @@ git history.
 
 - Scope is now offline Binance USDT-M futures range-strategy discovery. The
   implemented CLI default remains BTCUSDT `5m`, and the active approved
-  research path is a local BTC/ETH/SOL range-universe funnel. BTCUSDT `5m`,
-  buy/sell-touch, and single-candle reaction ideas remain available when they
-  are materially reframed and compared inside a discovery-to-backtest funnel.
+  research path is the selected local ETH/SOL `4h` structured-compression
+  stream, with BTC diagnostic-only. BTCUSDT `5m`, buy/sell-touch, and
+  single-candle reaction ideas remain available when they are materially
+  reframed and compared inside a discovery-to-backtest funnel.
 - Active market target is Binance USDT-M futures, not spot. Spot-generated
   audits/reviews are historical context only unless a futures rerun explicitly
   revalidates a specific conclusion.
@@ -49,8 +50,69 @@ git history.
   h6` aggregate passed after costs and is approved for a bounded offline
   optimization/robustness brief only; BTCUSDT was weak, and the result depends
   on ETH/SOL strength. The `1h all h12` surface failed and is not promoted.
+- The bounded `4h` structured-compression optimization selected
+  `sc4h_btc_diagnostic_eth_sol_cw2_h12_t1_00_sb0_00` and has now been frozen
+  in a strategy spec. The next authorized implementation is an offline
+  candidate strategy replay/backtest for the exact ETH/SOL authority stream,
+  not another grid search.
 
 ## 2026-06-26
+
+Futures range universe structured compression strategy spec:
+
+- Spec doc:
+  `docs/FUTURES_RANGE_UNIVERSE_STRUCTURED_COMPRESSION_STRATEGY_SPEC.md`.
+- Stop state:
+  `structured_compression_strategy_spec_ready_for_offline_replay`.
+- This was a docs/memory-only milestone. No code, CLI flags, source files,
+  generated results, optimization grids, entries, exits, sizing changes,
+  live/paper/testnet wiring, exchange API use, deployment files, data
+  downloads, broad symbol mining, martingale, averaging down, or two-exchange
+  logic were added.
+- Frozen selected config:
+  `sc4h_btc_diagnostic_eth_sol_cw2_h12_t1_00_sb0_00`.
+- Authority symbols: `ETHUSDT,SOLUSDT`.
+- Diagnostic-only symbol: `BTCUSDT`.
+- Frozen rules:
+  - closed UTC `4h` resampling from accepted local `5m` Binance USDT-M futures
+    parents;
+  - detector `p30_c12_bollinger_on_adx_off`;
+  - first closed breakout within `24` closed `4h` bars after a completed
+    mature range;
+  - closed confirmation within `2` bars;
+  - next `4h` bar open entry;
+  - target `1.0` completed range width from slipped entry;
+  - stop buffer `0.0` range width;
+  - max hold `12` closed `4h` bars.
+- Source facts carried forward:
+  - each of `BTCUSDT`, `ETHUSDT`, and `SOLUSDT` loaded `573,984` Binance
+    USDT-M futures `5m` candles from `2021-01-01T00:00:00Z` through
+    `2026-06-16T23:55:00Z`;
+  - gaps / duplicates were `0` / `0` for every symbol;
+  - zero-volume counts: `BTCUSDT=66`, `ETHUSDT=47`, `SOLUSDT=47`;
+  - physical non-monotonic counts: `BTCUSDT=0`, `ETHUSDT=0`,
+    `SOLUSDT=1`;
+  - SOLUSDT may be sorted before downstream validation and accepted only when
+    the sorted stream has no gaps, duplicates, or invalid OHLCV.
+- Optimization facts preserved in the spec:
+  - selected authority result had `129` trades, gross P&L `641.05`, net P&L
+    `573.87`, PF `1.8089`, max drawdown `9.82%`, average net R `0.3465`;
+  - stress/OOS/recent authority splits were positive after costs;
+  - BTCUSDT diagnostic-only remained negative at `55` trades, net P&L
+    `-100.67`, PF `0.6507`;
+  - ETHUSDT recent and SOLUSDT stress split caveats remain explicit.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to implement the exact offline
+  candidate strategy replay/backtest behind
+  `-futures-range-universe-structured-compression-strategy-replay`.
+- Added a durable decision that the strategy spec freezes the selected
+  ETH/SOL authority configuration for replay; any replay mismatch, BTC
+  promotion, or grid-style retuning must stop for review.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short` showed only intended docs/memory changes before
+    commit.
 
 Futures range universe structured compression optimization:
 
