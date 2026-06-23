@@ -95,6 +95,11 @@
   on Binance USDT-M futures data. Do not promote, parameter-tune, broaden, or
   live-wire this hold-inside/midline entry family without a materially new
   non-trading premise and fresh review.
+- The futures hypothesis pivot inventory has been reviewed. Closed or
+  diagnostic families should not be retried, narrowed, or converted into
+  entries without a materially new futures hypothesis or data premise. Legacy
+  spot-only evidence cannot promote futures work. The reviewed families are now
+  an exclusion map plus reusable infrastructure until a new premise is supplied.
 - External helper modules may be used for feature extraction and audit outputs
   only; strategy hypotheses, entries, exits, scoring, sizing, and backtest
   behavior stay inside this lab.

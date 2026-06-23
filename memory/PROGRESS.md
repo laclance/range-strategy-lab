@@ -26,11 +26,45 @@ git history.
   `hold_3_inside` + first `mid_touch` within `12` bars + event close-position
   bucket `mid_50` surface has been built and reviewed. The close-back
   boundary-target template failed P&L and is not promoted.
-- Current next task: stop mining the hold-inside/midline entry family and
-  produce a compact futures hypothesis inventory before choosing any new
-  non-trading audit.
+- Futures hypothesis pivot inventory is complete. No materially different
+  futures-authoritative hypothesis is ready for an automatic new audit; the next
+  step needs a user-supplied hypothesis or data premise.
 
 ## 2026-06-25
+
+Futures hypothesis pivot inventory:
+
+- Inventory doc: `docs/FUTURES_HYPOTHESIS_PIVOT_INVENTORY.md`.
+- Stop state: `pivot_inventory_needs_user_hypothesis`.
+- Outcome: reviewed material is now an exclusion map plus reusable
+  infrastructure, not a new strategy queue.
+- Source authority remains Binance USDT-M futures BTCUSDT 5m:
+  - path:
+    `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`
+  - CSV lines including header: `573,985`
+  - loaded candles / manifest `row_count`: `573,984`
+  - open-time coverage: `2021-01-01T00:00:00Z` through
+    `2026-06-16T23:55:00Z`
+  - `gap_count=0`, `duplicate_count=0`, `zero_volume_count=66`,
+    `comparison_only=false`, `validation_status=accepted`
+- Classification:
+  - SR timing and compression breakout are closed legacy spot-only evidence.
+  - Range durability is diagnostic/infrastructure, not an entry surface.
+  - Detector durability/context refinement is reusable infrastructure; futures
+    review revalidated context shape only, not entry promotion.
+  - Hold-inside directional edge is closed.
+  - Hold-inside midline transition/reaction is diagnostic after the failed
+    prototype; do not broaden into `hold_6_inside`, `mid_close_across`, side
+    cohorts, or old spot authority.
+  - Futures midline touch prototype is a futures-authoritative failure.
+- No code, CLI flags, audits, result directories, entry/exit logic, scoring,
+  sizing, paper/testnet/live wiring, exchange API use, deploy files, grid,
+  martingale, averaging down, or two-exchange logic was added.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short` before commit showed only intended doc/memory changes.
 
 Minimal futures midline touch prototype:
 
