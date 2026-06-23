@@ -19,6 +19,7 @@ import (
 const defaultCSVPath = "../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv"
 
 var futuresRangeUniverseDiscoveryConfigForRun = lab.DefaultFuturesRangeUniverseDiscoveryAuditConfig
+var futuresRangeUniverseBreakoutRetestAcceptanceBaselineConfigForRun = lab.DefaultFuturesRangeUniverseBreakoutRetestAcceptanceBaselineConfig
 var futuresRangeUniverseStructuredCompressionBaselineConfigForRun = lab.DefaultFuturesRangeUniverseStructuredCompressionBaselineConfig
 var futuresRangeUniverseStructuredCompressionOptimizationConfigForRun = lab.DefaultFuturesRangeUniverseStructuredCompressionOptimizationConfig
 var futuresRangeUniverseStructuredCompressionStrategyReplayConfigForRun = lab.DefaultFuturesRangeUniverseStructuredCompressionStrategyReplayConfig
@@ -61,6 +62,7 @@ func runWithArgs(args []string) error {
 	futuresRangeCandidateDiscoveryAudit := fs.Bool("futures-range-candidate-discovery-audit", false, "write non-trading futures range candidate discovery diagnostics")
 	futuresRangeUniverseDiscoveryAudit := fs.Bool("futures-range-universe-discovery-audit", false, "write non-trading futures range universe discovery diagnostics")
 	futuresCleanBreakoutBaselineBacktest := fs.Bool("futures-clean-breakout-baseline-backtest", false, "run offline futures clean breakout baseline backtest")
+	futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest := fs.Bool("futures-range-universe-breakout-retest-acceptance-baseline-backtest", false, "run offline futures range universe breakout-retest acceptance baseline backtest")
 	futuresRangeUniverseStructuredCompressionBaselineBacktest := fs.Bool("futures-range-universe-structured-compression-baseline-backtest", false, "run offline futures range universe structured compression baseline backtest")
 	futuresRangeUniverseStructuredCompressionOptimization := fs.Bool("futures-range-universe-structured-compression-optimization", false, "run offline futures range universe structured compression optimization")
 	futuresRangeUniverseStructuredCompressionStrategyReplay := fs.Bool("futures-range-universe-structured-compression-strategy-replay", false, "run offline futures range universe structured compression strategy replay")
@@ -121,7 +123,7 @@ func runWithArgs(args []string) error {
 	strategyName := strategy.Name()
 	var prototypeStrategy lab.HoldInsideMidlineTouchPrototypeStrategy
 	if *holdInsideMidlineTouchPrototype {
-		if *futuresCleanBreakoutBaselineBacktest || *futuresRangeUniverseStructuredCompressionBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness {
+		if *futuresCleanBreakoutBaselineBacktest || *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest || *futuresRangeUniverseStructuredCompressionBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness {
 			return fmt.Errorf("-hold-inside-midline-touch-prototype cannot be combined with trade-producing backtest flags")
 		}
 		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
@@ -154,7 +156,7 @@ func runWithArgs(args []string) error {
 		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
 			return fmt.Errorf("-futures-range-universe-discovery-audit requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
 		}
-		if *holdInsideMidlineTouchPrototype || *futuresCleanBreakoutBaselineBacktest || *futuresRangeUniverseStructuredCompressionBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness {
+		if *holdInsideMidlineTouchPrototype || *futuresCleanBreakoutBaselineBacktest || *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest || *futuresRangeUniverseStructuredCompressionBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness {
 			return fmt.Errorf("-futures-range-universe-discovery-audit cannot be combined with trade-producing prototype/backtest flags")
 		}
 	}
@@ -162,16 +164,24 @@ func runWithArgs(args []string) error {
 		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
 			return fmt.Errorf("-futures-clean-breakout-baseline-backtest requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
 		}
+		if *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest || *futuresRangeUniverseStructuredCompressionBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness {
+			return fmt.Errorf("-futures-clean-breakout-baseline-backtest cannot be combined with other trade-producing range-universe flags")
+		}
+	}
+	if *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest {
+		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
+			return fmt.Errorf("-futures-range-universe-breakout-retest-acceptance-baseline-backtest requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
+		}
 		if *futuresRangeUniverseStructuredCompressionBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness {
-			return fmt.Errorf("-futures-clean-breakout-baseline-backtest cannot be combined with structured-compression trade-producing flags")
+			return fmt.Errorf("-futures-range-universe-breakout-retest-acceptance-baseline-backtest cannot be combined with structured-compression trade-producing flags")
 		}
 	}
 	if *futuresRangeUniverseStructuredCompressionBaselineBacktest {
 		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
 			return fmt.Errorf("-futures-range-universe-structured-compression-baseline-backtest requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
 		}
-		if *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness {
-			return fmt.Errorf("-futures-range-universe-structured-compression-baseline-backtest cannot be combined with other structured-compression trade-producing flags")
+		if *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness {
+			return fmt.Errorf("-futures-range-universe-structured-compression-baseline-backtest cannot be combined with other trade-producing range-universe flags")
 		}
 	}
 	if *futuresRangeUniverseStructuredCompressionOptimization {
@@ -197,6 +207,7 @@ func runWithArgs(args []string) error {
 	}
 
 	var cleanBreakoutResult lab.FuturesCleanBreakoutBaselineResult
+	var breakoutRetestAcceptanceResult lab.FuturesRangeUniverseBreakoutRetestAcceptanceBaselineResult
 	var structuredCompressionResult lab.FuturesRangeUniverseStructuredCompressionBaselineResult
 	var structuredCompressionOptimizationResult lab.FuturesRangeUniverseStructuredCompressionOptimizationResult
 	var structuredCompressionStrategyReplayResult lab.FuturesRangeUniverseStructuredCompressionStrategyReplayResult
@@ -210,6 +221,15 @@ func runWithArgs(args []string) error {
 		}
 		result = lab.BacktestResult{Trades: cleanBreakoutResult.Trades}
 		strategyName = lab.FuturesCleanBreakoutBaselineName
+	} else if *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest {
+		var err error
+		breakoutRetestAcceptanceCfg := futuresRangeUniverseBreakoutRetestAcceptanceBaselineConfigForRun()
+		breakoutRetestAcceptanceResult, err = lab.RunFuturesRangeUniverseBreakoutRetestAcceptanceBaselineBacktest(breakoutRetestAcceptanceCfg, cfg, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+		result = lab.BacktestResult{Trades: breakoutRetestAcceptanceResult.Trades}
+		strategyName = lab.FuturesRangeUniverseBreakoutRetestAcceptanceBaselineName
 	} else if *futuresRangeUniverseStructuredCompressionBaselineBacktest {
 		var err error
 		structuredCompressionCfg := futuresRangeUniverseStructuredCompressionBaselineConfigForRun()
@@ -453,6 +473,54 @@ func runWithArgs(args []string) error {
 			len(cleanBreakoutResult.SummaryRows),
 			coverage,
 			lab.FuturesCleanBreakoutBaselineStopState(cleanBreakoutResult.SummaryRows, lab.DefaultFuturesCleanBreakoutBaselineConfig(), *startBalance, lab.DefaultSplits()),
+		)
+	}
+	if *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest {
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_universe_breakout_retest_acceptance_baseline_sources.json"), breakoutRetestAcceptanceResult.SourceRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeUniverseBreakoutRetestAcceptanceBaselineSourcesCSV(filepath.Join(*outDir, "futures_range_universe_breakout_retest_acceptance_baseline_sources.csv"), breakoutRetestAcceptanceResult.SourceRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_universe_breakout_retest_acceptance_baseline_coverage.json"), breakoutRetestAcceptanceResult.CoverageRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeUniverseBreakoutRetestAcceptanceBaselineCoverageCSV(filepath.Join(*outDir, "futures_range_universe_breakout_retest_acceptance_baseline_coverage.csv"), breakoutRetestAcceptanceResult.CoverageRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_universe_breakout_retest_acceptance_baseline_selection.json"), breakoutRetestAcceptanceResult.SelectionRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeUniverseBreakoutRetestAcceptanceBaselineSelectionCSV(filepath.Join(*outDir, "futures_range_universe_breakout_retest_acceptance_baseline_selection.csv"), breakoutRetestAcceptanceResult.SelectionRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_universe_breakout_retest_acceptance_baseline_signals.json"), breakoutRetestAcceptanceResult.SignalRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeUniverseBreakoutRetestAcceptanceBaselineSignalsCSV(filepath.Join(*outDir, "futures_range_universe_breakout_retest_acceptance_baseline_signals.csv"), breakoutRetestAcceptanceResult.SignalRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_universe_breakout_retest_acceptance_baseline_trades.json"), breakoutRetestAcceptanceResult.TradeRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeUniverseBreakoutRetestAcceptanceBaselineTradesCSV(filepath.Join(*outDir, "futures_range_universe_breakout_retest_acceptance_baseline_trades.csv"), breakoutRetestAcceptanceResult.TradeRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_universe_breakout_retest_acceptance_baseline_summary.json"), breakoutRetestAcceptanceResult.SummaryRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeUniverseBreakoutRetestAcceptanceBaselineSummaryCSV(filepath.Join(*outDir, "futures_range_universe_breakout_retest_acceptance_baseline_summary.csv"), breakoutRetestAcceptanceResult.SummaryRows); err != nil {
+			return err
+		}
+		breakoutRetestAcceptanceCfg := futuresRangeUniverseBreakoutRetestAcceptanceBaselineConfigForRun()
+		fmt.Printf("futures_range_universe_breakout_retest_acceptance_baseline source_rows=%d coverage_rows=%d selection_rows=%d signal_rows=%d trades=%d summary_rows=%d stop_state=%s\n",
+			len(breakoutRetestAcceptanceResult.SourceRows),
+			len(breakoutRetestAcceptanceResult.CoverageRows),
+			len(breakoutRetestAcceptanceResult.SelectionRows),
+			len(breakoutRetestAcceptanceResult.SignalRows),
+			len(breakoutRetestAcceptanceResult.TradeRows),
+			len(breakoutRetestAcceptanceResult.SummaryRows),
+			lab.FuturesRangeUniverseBreakoutRetestAcceptanceBaselineStopState(breakoutRetestAcceptanceResult, breakoutRetestAcceptanceCfg, *startBalance, lab.DefaultSplits()),
 		)
 	}
 	if *futuresRangeUniverseStructuredCompressionBaselineBacktest {
@@ -2550,6 +2618,30 @@ func writeFuturesCleanBreakoutBaselineTradesCSV(path string, rows []lab.FuturesC
 }
 
 func writeFuturesCleanBreakoutBaselineSummaryCSV(path string, rows []lab.FuturesCleanBreakoutBaselineSummaryRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeUniverseBreakoutRetestAcceptanceBaselineSourcesCSV(path string, rows []lab.FuturesRangeUniverseSourceRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeUniverseBreakoutRetestAcceptanceBaselineCoverageCSV(path string, rows []lab.FuturesRangeUniverseCoverageRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeUniverseBreakoutRetestAcceptanceBaselineSelectionCSV(path string, rows []lab.FuturesRangeUniverseBreakoutRetestAcceptanceSelectionRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeUniverseBreakoutRetestAcceptanceBaselineSignalsCSV(path string, rows []lab.FuturesRangeUniverseBreakoutRetestAcceptanceSignalRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeUniverseBreakoutRetestAcceptanceBaselineTradesCSV(path string, rows []lab.FuturesRangeUniverseBreakoutRetestAcceptanceTradeRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeUniverseBreakoutRetestAcceptanceBaselineSummaryCSV(path string, rows []lab.FuturesRangeUniverseBreakoutRetestAcceptanceSummaryRow) error {
 	return writeJSONTaggedCSV(path, rows)
 }
 

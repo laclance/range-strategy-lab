@@ -354,6 +354,89 @@ func TestRunWithArgsFuturesCleanBreakoutBaselineFlagWritesArtifactsAndRejectsSpo
 	}
 }
 
+func TestRunWithArgsFuturesRangeUniverseBreakoutRetestAcceptanceBaselineFlagWritesArtifactsAndRejectsSpotComparison(t *testing.T) {
+	dir := t.TempDir()
+	futuresPath := writeCLITestCSV(t, dir, "btcusdt_futures_um_5m_test.csv")
+	btcPath := writeCLITestCSVN(t, dir, "btcusdt_futures_um_5m_breakout_retest.csv", 48)
+	ethPath := writeCLITestCSVN(t, dir, "ethusdt_futures_um_5m_breakout_retest.csv", 48)
+	solPath := writeCLITestCSVN(t, dir, "solusdt_futures_um_5m_breakout_retest.csv", 48)
+	oldBreakoutRetestConfig := futuresRangeUniverseBreakoutRetestAcceptanceBaselineConfigForRun
+	futuresRangeUniverseBreakoutRetestAcceptanceBaselineConfigForRun = func() lab.FuturesRangeUniverseBreakoutRetestAcceptanceBaselineConfig {
+		cfg := lab.DefaultFuturesRangeUniverseBreakoutRetestAcceptanceBaselineConfig()
+		cfg.DiscoveryConfig.Sources = []lab.FuturesRangeUniverseSourceConfig{
+			{Symbol: lab.RangeUniverseSymbolBTCUSDT, Path: btcPath, ApprovedPath: btcPath, SkipSplitEligibilityCheck: true},
+			{Symbol: lab.RangeUniverseSymbolETHUSDT, Path: ethPath, ApprovedPath: ethPath, SkipSplitEligibilityCheck: true},
+			{Symbol: lab.RangeUniverseSymbolSOLUSDT, Path: solPath, ApprovedPath: solPath, SkipSplitEligibilityCheck: true},
+		}
+		cfg.DiscoveryConfig.Discovery.DetectorLookbackBarsOverride = 2
+		cfg.DiscoveryConfig.Discovery.DetectorMinConsecutiveBars = 1
+		cfg.DiscoveryConfig.Discovery.MinCandidatesPerSplit = 1
+		return cfg
+	}
+	defer func() { futuresRangeUniverseBreakoutRetestAcceptanceBaselineConfigForRun = oldBreakoutRetestConfig }()
+
+	defaultOutDir := filepath.Join(dir, "default")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-out-dir", defaultOutDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(defaultOutDir, "futures_range_universe_breakout_retest_acceptance_baseline_signals.csv")); !os.IsNotExist(err) {
+		t.Fatalf("default run should not write breakout retest acceptance artifacts, stat err=%v", err)
+	}
+
+	outDir := filepath.Join(dir, "breakout-retest")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-range-universe-breakout-retest-acceptance-baseline-backtest",
+		"-out-dir", outDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{
+		"source_manifest.json",
+		"summary.csv",
+		"summary.json",
+		"trades.json",
+		"futures_range_universe_breakout_retest_acceptance_baseline_sources.csv",
+		"futures_range_universe_breakout_retest_acceptance_baseline_coverage.csv",
+		"futures_range_universe_breakout_retest_acceptance_baseline_selection.csv",
+		"futures_range_universe_breakout_retest_acceptance_baseline_signals.csv",
+		"futures_range_universe_breakout_retest_acceptance_baseline_trades.csv",
+		"futures_range_universe_breakout_retest_acceptance_baseline_summary.csv",
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, name)); err != nil {
+			t.Fatalf("expected breakout retest acceptance artifact %s: %v", name, err)
+		}
+	}
+
+	spotPath := writeCLITestCSV(t, dir, "btcusdt_spot_5m_test.csv")
+	err := runWithArgs([]string{
+		"-csv", spotPath,
+		"-source-product", lab.SourceProductBinanceSpot,
+		"-allow-spot-comparison",
+		"-futures-range-universe-breakout-retest-acceptance-baseline-backtest",
+		"-out-dir", filepath.Join(dir, "spot-breakout-retest"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "requires Binance USDT-M futures source") {
+		t.Fatalf("expected breakout retest acceptance futures-source error, got %v", err)
+	}
+
+	err = runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-range-universe-breakout-retest-acceptance-baseline-backtest",
+		"-futures-range-universe-structured-compression-baseline-backtest",
+		"-out-dir", filepath.Join(dir, "combined-breakout-retest"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "cannot be combined") {
+		t.Fatalf("expected breakout retest acceptance combination error, got %v", err)
+	}
+}
+
 func TestRunWithArgsFuturesRangeUniverseStructuredCompressionBaselineFlagWritesArtifactsAndRejectsSpotComparison(t *testing.T) {
 	dir := t.TempDir()
 	futuresPath := writeCLITestCSV(t, dir, "btcusdt_futures_um_5m_test.csv")

@@ -55,11 +55,90 @@ git history.
   it, and the fixed offline replay/backtest passed. The bounded offline
   walk-forward robustness pass has now run and is fragile: no candidate
   strategy package is approved, and the structured-compression ETH/SOL stream
-  is exclusion evidence. The post-fragility pivot review authorizes only a
+  is exclusion evidence. The post-fragility pivot review authorized one
   bounded offline breakout-retest/acceptance baseline from existing
-  range-universe discovery evidence as the next materially different premise.
+  range-universe discovery evidence; that baseline also failed after costs and
+  is not promoted. No automatic next implementation premise is currently
+  authorized without user input.
 
 ## 2026-06-26
+
+Futures range universe breakout retest acceptance baseline:
+
+- Review doc:
+  `docs/FUTURES_RANGE_UNIVERSE_BREAKOUT_RETEST_ACCEPTANCE_BASELINE_REVIEW.md`.
+- Stop state:
+  `breakout_retest_acceptance_baseline_failed_no_promotion`.
+- Added explicit offline CLI flag:
+  `-futures-range-universe-breakout-retest-acceptance-baseline-backtest`.
+- This fixed-rule baseline selected only passing all-side
+  `breakout_retest_acceptance` discovery rows and skipped duplicate
+  timeframe/side variants:
+  - selected `breakout_retest_acceptance_15m_all_h12` from discovery rank
+    `22`;
+  - selected `breakout_retest_acceptance_1h_all_h12` from discovery rank
+    `28`.
+- Result dir:
+  `results/futures-range-universe-breakout-retest-acceptance-baseline-backtest/`.
+- Outputs:
+  - `futures_range_universe_breakout_retest_acceptance_baseline_sources.csv/json`
+  - `futures_range_universe_breakout_retest_acceptance_baseline_coverage.csv/json`
+  - `futures_range_universe_breakout_retest_acceptance_baseline_selection.csv/json`
+  - `futures_range_universe_breakout_retest_acceptance_baseline_signals.csv/json`
+  - `futures_range_universe_breakout_retest_acceptance_baseline_trades.csv/json`
+  - `futures_range_universe_breakout_retest_acceptance_baseline_summary.csv/json`
+  - common `source_manifest.json`, `summary.csv/json`, and `trades.json`
+- Source facts:
+  - each of `BTCUSDT`, `ETHUSDT`, and `SOLUSDT` loaded `573,984` Binance
+    USDT-M futures `5m` candles from `2021-01-01T00:00:00Z` through
+    `2026-06-16T23:55:00Z`;
+  - gaps / duplicates were `0` / `0` for every symbol;
+  - zero-volume counts: `BTCUSDT=66`, `ETHUSDT=47`, `SOLUSDT=47`;
+  - physical non-monotonic counts: `BTCUSDT=0`, `ETHUSDT=0`,
+    `SOLUSDT=1`; SOLUSDT was sorted and accepted.
+- Selected closed UTC resamples:
+  - `15m`: `191,328` rows per symbol, first open
+    `2021-01-01T00:00:00Z`, last open `2026-06-16T23:45:00Z`;
+  - `1h`: `47,832` rows per symbol, first open
+    `2021-01-01T00:00:00Z`, last open `2026-06-16T23:00:00Z`;
+  - every selected coverage row had `gap_count=0`, `duplicate_count=0`,
+    `missing_child_open_count=0`, `complete=true`,
+    `validation_status=accepted`.
+- CSV line counts including headers:
+  - coverage `7`
+  - selection `3`
+  - signals `10,827`
+  - sources `4`
+  - summary `97`
+  - trades `7,183`
+  - common summary `13`
+- Baseline outcomes:
+  - `breakout_retest_acceptance_15m_all_h12`: aggregate full `5,825`
+    trades, net P&L `-2329.18`, PF `0.6778`; all period splits were negative
+    after costs, with `2023_2024_oos=-860.87` and
+    `2025_2026_recent=-212.23`;
+  - `breakout_retest_acceptance_1h_all_h12`: aggregate full `1,357` trades,
+    net P&L `-604.03`, PF `0.8652`; all period splits were negative after
+    costs, with `2023_2024_oos=-285.08` and
+    `2025_2026_recent=-220.25`;
+  - full-period symbol rows were negative for every symbol in both candidates
+    (`15m`: BTC `-828.60`, ETH `-639.03`, SOL `-861.54`; `1h`: BTC
+    `-361.79`, ETH `-5.18`, SOL `-237.06`).
+- Review outcome:
+  - source and resample validation passed;
+  - enough trades existed, but both fixed candidates failed positive net,
+    PF `1.2`, OOS/recent split, and symbol-transfer gates;
+  - no optimization, robustness review, BTCUSDT promotion, paper/testnet/live
+    path, exchange API, deployment, data download, martingale, averaging down,
+    or two-exchange work is approved from this baseline.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to a review-only stop brief requiring
+  user input before any new implementation premise.
+- Added a durable decision blocking promotion and automatic retuning of this
+  fixed-rule breakout-retest/acceptance baseline.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -futures-range-universe-breakout-retest-acceptance-baseline-backtest -out-dir results/futures-range-universe-breakout-retest-acceptance-baseline-backtest`
+  - `wc -l results/futures-range-universe-breakout-retest-acceptance-baseline-backtest/*.csv`
 
 Futures range universe post structured compression pivot review:
 

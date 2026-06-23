@@ -192,6 +192,15 @@
   contain a passing non-duplicative row, stop for user input; do not rescue
   structured compression by retuning, reopening the failed `1h` surface,
   relaxing gates, adding symbols, or moving to live/paper/testnet/deploy.
+- The futures range-universe breakout-retest/acceptance baseline has been
+  reviewed and failed after costs. The selected
+  `breakout_retest_acceptance_15m_all_h12` and
+  `breakout_retest_acceptance_1h_all_h12` candidates both had negative
+  full-period net P&L, negative `2023_2024_oos` and `2025_2026_recent` splits,
+  PF below `1.2`, and no positive full-period symbol transfer. Do not optimize,
+  retune, robustness-review, live-wire, paper/testnet, promote BTCUSDT, add
+  symbols, or package this breakout-retest baseline without a materially
+  different user-approved premise and fresh review.
 - The futures impulse absorption audit has been reviewed. Abnormal OHLCV
   impulse candles on Binance USDT-M futures data are continuation-dominant
   rather than midpoint-reclaim-dominant across every period split and tested
