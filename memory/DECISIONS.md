@@ -107,6 +107,13 @@
   template under a new name; materially reframed BTCUSDT futures range ideas
   may compete in a broad discovery audit and should move quickly to a baseline
   backtest brief if the discovery gate passes.
+- The futures range candidate discovery audit has been reviewed. Only clean
+  breakout continuation passed the balanced discovery gate. The next authorized
+  baseline backtest is limited to the top non-duplicative `4h` up-breakout
+  `h12` and `1h` all-side clean-breakout `h12` candidates. Boundary touch
+  rejection, single-candle wick rejection, failed breakout re-entry, and mature
+  balance persistence did not pass this discovery gate and should not be
+  backtested from this milestone.
 - The futures impulse absorption audit has been reviewed. Abnormal OHLCV
   impulse candles on Binance USDT-M futures data are continuation-dominant
   rather than midpoint-reclaim-dominant across every period split and tested

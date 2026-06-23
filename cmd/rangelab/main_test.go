@@ -163,6 +163,66 @@ func TestRunWithArgsFuturesImpulseAbsorptionFlagWritesArtifactsAndRejectsSpotCom
 	}
 }
 
+func TestRunWithArgsFuturesRangeDiscoveryFlagWritesArtifactsAndRejectsSpotComparison(t *testing.T) {
+	dir := t.TempDir()
+	futuresPath := writeCLITestCSV(t, dir, "btcusdt_futures_um_5m_test.csv")
+	defaultOutDir := filepath.Join(dir, "default")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-out-dir", defaultOutDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(defaultOutDir, "futures_range_discovery_candidates.csv")); !os.IsNotExist(err) {
+		t.Fatalf("default run should not write range discovery artifacts, stat err=%v", err)
+	}
+
+	outDir := filepath.Join(dir, "discovery")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-range-candidate-discovery-audit",
+		"-out-dir", outDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{
+		"futures_range_discovery_coverage.csv",
+		"futures_range_discovery_candidates.csv",
+		"futures_range_discovery_summary.csv",
+		"futures_range_discovery_rankings.csv",
+		"futures_range_discovery_stability.csv",
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, name)); err != nil {
+			t.Fatalf("expected range discovery artifact %s: %v", name, err)
+		}
+	}
+	data, err := os.ReadFile(filepath.Join(outDir, "trades.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var trades []lab.Trade
+	if err := json.Unmarshal(data, &trades); err != nil {
+		t.Fatal(err)
+	}
+	if len(trades) != 0 {
+		t.Fatalf("range discovery audit must remain zero-trade, got %d", len(trades))
+	}
+
+	spotPath := writeCLITestCSV(t, dir, "btcusdt_spot_5m_test.csv")
+	err = runWithArgs([]string{
+		"-csv", spotPath,
+		"-source-product", lab.SourceProductBinanceSpot,
+		"-allow-spot-comparison",
+		"-futures-range-candidate-discovery-audit",
+		"-out-dir", filepath.Join(dir, "spot-discovery"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "requires Binance USDT-M futures source") {
+		t.Fatalf("expected range discovery futures-source error, got %v", err)
+	}
+}
+
 func writeCLITestCSV(t *testing.T, dir string, name string) string {
 	t.Helper()
 	path := filepath.Join(dir, name)

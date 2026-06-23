@@ -52,6 +52,7 @@ func runWithArgs(args []string) error {
 	holdInsideMidlineReactionAudit := fs.Bool("hold-inside-midline-reaction-audit", false, "write non-trading hold-inside midline reaction diagnostics")
 	holdInsideMidlineTouchPrototype := fs.Bool("hold-inside-midline-touch-prototype", false, "run offline hold-inside midline touch prototype")
 	futuresImpulseAbsorptionAudit := fs.Bool("futures-impulse-absorption-audit", false, "write non-trading futures impulse absorption diagnostics")
+	futuresRangeCandidateDiscoveryAudit := fs.Bool("futures-range-candidate-discovery-audit", false, "write non-trading futures range candidate discovery diagnostics")
 	srAudit := fs.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
 	srBoundaryAudit := fs.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
 	srBoundaryInspect := fs.Bool("sr-boundary-inspect", false, "write compact non-trading SR boundary candidate comparison diagnostics")
@@ -125,6 +126,11 @@ func runWithArgs(args []string) error {
 	if *futuresImpulseAbsorptionAudit {
 		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
 			return fmt.Errorf("-futures-impulse-absorption-audit requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
+		}
+	}
+	if *futuresRangeCandidateDiscoveryAudit {
+		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
+			return fmt.Errorf("-futures-range-candidate-discovery-audit requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
 		}
 	}
 	result := lab.RunBacktest(candles, strategy, cfg)
@@ -205,6 +211,52 @@ func runWithArgs(args []string) error {
 			absorptionCfg.WarmupBars,
 			formatIntSlice(absorptionCfg.HorizonsBars),
 			lab.FuturesImpulseAbsorptionReviewStopState(summaryRows, lab.DefaultSplits()),
+		)
+	}
+	if *futuresRangeCandidateDiscoveryAudit {
+		discoveryCfg := lab.DefaultFuturesRangeCandidateDiscoveryAuditConfig()
+		coverageRows, candidateRows, summaryRows, rankingRows, stabilityRows, err := lab.RunFuturesRangeCandidateDiscoveryAudit(candles, discoveryCfg, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_discovery_coverage.json"), coverageRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeDiscoveryCoverageCSV(filepath.Join(*outDir, "futures_range_discovery_coverage.csv"), coverageRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_discovery_candidates.json"), candidateRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeDiscoveryCandidatesCSV(filepath.Join(*outDir, "futures_range_discovery_candidates.csv"), candidateRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_discovery_summary.json"), summaryRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeDiscoverySummaryCSV(filepath.Join(*outDir, "futures_range_discovery_summary.csv"), summaryRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_discovery_rankings.json"), rankingRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeDiscoveryRankingsCSV(filepath.Join(*outDir, "futures_range_discovery_rankings.csv"), rankingRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_discovery_stability.json"), stabilityRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeDiscoveryStabilityCSV(filepath.Join(*outDir, "futures_range_discovery_stability.csv"), stabilityRows); err != nil {
+			return err
+		}
+		fmt.Printf("futures_range_candidate_discovery_audit coverage_rows=%d candidate_rows=%d summary_rows=%d ranking_rows=%d stability_rows=%d horizons=%s stop_state=%s\n",
+			len(coverageRows),
+			len(candidateRows),
+			len(summaryRows),
+			len(rankingRows),
+			len(stabilityRows),
+			formatIntSlice(discoveryCfg.HorizonsBars),
+			lab.FuturesRangeDiscoveryReviewStopState(rankingRows),
 		)
 	}
 	var srRows []lab.SRAuditRow
@@ -2018,6 +2070,26 @@ func writeFuturesImpulseAbsorptionSummaryCSV(path string, rows []lab.FuturesImpu
 }
 
 func writeFuturesImpulseAbsorptionStabilityCSV(path string, rows []lab.FuturesImpulseAbsorptionStabilityRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeDiscoveryCoverageCSV(path string, rows []lab.FuturesRangeDiscoveryCoverageRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeDiscoveryCandidatesCSV(path string, rows []lab.FuturesRangeDiscoveryCandidateRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeDiscoverySummaryCSV(path string, rows []lab.FuturesRangeDiscoverySummaryRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeDiscoveryRankingsCSV(path string, rows []lab.FuturesRangeDiscoveryRankingRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeDiscoveryStabilityCSV(path string, rows []lab.FuturesRangeDiscoveryStabilityRow) error {
 	return writeJSONTaggedCSV(path, rows)
 }
 

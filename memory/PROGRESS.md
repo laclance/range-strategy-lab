@@ -34,12 +34,89 @@ git history.
   non-trading review gate: continuation-first and quick continuation dominated
   midpoint reclaim-first across all period splits and horizons. No prototype or
   promotion is approved.
-- The canonical next brief now implements a non-trading futures range candidate
-  discovery audit across BTCUSDT futures `5m`, `15m`, `1h`, and `4h`. The
-  intended path is discovery ranking first, then a baseline backtest brief for
-  one or two candidates only if the gate passes.
+- Futures range candidate discovery has been implemented, run, and reviewed.
+  It passed the discovery gate only for clean breakout continuation surfaces.
+  The canonical next brief now implements a fixed-rule offline baseline
+  backtest for the top non-duplicative `4h` up-breakout and `1h` all-side
+  clean-breakout candidates.
 
 ## 2026-06-26
+
+Futures range candidate discovery audit:
+
+- Review doc: `docs/FUTURES_RANGE_CANDIDATE_DISCOVERY_REVIEW.md`.
+- Stop state: `range_discovery_audit_ready`.
+- Added explicit non-trading CLI flag:
+  `-futures-range-candidate-discovery-audit`.
+- Default runs still use `lab.EmptyStrategy`; this audit writes labels,
+  coverage, rankings, summaries, and stability rows only and produced `0`
+  trades.
+- Source path:
+  `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`.
+- Market type: Binance USDT-M futures BTCUSDT `5m`.
+- Source manifest:
+  - loaded candles / manifest `row_count`: `573,984`
+  - open-time coverage: `2021-01-01T00:00:00Z` through
+    `2026-06-16T23:55:00Z`
+  - `gap_count=0`, `duplicate_count=0`, `zero_volume_count=66`,
+    `comparison_only=false`, `validation_status=accepted`
+- Resample coverage:
+  - `5m`: `573,984` rows, first open `2021-01-01T00:00:00Z`, last open
+    `2026-06-16T23:55:00Z`
+  - `15m`: `191,328` rows, first open `2021-01-01T00:00:00Z`, last open
+    `2026-06-16T23:45:00Z`
+  - `1h`: `47,832` rows, first open `2021-01-01T00:00:00Z`, last open
+    `2026-06-16T23:00:00Z`
+  - `4h`: `11,958` rows, first open `2021-01-01T00:00:00Z`, last open
+    `2026-06-16T20:00:00Z`
+  - every timeframe had `gap_count=0`, `duplicate_count=0`,
+    `missing_child_open_count=0`, `complete=true`,
+    `validation_status=accepted`
+- Result dir:
+  `results/futures-range-candidate-discovery-audit/`.
+- Outputs:
+  - `futures_range_discovery_coverage.csv/json`
+  - `futures_range_discovery_candidates.csv/json`
+  - `futures_range_discovery_summary.csv/json`
+  - `futures_range_discovery_rankings.csv/json`
+  - `futures_range_discovery_stability.csv/json`
+  - common `summary.csv/json`, `trades.json`, and `source_manifest.json`
+- CSV line counts including headers:
+  - candidates `144,637`
+  - coverage `5`
+  - rankings `121`
+  - stability `121`
+  - discovery summary `481`
+  - common summary `13`
+- Audit result:
+  - `144,636` event/horizon rows
+  - `48,212` distinct events
+  - `120` ranked surfaces
+  - `24` passing rows, all from `clean_breakout_continuation`
+  - passing rows by timeframe: `15m=9`, `1h=9`, `4h=6`
+- Top non-duplicative candidates for the next baseline:
+  - `4h clean_breakout_continuation up h12`: full count `496`, weakest split
+    count `112`, full favorable rate `86.69%`, weakest favorable rate
+    `82.38%`, weakest cost buffer `4.2910%`
+  - `1h clean_breakout_continuation all h12`: full count `4,352`, weakest
+    split count `1,213`, full favorable rate `90.37%`, weakest favorable rate
+    `89.01%`, weakest cost buffer `2.5907%`
+- Rejected for this baseline: boundary touch rejection, single-candle wick
+  rejection, failed breakout re-entry, and mature balance persistence.
+- Added README docs-index entry for the new review doc.
+- Added a durable decision that only clean breakout continuation is authorized
+  for the next fixed-rule baseline; the other discovery families are not.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to implement
+  `-futures-clean-breakout-baseline-backtest`.
+- No entries, exits, scoring, sizing, optimization, strategy replacement,
+  paper/testnet/live wiring, exchange API use, deploy files, grid,
+  martingale, averaging down, two-exchange logic, data download, spot
+  comparison, symbol expansion, or sibling repo mutation was added by this
+  audit.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -csv ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv -source-product binance-usdm-futures -futures-range-candidate-discovery-audit -out-dir results/futures-range-candidate-discovery-audit`
+  - `wc -l results/futures-range-candidate-discovery-audit/*.csv`
 
 Futures range candidate discovery spec:
 
