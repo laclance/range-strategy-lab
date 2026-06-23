@@ -168,6 +168,13 @@
   SOLUSDT authority only, BTCUSDT diagnostic-only. The replay must stop for
   review on source mismatch, material result mismatch, BTC promotion, or any
   grid-style retuning.
+- The futures range universe structured-compression strategy replay has been
+  reviewed and passed. It authorizes a bounded offline walk-forward robustness
+  pass only, using the already declared `4h` structured-compression grid for
+  forward-selection checks and the frozen ETH/SOL authority replay as the
+  candidate stream. It does not authorize BTCUSDT promotion, new grid
+  dimensions, new symbols, live/paper/testnet, exchange API, deployment, data
+  download, martingale, averaging down, or two-exchange work.
 - The futures impulse absorption audit has been reviewed. Abnormal OHLCV
   impulse candles on Binance USDT-M futures data are continuation-dominant
   rather than midpoint-reclaim-dominant across every period split and tested

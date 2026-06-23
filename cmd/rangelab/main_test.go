@@ -498,6 +498,75 @@ func TestRunWithArgsFuturesRangeUniverseStructuredCompressionOptimizationFlagWri
 	}
 }
 
+func TestRunWithArgsFuturesRangeUniverseStructuredCompressionStrategyReplayFlagWritesArtifactsAndRejectsSpotComparison(t *testing.T) {
+	dir := t.TempDir()
+	futuresPath := writeCLITestCSV(t, dir, "btcusdt_futures_um_5m_test.csv")
+	btcPath := writeCLITestCSVN(t, dir, "btcusdt_futures_um_5m_strategy.csv", 48)
+	ethPath := writeCLITestCSVN(t, dir, "ethusdt_futures_um_5m_strategy.csv", 48)
+	solPath := writeCLITestCSVN(t, dir, "solusdt_futures_um_5m_strategy.csv", 48)
+	oldStrategyReplayConfig := futuresRangeUniverseStructuredCompressionStrategyReplayConfigForRun
+	futuresRangeUniverseStructuredCompressionStrategyReplayConfigForRun = func() lab.FuturesRangeUniverseStructuredCompressionStrategyReplayConfig {
+		cfg := lab.DefaultFuturesRangeUniverseStructuredCompressionStrategyReplayConfig()
+		cfg.Sources = []lab.FuturesRangeUniverseSourceConfig{
+			{Symbol: lab.RangeUniverseSymbolBTCUSDT, Path: btcPath, ApprovedPath: btcPath, SkipSplitEligibilityCheck: true},
+			{Symbol: lab.RangeUniverseSymbolETHUSDT, Path: ethPath, ApprovedPath: ethPath, SkipSplitEligibilityCheck: true},
+			{Symbol: lab.RangeUniverseSymbolSOLUSDT, Path: solPath, ApprovedPath: solPath, SkipSplitEligibilityCheck: true},
+		}
+		cfg.DetectorMinConsecutiveBars = 1
+		return cfg
+	}
+	defer func() { futuresRangeUniverseStructuredCompressionStrategyReplayConfigForRun = oldStrategyReplayConfig }()
+
+	defaultOutDir := filepath.Join(dir, "default")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-out-dir", defaultOutDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(defaultOutDir, "futures_range_universe_structured_compression_strategy_signals.csv")); !os.IsNotExist(err) {
+		t.Fatalf("default run should not write structured compression strategy replay artifacts, stat err=%v", err)
+	}
+
+	outDir := filepath.Join(dir, "strategy-replay")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-range-universe-structured-compression-strategy-replay",
+		"-out-dir", outDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{
+		"source_manifest.json",
+		"summary.csv",
+		"summary.json",
+		"trades.json",
+		"futures_range_universe_structured_compression_strategy_sources.csv",
+		"futures_range_universe_structured_compression_strategy_coverage.csv",
+		"futures_range_universe_structured_compression_strategy_signals.csv",
+		"futures_range_universe_structured_compression_strategy_trades.csv",
+		"futures_range_universe_structured_compression_strategy_summary.csv",
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, name)); err != nil {
+			t.Fatalf("expected structured compression strategy replay artifact %s: %v", name, err)
+		}
+	}
+
+	spotPath := writeCLITestCSV(t, dir, "btcusdt_spot_5m_test.csv")
+	err := runWithArgs([]string{
+		"-csv", spotPath,
+		"-source-product", lab.SourceProductBinanceSpot,
+		"-allow-spot-comparison",
+		"-futures-range-universe-structured-compression-strategy-replay",
+		"-out-dir", filepath.Join(dir, "spot-strategy-replay"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "requires Binance USDT-M futures source") {
+		t.Fatalf("expected structured compression strategy replay futures-source error, got %v", err)
+	}
+}
+
 func writeCLITestCSV(t *testing.T, dir string, name string) string {
 	return writeCLITestCSVN(t, dir, name, 2)
 }

@@ -11,6 +11,7 @@ const (
 	FuturesRangeUniverseStructuredCompressionBaselineName = "futures_range_universe_structured_compression_baseline"
 
 	StructuredCompressionCandidate4HAllH6  = "structured_compression_4h_all_h6"
+	StructuredCompressionCandidate4HAllH12 = "structured_compression_4h_all_h12"
 	StructuredCompressionCandidate1HAllH12 = "structured_compression_1h_all_h12"
 
 	StructuredCompressionStopStateSourceGap            = "structured_compression_baseline_source_gap"
@@ -693,7 +694,7 @@ func (cfg FuturesRangeUniverseStructuredCompressionBaselineConfig) validateCandi
 	if candidate.CandidateID == "" {
 		return fmt.Errorf("structured compression candidate id must not be empty")
 	}
-	if candidate.CandidateID != StructuredCompressionCandidate4HAllH6 && candidate.CandidateID != StructuredCompressionCandidate1HAllH12 {
+	if candidate.CandidateID != StructuredCompressionCandidate4HAllH6 && candidate.CandidateID != StructuredCompressionCandidate4HAllH12 && candidate.CandidateID != StructuredCompressionCandidate1HAllH12 {
 		return fmt.Errorf("structured compression candidate %q is not approved for this baseline", candidate.CandidateID)
 	}
 	if candidate.Timeframe != RangeDiscoveryTimeframe1h && candidate.Timeframe != RangeDiscoveryTimeframe4h {

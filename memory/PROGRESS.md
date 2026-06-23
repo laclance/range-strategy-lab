@@ -51,12 +51,83 @@ git history.
   optimization/robustness brief only; BTCUSDT was weak, and the result depends
   on ETH/SOL strength. The `1h all h12` surface failed and is not promoted.
 - The bounded `4h` structured-compression optimization selected
-  `sc4h_btc_diagnostic_eth_sol_cw2_h12_t1_00_sb0_00` and has now been frozen
-  in a strategy spec. The next authorized implementation is an offline
-  candidate strategy replay/backtest for the exact ETH/SOL authority stream,
-  not another grid search.
+  `sc4h_btc_diagnostic_eth_sol_cw2_h12_t1_00_sb0_00`, the strategy spec froze
+  it, and the fixed offline replay/backtest has passed. The next authorized
+  implementation is a bounded offline walk-forward robustness pass, not live,
+  paper, testnet, deployment, or a widened search.
 
 ## 2026-06-26
+
+Futures range universe structured compression strategy replay:
+
+- Review doc:
+  `docs/FUTURES_RANGE_UNIVERSE_STRUCTURED_COMPRESSION_STRATEGY_REPLAY_REVIEW.md`.
+- Stop state:
+  `structured_compression_strategy_replay_passed_needs_walk_forward_robustness_brief`.
+- Added explicit offline CLI flag:
+  `-futures-range-universe-structured-compression-strategy-replay`.
+- This replay is fixed to
+  `sc4h_btc_diagnostic_eth_sol_cw2_h12_t1_00_sb0_00`. It does not add a new
+  grid, new symbols, new timeframes, new candidate families, scoring search,
+  optimization, live/paper/testnet wiring, exchange API use, credentials,
+  deployment files, data downloads, martingale, averaging down, or
+  two-exchange logic.
+- Result dir:
+  `results/futures-range-universe-structured-compression-strategy-replay/`.
+- Outputs:
+  - `futures_range_universe_structured_compression_strategy_sources.csv/json`
+  - `futures_range_universe_structured_compression_strategy_coverage.csv/json`
+  - `futures_range_universe_structured_compression_strategy_signals.csv/json`
+  - `futures_range_universe_structured_compression_strategy_trades.csv/json`
+  - `futures_range_universe_structured_compression_strategy_summary.csv/json`
+  - common `source_manifest.json`, `summary.csv/json`, and `trades.json`
+- Source facts:
+  - each of `BTCUSDT`, `ETHUSDT`, and `SOLUSDT` loaded `573,984` Binance
+    USDT-M futures `5m` candles from `2021-01-01T00:00:00Z` through
+    `2026-06-16T23:55:00Z`;
+  - gaps / duplicates were `0` / `0` for every symbol;
+  - zero-volume counts: `BTCUSDT=66`, `ETHUSDT=47`, `SOLUSDT=47`;
+  - physical non-monotonic counts: `BTCUSDT=0`, `ETHUSDT=0`,
+    `SOLUSDT=1`; SOLUSDT was sorted and accepted.
+- Closed UTC `4h` resamples:
+  - `11,958` rows per symbol, first open `2021-01-01T00:00:00Z`, last open
+    `2026-06-16T20:00:00Z`;
+  - every coverage row had `gap_count=0`, `duplicate_count=0`,
+    `missing_child_open_count=0`, `complete=true`,
+    `validation_status=accepted`.
+- CSV line counts including headers:
+  - coverage `4`
+  - signals `186`
+  - sources `4`
+  - strategy summary `49`
+  - strategy trades `185`
+  - common summary `13`
+- Replay result:
+  - strategy-specific rows: `185` signals and `184` trades;
+  - common authority outputs: `129` ETH/SOL trades only;
+  - full authority gross P&L `641.05`, net P&L `573.87`, PF `1.8089`,
+    max drawdown `9.82%`;
+  - `2021_2022_stress`: `54` trades, net P&L `151.79`, PF `1.4867`;
+  - `2023_2024_oos`: `43` trades, net P&L `229.02`, PF `2.2318`;
+  - `2025_2026_recent`: `32` trades, net P&L `193.06`, PF `1.9121`;
+  - long side: `69` trades, net P&L `385.79`, PF `2.0488`;
+  - short side: `60` trades, net P&L `188.08`, PF `1.5506`.
+- Symbol facts:
+  - `BTCUSDT` diagnostic-only remained negative: `55` trades, net P&L
+    `-100.67`, PF `0.6507`;
+  - `ETHUSDT` authority full sample: `70` trades, net P&L `351.81`,
+    PF `1.9044`, but recent split remained negative;
+  - `SOLUSDT` authority full sample: `59` trades, net P&L `222.06`,
+    PF `1.6930`, but stress split remained negative.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to implement a bounded offline
+  walk-forward robustness pass for the structured-compression `4h` stream.
+- Added a durable decision that the replay authorizes walk-forward robustness
+  only; it still does not authorize live, paper/testnet, deploy, new symbols,
+  new grid dimensions, or BTCUSDT promotion.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -futures-range-universe-structured-compression-strategy-replay -out-dir results/futures-range-universe-structured-compression-strategy-replay`
+  - `wc -l results/futures-range-universe-structured-compression-strategy-replay/*.csv`
 
 Futures range universe structured compression strategy spec:
 
