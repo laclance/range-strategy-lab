@@ -31,8 +31,62 @@ git history.
   non-trading review gate: continuation-first and quick continuation dominated
   midpoint reclaim-first across all period splits and horizons. No prototype or
   promotion is approved.
-- The canonical next brief now asks for a new materially different futures
-  hypothesis or data premise before any further audit.
+- The canonical next brief now asks for a range-only
+  `FUTURES_SCOPE_PIVOT_REVIEW` before any further audit. The review may
+  consider higher timeframe or narrow BTC/ETH futures range scope, but not
+  generic futures strategy discovery.
+
+## 2026-06-26
+
+Futures scope pivot review spec, range-only:
+
+- Spec doc: `docs/FUTURES_SCOPE_PIVOT_REVIEW_SPEC.md`.
+- Stop state: `range_scope_pivot_spec_ready`.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to make the next task a docs-only
+  `docs/FUTURES_SCOPE_PIVOT_REVIEW.md`, focused on range strategy scope only.
+- Added README docs-index entry for the new spec.
+- Added a durable decision: a scope pivot remains range-strategy-only unless
+  the user explicitly changes the project objective. Higher-timeframe,
+  multi-symbol, or sibling-repo context may be used only as range-source,
+  range-premise, process, or exclusion evidence.
+- Current lab authority remains Binance USDT-M futures BTCUSDT 5m:
+  - path:
+    `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`
+  - CSV lines including header: `573,985`
+  - loaded candles / manifest `row_count`: `573,984`
+  - open-time coverage: `2021-01-01T00:00:00Z` through
+    `2026-06-16T23:55:00Z`
+  - accepted manifest facts: `gap_count=0`, `duplicate_count=0`,
+    `zero_volume_count=66`, `comparison_only=false`,
+    `validation_status=accepted`
+- Sibling repo facts recorded for next-review context only:
+  - `~/binance-bot` range seed: Binance-only BTCUSDT 5m range sleeve on
+    legacy spot data failed even gross; use only as caution.
+  - `~/binance-bot` cross-exchange spread seed failed local gates and remains
+    out of scope because this lab forbids two-exchange execution.
+  - `~/binance-bot` multi-pair selector/alt overlay work is no-go evidence for
+    broad symbol selection.
+  - `~/binance-bot` daily ATR contraction is positive-looking but non-range
+    trend/volatility work, so it is outside this range-only pivot.
+  - `~/crypto-trading-bot` BTC/ETH 4h range-reversal/re-entry workbench failed
+    as a frozen family; use only as exclusion evidence.
+  - `~/crypto-trading-bot` BTC/ETH USD-M source-contract discipline may be
+    useful if the review selects higher-timeframe or BTC/ETH range-source
+    specification.
+- This was docs/memory-only: no code, CLI flags, audits, generated results,
+  source mutation, entries, exits, scoring, sizing, strategy replacement,
+  paper/testnet/live wiring, exchange API use, deploy files, grid,
+  martingale, averaging down, or two-exchange logic was added.
+- Sibling repo status note:
+  - `~/binance-bot` was clean during inspection.
+  - `~/crypto-trading-bot` had pre-existing dirty docs/memory/research files
+    and was treated as read-only.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short` showed only intended doc/memory changes before
+    commit.
 
 ## 2026-06-25
 

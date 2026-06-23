@@ -106,6 +106,12 @@
   horizon. Do not convert this impulse absorption surface into an entry
   prototype, retune, paper/testnet/live path, or strategy replacement without a
   materially new futures hypothesis or data premise.
+- The futures scope pivot remains range-strategy-only unless the user
+  explicitly changes the project objective. Higher-timeframe, multi-symbol, or
+  sibling-repo context may be considered only as range-source, range-premise,
+  process, or exclusion evidence. Non-range trend/volatility paths, broad
+  multi-pair mining, and cross-exchange execution are not authorized by a
+  range-only pivot review.
 - External helper modules may be used for feature extraction and audit outputs
   only; strategy hypotheses, entries, exits, scoring, sizing, and backtest
   behavior stay inside this lab.
