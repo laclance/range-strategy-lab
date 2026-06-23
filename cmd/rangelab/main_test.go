@@ -567,6 +567,91 @@ func TestRunWithArgsFuturesRangeUniverseStructuredCompressionStrategyReplayFlagW
 	}
 }
 
+func TestRunWithArgsFuturesRangeUniverseStructuredCompressionWalkForwardFlagWritesArtifactsAndRejectsSpotComparison(t *testing.T) {
+	dir := t.TempDir()
+	futuresPath := writeCLITestCSV(t, dir, "btcusdt_futures_um_5m_test.csv")
+	btcPath := writeCLITestCSVN(t, dir, "btcusdt_futures_um_5m_walk_forward.csv", 48)
+	ethPath := writeCLITestCSVN(t, dir, "ethusdt_futures_um_5m_walk_forward.csv", 48)
+	solPath := writeCLITestCSVN(t, dir, "solusdt_futures_um_5m_walk_forward.csv", 48)
+	oldWalkForwardConfig := futuresRangeUniverseStructuredCompressionWalkForwardConfigForRun
+	futuresRangeUniverseStructuredCompressionWalkForwardConfigForRun = func() lab.FuturesRangeUniverseStructuredCompressionWalkForwardConfig {
+		cfg := lab.DefaultFuturesRangeUniverseStructuredCompressionWalkForwardConfig()
+		sources := []lab.FuturesRangeUniverseSourceConfig{
+			{Symbol: lab.RangeUniverseSymbolBTCUSDT, Path: btcPath, ApprovedPath: btcPath, SkipSplitEligibilityCheck: true},
+			{Symbol: lab.RangeUniverseSymbolETHUSDT, Path: ethPath, ApprovedPath: ethPath, SkipSplitEligibilityCheck: true},
+			{Symbol: lab.RangeUniverseSymbolSOLUSDT, Path: solPath, ApprovedPath: solPath, SkipSplitEligibilityCheck: true},
+		}
+		cfg.OptimizationConfig.Sources = sources
+		cfg.OptimizationConfig.DetectorMinConsecutiveBars = 1
+		cfg.FrozenReplayConfig.Sources = sources
+		cfg.FrozenReplayConfig.DetectorMinConsecutiveBars = 1
+		return cfg
+	}
+	defer func() { futuresRangeUniverseStructuredCompressionWalkForwardConfigForRun = oldWalkForwardConfig }()
+
+	defaultOutDir := filepath.Join(dir, "default")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-out-dir", defaultOutDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(defaultOutDir, "futures_range_universe_structured_compression_walk_forward_grid.csv")); !os.IsNotExist(err) {
+		t.Fatalf("default run should not write structured compression walk-forward artifacts, stat err=%v", err)
+	}
+
+	outDir := filepath.Join(dir, "walk-forward")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-range-universe-structured-compression-walk-forward-robustness",
+		"-out-dir", outDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{
+		"source_manifest.json",
+		"summary.csv",
+		"summary.json",
+		"trades.json",
+		"futures_range_universe_structured_compression_walk_forward_sources.csv",
+		"futures_range_universe_structured_compression_walk_forward_coverage.csv",
+		"futures_range_universe_structured_compression_walk_forward_grid.csv",
+		"futures_range_universe_structured_compression_walk_forward_folds.csv",
+		"futures_range_universe_structured_compression_walk_forward_trades.csv",
+		"futures_range_universe_structured_compression_walk_forward_summary.csv",
+		"futures_range_universe_structured_compression_walk_forward_rankings.csv",
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, name)); err != nil {
+			t.Fatalf("expected structured compression walk-forward artifact %s: %v", name, err)
+		}
+	}
+
+	spotPath := writeCLITestCSV(t, dir, "btcusdt_spot_5m_test.csv")
+	err := runWithArgs([]string{
+		"-csv", spotPath,
+		"-source-product", lab.SourceProductBinanceSpot,
+		"-allow-spot-comparison",
+		"-futures-range-universe-structured-compression-walk-forward-robustness",
+		"-out-dir", filepath.Join(dir, "spot-walk-forward"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "requires Binance USDT-M futures source") {
+		t.Fatalf("expected structured compression walk-forward futures-source error, got %v", err)
+	}
+
+	err = runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-range-universe-structured-compression-optimization",
+		"-futures-range-universe-structured-compression-walk-forward-robustness",
+		"-out-dir", filepath.Join(dir, "combined-walk-forward"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "cannot be combined") {
+		t.Fatalf("expected structured compression combination error, got %v", err)
+	}
+}
+
 func writeCLITestCSV(t *testing.T, dir string, name string) string {
 	return writeCLITestCSVN(t, dir, name, 2)
 }

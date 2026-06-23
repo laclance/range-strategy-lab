@@ -175,6 +175,15 @@
   candidate stream. It does not authorize BTCUSDT promotion, new grid
   dimensions, new symbols, live/paper/testnet, exchange API, deployment, data
   download, martingale, averaging down, or two-exchange work.
+- The futures range universe structured-compression walk-forward robustness
+  pass has been reviewed and is fragile. It does not authorize a candidate
+  strategy package for `sc4h_btc_diagnostic_eth_sol_cw2_h12_t1_00_sb0_00`:
+  only one of three folds selected the exact frozen config and passed, one
+  selected same-shape ETH/SOL authority config tested worse than frozen, and
+  one had no selectable training config under the multi-split `100` trade gate.
+  Do not retune around this result, relax gates, promote BTCUSDT, add new grid
+  dimensions, or move to live/paper/testnet/deploy from this stream without a
+  materially new user-approved premise and fresh review.
 - The futures impulse absorption audit has been reviewed. Abnormal OHLCV
   impulse candles on Binance USDT-M futures data are continuation-dominant
   rather than midpoint-reclaim-dominant across every period split and tested

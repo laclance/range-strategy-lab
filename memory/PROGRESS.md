@@ -52,11 +52,92 @@ git history.
   on ETH/SOL strength. The `1h all h12` surface failed and is not promoted.
 - The bounded `4h` structured-compression optimization selected
   `sc4h_btc_diagnostic_eth_sol_cw2_h12_t1_00_sb0_00`, the strategy spec froze
-  it, and the fixed offline replay/backtest has passed. The next authorized
-  implementation is a bounded offline walk-forward robustness pass, not live,
-  paper, testnet, deployment, or a widened search.
+  it, and the fixed offline replay/backtest passed. The bounded offline
+  walk-forward robustness pass has now run and is fragile: no candidate
+  strategy package is approved, and the structured-compression ETH/SOL stream
+  should stay review-only unless the user explicitly approves a materially new
+  premise.
 
 ## 2026-06-26
+
+Futures range universe structured compression walk-forward robustness:
+
+- Review doc:
+  `docs/FUTURES_RANGE_UNIVERSE_STRUCTURED_COMPRESSION_WALK_FORWARD_REVIEW.md`.
+- Stop state:
+  `structured_compression_walk_forward_fragile_needs_review`.
+- Added explicit offline CLI flag:
+  `-futures-range-universe-structured-compression-walk-forward-robustness`.
+- This walk-forward pass reused the declared `4h` structured-compression grid
+  only: confirmation window `2,3,4`, max hold `4,6,8,12`, target multiple
+  `0.75,1.0,1.25`, stop buffer `0.0,0.10`, and symbol sets `BTC_ETH_SOL`,
+  `ETH_SOL`, and `BTC_DIAGNOSTIC_ETH_SOL`. It did not add new grid dimensions,
+  new symbols, new timeframes, new candidate families, live/paper/testnet
+  wiring, exchange API use, credentials, deployment files, data downloads,
+  martingale, averaging down, or two-exchange logic.
+- Result dir:
+  `results/futures-range-universe-structured-compression-walk-forward-robustness/`.
+- Outputs:
+  - `futures_range_universe_structured_compression_walk_forward_sources.csv/json`
+  - `futures_range_universe_structured_compression_walk_forward_coverage.csv/json`
+  - `futures_range_universe_structured_compression_walk_forward_grid.csv/json`
+  - `futures_range_universe_structured_compression_walk_forward_folds.csv/json`
+  - `futures_range_universe_structured_compression_walk_forward_trades.csv/json`
+  - `futures_range_universe_structured_compression_walk_forward_summary.csv/json`
+  - `futures_range_universe_structured_compression_walk_forward_rankings.csv/json`
+  - common `source_manifest.json`, `summary.csv/json`, and `trades.json`
+- Source facts:
+  - each of `BTCUSDT`, `ETHUSDT`, and `SOLUSDT` loaded `573,984` Binance
+    USDT-M futures `5m` candles from `2021-01-01T00:00:00Z` through
+    `2026-06-16T23:55:00Z`;
+  - gaps / duplicates were `0` / `0` for every symbol;
+  - zero-volume counts: `BTCUSDT=66`, `ETHUSDT=47`, `SOLUSDT=47`;
+  - physical non-monotonic counts: `BTCUSDT=0`, `ETHUSDT=0`,
+    `SOLUSDT=1`; SOLUSDT was sorted and accepted.
+- Closed UTC `4h` resamples:
+  - `11,958` rows per symbol, first open `2021-01-01T00:00:00Z`, last open
+    `2026-06-16T20:00:00Z`;
+  - every coverage row had `gap_count=0`, `duplicate_count=0`,
+    `missing_child_open_count=0`, `complete=true`,
+    `validation_status=accepted`.
+- CSV line counts including headers:
+  - coverage `4`
+  - folds `4`
+  - grid `217`
+  - rankings `649`
+  - sources `4`
+  - walk-forward summary `9,505`
+  - walk-forward trades `35,881`
+  - common summary `13`
+- Normal common outputs stayed frozen to the ETH/SOL authority replay:
+  `trades.json` has `129` trades, and `summary.csv/json` matches the replay
+  authority stream. BTCUSDT appears only in walk-forward-specific diagnostic
+  or historical comparison artifacts.
+- Fold results:
+  - `wf_2021_2022_train__2023_2024_test` selected
+    `sc4h_btc_diagnostic_eth_sol_cw2_h12_t0_75_sb0_10`; selected test net P&L
+    was `92.68` versus frozen test net P&L `229.02`, so the fold failed with
+    `selected_test_net_worse_than_frozen`;
+  - `wf_2021_2024_train__2025_2026_test` selected no config because the
+    combined train period had `97` authority trades, below the `100` aggregate
+    multi-split train gate; frozen test net P&L was `193.06`;
+  - `wf_2023_2024_train__2025_2026_test` selected the exact frozen config and
+    passed, with `32` test trades, net P&L `193.06`, PF `1.9121`.
+- Review outcome:
+  - source/resample validation passed;
+  - the frozen config was present in every fold;
+  - only one of three folds selected the exact frozen config and passed;
+  - no fold required BTCUSDT authority to pass;
+  - the result is fragile and does not authorize candidate packaging,
+    retuning, BTCUSDT promotion, or live-adjacent work.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` toward a post-fragility hypothesis
+  pivot brief rather than another structured-compression retune.
+- Added a durable decision that the walk-forward result blocks candidate
+  strategy packaging for this frozen ETH/SOL structured-compression stream.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -futures-range-universe-structured-compression-walk-forward-robustness -out-dir results/futures-range-universe-structured-compression-walk-forward-robustness`
+  - `wc -l results/futures-range-universe-structured-compression-walk-forward-robustness/*.csv`
 
 Futures range universe structured compression strategy replay:
 
