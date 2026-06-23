@@ -7,8 +7,9 @@ git history.
 
 ## Current State
 
-- Scope remains offline BTCUSDT futures range-strategy research, now
-  range-first broad rather than narrow range-only. BTCUSDT `5m`,
+- Scope is now offline Binance USDT-M futures range-strategy discovery. The
+  implemented CLI default remains BTCUSDT `5m`, but the next approved research
+  scope is a local BTC/ETH/SOL range-universe discovery spec. BTCUSDT `5m`,
   buy/sell-touch, and single-candle reaction ideas remain available when they
   are materially reframed and compared inside a discovery-to-backtest funnel.
 - Active market target is Binance USDT-M futures, not spot. Spot-generated
@@ -41,8 +42,63 @@ git history.
   and reviewed. Both candidates failed after costs; no optimization,
   portfolio-style stream, or automatic `15m` expansion is approved from that
   baseline.
+- The current next task is a non-trading local universe discovery audit across
+  BTCUSDT, ETHUSDT, and SOLUSDT Binance USDT-M futures `5m` sources. It must
+  validate sources first, rank range-first surfaces, and route quickly to a
+  fixed-rule baseline backtest only if one or two surfaces pass.
 
 ## 2026-06-26
+
+Futures range universe discovery spec:
+
+- Spec doc: `docs/FUTURES_RANGE_UNIVERSE_DISCOVERY_SPEC.md`.
+- Stop state: `range_universe_spec_ready_for_audit_implementation`.
+- Outcome: the project explicitly broadens from BTCUSDT-only to a local
+  Binance USDT-M futures range universe for discovery. The v1 universe is
+  limited to local BTCUSDT, ETHUSDT, and SOLUSDT `5m` CSVs under
+  `../binance-bot/data/`.
+- Motivation: the BTCUSDT clean-breakout baseline had adequate trade counts
+  but failed after costs, so the next useful step is source-validated
+  cross-symbol range discovery rather than retuning the failed immediate
+  breakout template.
+- Local source quick checks:
+  - `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`: `573,985`
+    CSV lines including header, `573,984` rows, min open `1609459200000`,
+    max open `1781654100000`, non-monotonic physical row count `0`
+  - `../binance-bot/data/ethusdt_futures_um_5m_2021_2026.csv`: `573,985`
+    CSV lines including header, `573,984` rows, min open `1609459200000`,
+    max open `1781654100000`, non-monotonic physical row count `0`
+  - `../binance-bot/data/solusdt_futures_um_5m_2021_2026.csv`: `573,985`
+    CSV lines including header, `573,984` rows, min open `1609459200000`,
+    max open `1781654100000`, non-monotonic physical row count `1`
+- The SOL caveat is recorded in the spec: the future implementation must
+  validate and sort/fail explicitly instead of trusting filename coverage.
+- Future candidate families:
+  - breakout retest / acceptance after completed mature range;
+  - boundary touch / rejection;
+  - failed breakout re-entry;
+  - mature balance rotation / persistence;
+  - compression-to-expansion only if materially reframed from the failed
+    immediate clean-breakout baseline.
+- Required future outputs are scoped under
+  `results/futures-range-universe-discovery-audit/` and remain zero-trade
+  common outputs until a later baseline backtest is approved.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to implement
+  `-futures-range-universe-discovery-audit` as a non-trading source/universe
+  validation plus discovery audit.
+- This was docs/memory-only: no code, CLI flags, generated results, entries,
+  exits, scoring, sizing, optimization, strategy replacement,
+  paper/testnet/live wiring, exchange API use, deploy files, grid,
+  martingale, averaging down, two-exchange logic, data download, or sibling
+  repo mutation was added.
+- Verification passed:
+  - `wc -l ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv ../binance-bot/data/ethusdt_futures_um_5m_2021_2026.csv ../binance-bot/data/solusdt_futures_um_5m_2021_2026.csv`
+  - `awk -F, 'NR>1{if(NR==2||$1<min)min=$1;if($1>max)max=$1;if(NR>2 && $1<=prev) nonmono++; prev=$1} END{print FILENAME, NR-1, min, max, nonmono+0}' <source>`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short` showed only intended doc/memory changes before
+    commit.
 
 Futures clean breakout baseline backtest:
 

@@ -4,7 +4,9 @@
 
 - This project is offline research only.
 - Do not add live orders, exchange API keys, deploy scripts, grid, martingale, averaging down, or two-exchange execution.
-- BTCUSDT only until project scope explicitly changes.
+- Symbol scope is BTCUSDT by default, but the explicit 2026-06-26 range-universe
+  discovery scope also allows local ETHUSDT and SOLUSDT Binance USDT-M futures
+  sources for offline range-first discovery only.
 - Use 5m candles first.
 - The active research market is Binance USDT-M futures, not Binance spot.
 - Use confirmed closed-candle decisions only.
@@ -122,6 +124,13 @@
   these clean breakout candidates into a portfolio-style stream from this
   result. A portfolio stream or `15m` comparison requires a new user-approved
   premise.
+- The futures range universe discovery spec explicitly broadens this lab from
+  BTCUSDT-only to a local BTC/ETH/SOL Binance USDT-M futures range-discovery
+  universe. This authorizes source validation and non-trading discovery only:
+  it does not authorize optimization, live wiring, paper/testnet, data
+  downloads, broad symbol mining, sibling repo mutation, or importing sibling
+  strategy results as evidence. Any passing surface must still earn a fixed-rule
+  baseline backtest before optimization.
 - The futures impulse absorption audit has been reviewed. Abnormal OHLCV
   impulse candles on Binance USDT-M futures data are continuation-dominant
   rather than midpoint-reclaim-dominant across every period split and tested
