@@ -2,7 +2,7 @@
 
 Standalone BTCUSDT range-strategy starter project. The current trading target is
 Binance USDT-M futures 5m data; older spot-data outputs are historical context
-until rerun and reviewed on futures data.
+unless a futures rerun explicitly revalidates a specific conclusion.
 
 ## Purpose
 
@@ -41,7 +41,8 @@ review, read the docs in this order:
 14. [docs/HOLD_INSIDE_DIRECTIONAL_EDGE_REVIEW.md](docs/HOLD_INSIDE_DIRECTIONAL_EDGE_REVIEW.md)
 15. [docs/HOLD_INSIDE_MIDLINE_TRANSITION_REVIEW.md](docs/HOLD_INSIDE_MIDLINE_TRANSITION_REVIEW.md)
 16. [docs/HOLD_INSIDE_MIDLINE_REACTION_REVIEW.md](docs/HOLD_INSIDE_MIDLINE_REACTION_REVIEW.md)
-17. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+17. [docs/FUTURES_DATA_IMPACT_REVIEW.md](docs/FUTURES_DATA_IMPACT_REVIEW.md)
+18. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 

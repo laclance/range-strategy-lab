@@ -80,14 +80,14 @@
   strategy inputs. Treat the midline as a non-trading observation point for a
   follow-up reindexed midline-event audit; do not promote current midline
   transition labels into entries, exits, scoring, sizing, or strategy logic.
-- The hold-inside midline reaction audit was reviewed on spot data. That review
-  had approved only `hold_3_inside` + first `mid_touch` within `12` bars, with
-  event close in the frozen range `mid_50` bucket, for a first minimal offline
-  entry prototype. This was not strategy promotion or live approval. Because
-  the approval was spot-based, it is suspended until the same surface is rerun
-  and reviewed on Binance USDT-M futures data. `hold_6_inside`,
+- The futures data impact review revalidated only `hold_3_inside` + first
+  `mid_touch` within `12` bars, with event close in the frozen range `mid_50`
+  bucket, for a first minimal offline entry prototype on Binance USDT-M futures
+  data. This is not strategy promotion or live approval; keep
+  `lab.EmptyStrategy` until that prototype exists and is reviewed. The old
+  spot-based approval is historical comparison only. `hold_6_inside`,
   `mid_close_across`, side-specific cohorts, and `hold_3_inside_mid_50` remain
-  diagnostic after the spot review.
+  diagnostic after the futures review.
 - External helper modules may be used for feature extraction and audit outputs
   only; strategy hypotheses, entries, exits, scoring, sizing, and backtest
   behavior stay inside this lab.

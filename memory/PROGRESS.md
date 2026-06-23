@@ -8,9 +8,9 @@ git history.
 ## Current State
 
 - Scope remains offline BTCUSDT 5m range-strategy research only.
-- Active market target is Binance USDT-M futures, not spot. Prior generated
-  audits/reviews were run on spot CSVs and are no longer authoritative for
-  promotion or entry decisions until rerun/reviewed on futures data.
+- Active market target is Binance USDT-M futures, not spot. Spot-generated
+  audits/reviews are historical context only unless a futures rerun explicitly
+  revalidates a specific conclusion.
 - Strategy remains `lab.EmptyStrategy`; trades remain `0`.
 - Closed-candle decision semantics remain required.
 - `cmd/rangelab` now enforces source identity before audits/backtests. The
@@ -21,11 +21,66 @@ git history.
 - No live code, API keys, deploy scripts, grid, martingale, averaging down, or
   two-exchange execution is allowed.
 - `memory/NEXT_CODEX_BRIEF.md` is the only canonical next-session prompt.
-- Current next task: run the futures data impact review on the full-history
-  Binance USDT-M futures CSV before any entries. The previously planned
-  hold-inside midline touch prototype remains paused.
+- The futures data impact review revalidated only the first minimal offline
+  prototype surface: `hold_3_inside` + first `mid_touch` within `12` bars +
+  event close-position bucket `mid_50`.
+- Current next task: build that first minimal offline prototype on the
+  full-history Binance USDT-M futures CSV. This is still not strategy
+  promotion, live use, or a change to the default empty strategy.
 
 ## 2026-06-25
+
+Futures data impact review:
+
+- Review doc: `docs/FUTURES_DATA_IMPACT_REVIEW.md`.
+- Stop state: `futures_reaction_gate_passed_needs_minimal_entry_brief`.
+- Source path:
+  `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`.
+- Market type: Binance USDT-M futures BTCUSDT 5m.
+- Source manifests in all futures result dirs:
+  - loaded candles / manifest `row_count`: `573,984`
+  - open-time coverage: `2021-01-01T00:00:00Z` through
+    `2026-06-16T23:55:00Z`
+  - `gap_count=0`, `duplicate_count=0`, `zero_volume_count=66`,
+    `comparison_only=false`, `validation_status=accepted`
+- Result dirs:
+  - `results/futures-detector-context-refinement-audit/`
+  - `results/futures-hold-inside-midline-transition-audit/`
+  - `results/futures-hold-inside-midline-reaction-audit/`
+- Audit sizes:
+  - detector context refinement: `117,848` candidate rows, `640` summary rows,
+    `160` stability rows
+  - hold-inside midline transition: `8,600` candidate rows, `672` summary rows,
+    `168` stability rows
+  - hold-inside midline reaction: `10,172` candidate rows, `24` funnel rows,
+    `1,240` summary rows, `336` stability rows
+- Futures reaction gate:
+  - `hold_3_inside + mid_touch`: weakest split `129` event candidates,
+    `55.60%` minimum event rate, `44.40%` maximum missing-event rate
+  - h6 all-bucket: weakest split `129` candidates, `56.59%` minimum
+    close-back, `48.06%` minimum mid-rejection before boundary, `29.46%`
+    maximum boundary-before-rejection, `18.60%` maximum quick invalidation,
+    `22.48%` maximum trend
+  - h6 `mid_50`: weakest split `114` candidates, `57.89%` minimum close-back,
+    `52.63%` minimum mid-rejection before boundary, `23.68%` maximum
+    boundary-before-rejection, `13.16%` maximum quick invalidation, `21.93%`
+    maximum trend
+- Revalidated for the next task: first minimal offline prototype around
+  `hold_3_inside` + first `mid_touch` within `12` bars + event close-position
+  bucket `mid_50`.
+- Still diagnostic only: old spot approval as evidence, `hold_6_inside`,
+  `mid_close_across`, side-specific cohorts, and `hold_3_inside_mid_50`.
+- No entry, exit, scoring, sizing, strategy replacement, paper, testnet, live,
+  exchange-key, deploy, grid, martingale, averaging-down, or two-exchange work
+  was added. The runs reported `strategy=empty trades=0`.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -csv ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv -source-product binance-usdm-futures -detector-context-refinement-audit -out-dir results/futures-detector-context-refinement-audit`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -csv ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv -source-product binance-usdm-futures -hold-inside-midline-transition-audit -out-dir results/futures-hold-inside-midline-transition-audit`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -csv ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv -source-product binance-usdm-futures -hold-inside-midline-reaction-audit -out-dir results/futures-hold-inside-midline-reaction-audit`
+  - `wc -l results/futures-*/*.csv`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
 
 Futures source guard and next-brief refresh:
 
