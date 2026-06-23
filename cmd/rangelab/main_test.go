@@ -423,6 +423,81 @@ func TestRunWithArgsFuturesRangeUniverseStructuredCompressionBaselineFlagWritesA
 	}
 }
 
+func TestRunWithArgsFuturesRangeUniverseStructuredCompressionOptimizationFlagWritesArtifactsAndRejectsSpotComparison(t *testing.T) {
+	dir := t.TempDir()
+	futuresPath := writeCLITestCSV(t, dir, "btcusdt_futures_um_5m_test.csv")
+	btcPath := writeCLITestCSVN(t, dir, "btcusdt_futures_um_5m_optimization.csv", 48)
+	ethPath := writeCLITestCSVN(t, dir, "ethusdt_futures_um_5m_optimization.csv", 48)
+	solPath := writeCLITestCSVN(t, dir, "solusdt_futures_um_5m_optimization.csv", 48)
+	oldOptimizationConfig := futuresRangeUniverseStructuredCompressionOptimizationConfigForRun
+	futuresRangeUniverseStructuredCompressionOptimizationConfigForRun = func() lab.FuturesRangeUniverseStructuredCompressionOptimizationConfig {
+		cfg := lab.DefaultFuturesRangeUniverseStructuredCompressionOptimizationConfig()
+		cfg.Sources = []lab.FuturesRangeUniverseSourceConfig{
+			{Symbol: lab.RangeUniverseSymbolBTCUSDT, Path: btcPath, ApprovedPath: btcPath, SkipSplitEligibilityCheck: true},
+			{Symbol: lab.RangeUniverseSymbolETHUSDT, Path: ethPath, ApprovedPath: ethPath, SkipSplitEligibilityCheck: true},
+			{Symbol: lab.RangeUniverseSymbolSOLUSDT, Path: solPath, ApprovedPath: solPath, SkipSplitEligibilityCheck: true},
+		}
+		cfg.ConfirmationWindowBars = []int{2}
+		cfg.MaxHoldBars = []int{4}
+		cfg.TargetRangeWidthMultiples = []float64{1}
+		cfg.StopBoundaryBufferRangeWidths = []float64{0}
+		cfg.SymbolSets = []string{lab.StructuredCompressionOptimizationSymbolSetAll}
+		cfg.DetectorMinConsecutiveBars = 1
+		return cfg
+	}
+	defer func() { futuresRangeUniverseStructuredCompressionOptimizationConfigForRun = oldOptimizationConfig }()
+
+	defaultOutDir := filepath.Join(dir, "default")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-out-dir", defaultOutDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(defaultOutDir, "futures_range_universe_structured_compression_optimization_grid.csv")); !os.IsNotExist(err) {
+		t.Fatalf("default run should not write structured compression optimization artifacts, stat err=%v", err)
+	}
+
+	outDir := filepath.Join(dir, "optimization")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-range-universe-structured-compression-optimization",
+		"-out-dir", outDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{
+		"source_manifest.json",
+		"summary.csv",
+		"summary.json",
+		"trades.json",
+		"futures_range_universe_structured_compression_optimization_sources.csv",
+		"futures_range_universe_structured_compression_optimization_coverage.csv",
+		"futures_range_universe_structured_compression_optimization_grid.csv",
+		"futures_range_universe_structured_compression_optimization_trades.csv",
+		"futures_range_universe_structured_compression_optimization_summary.csv",
+		"futures_range_universe_structured_compression_optimization_rankings.csv",
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, name)); err != nil {
+			t.Fatalf("expected structured compression optimization artifact %s: %v", name, err)
+		}
+	}
+
+	spotPath := writeCLITestCSV(t, dir, "btcusdt_spot_5m_test.csv")
+	err := runWithArgs([]string{
+		"-csv", spotPath,
+		"-source-product", lab.SourceProductBinanceSpot,
+		"-allow-spot-comparison",
+		"-futures-range-universe-structured-compression-optimization",
+		"-out-dir", filepath.Join(dir, "spot-optimization"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "requires Binance USDT-M futures source") {
+		t.Fatalf("expected structured compression optimization futures-source error, got %v", err)
+	}
+}
+
 func writeCLITestCSV(t *testing.T, dir string, name string) string {
 	return writeCLITestCSVN(t, dir, name, 2)
 }

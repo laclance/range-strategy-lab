@@ -151,6 +151,15 @@
   result. No live, paper/testnet, exchange API, deployment, data download,
   broad symbol mining, grid, martingale, averaging down, or two-exchange path
   is approved.
+- The futures range universe structured-compression optimization has been
+  reviewed. The selected `4h` configuration is
+  `sc4h_btc_diagnostic_eth_sol_cw2_h12_t1_00_sb0_00`: ETHUSDT and SOLUSDT are
+  the authority symbols, while BTCUSDT is diagnostic-only and remains negative.
+  This authorizes a first offline candidate strategy spec for the ETH/SOL
+  universe stream only. It does not authorize BTC strategy promotion,
+  additional grid search, live wiring, paper/testnet, exchange API, deployment,
+  data download, broad symbol mining, martingale, averaging down, or
+  two-exchange work.
 - The futures impulse absorption audit has been reviewed. Abnormal OHLCV
   impulse candles on Binance USDT-M futures data are continuation-dominant
   rather than midpoint-reclaim-dominant across every period split and tested

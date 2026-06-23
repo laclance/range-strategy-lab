@@ -52,6 +52,90 @@ git history.
 
 ## 2026-06-26
 
+Futures range universe structured compression optimization:
+
+- Review doc:
+  `docs/FUTURES_RANGE_UNIVERSE_STRUCTURED_COMPRESSION_OPTIMIZATION_REVIEW.md`.
+- Stop state:
+  `structured_compression_optimization_passed_needs_strategy_spec`.
+- Added explicit offline CLI flag:
+  `-futures-range-universe-structured-compression-optimization`.
+- This optimization is bounded to the passing `4h` structured-compression
+  universe stream only. The failed `1h` structured-compression surface was not
+  optimized. Default runs still use `lab.EmptyStrategy`; this run writes common
+  `trades.json` and `summary.*` only for the selected top configuration.
+- Source facts:
+  - each of `BTCUSDT`, `ETHUSDT`, and `SOLUSDT` loaded `573,984` Binance
+    USDT-M futures `5m` candles from `2021-01-01T00:00:00Z` through
+    `2026-06-16T23:55:00Z`;
+  - gaps / duplicates were `0` / `0` for every symbol;
+  - zero-volume counts: `BTCUSDT=66`, `ETHUSDT=47`, `SOLUSDT=47`;
+  - physical non-monotonic counts: `BTCUSDT=0`, `ETHUSDT=0`,
+    `SOLUSDT=1`;
+  - the SOL source was sorted before downstream validation and accepted.
+- Closed UTC `4h` resamples:
+  - `11,958` rows per symbol, first open `2021-01-01T00:00:00Z`, last open
+    `2026-06-16T20:00:00Z`;
+  - all coverage rows had `gap_count=0`, `duplicate_count=0`,
+    `missing_child_open_count=0`, `complete=true`,
+    `validation_status=accepted`.
+- Result dir:
+  `results/futures-range-universe-structured-compression-optimization/`.
+- Outputs:
+  - `futures_range_universe_structured_compression_optimization_sources.csv/json`
+  - `futures_range_universe_structured_compression_optimization_coverage.csv/json`
+  - `futures_range_universe_structured_compression_optimization_grid.csv/json`
+  - `futures_range_universe_structured_compression_optimization_trades.csv/json`
+  - `futures_range_universe_structured_compression_optimization_summary.csv/json`
+  - `futures_range_universe_structured_compression_optimization_rankings.csv/json`
+  - common `summary.csv/json`, `trades.json`, and `source_manifest.json`
+- CSV line counts including headers:
+  - coverage `4`
+  - grid `217`
+  - rankings `217`
+  - sources `4`
+  - optimization summary `9,505`
+  - optimization trades `35,881`
+  - common summary `13`
+- Grid/result facts:
+  - grid size: `216` configurations;
+  - passing configurations: `115`;
+  - selected config:
+    `sc4h_btc_diagnostic_eth_sol_cw2_h12_t1_00_sb0_00`;
+  - selected authority symbols: `ETHUSDT,SOLUSDT`;
+  - selected diagnostic symbol: `BTCUSDT`;
+  - selected config settings: confirmation window `2`, max hold `12`,
+    target multiple `1.0`, stop buffer `0.0`.
+- Selected authority result:
+  - `129` trades, gross P&L `641.05`, net P&L `573.87`, PF `1.8089`,
+    max drawdown `9.82%`, average net R `0.3465`;
+  - `2021_2022_stress`: `54` trades, net P&L `151.79`, PF `1.4867`;
+  - `2023_2024_oos`: `43` trades, net P&L `229.02`, PF `2.2318`;
+  - `2025_2026_recent`: `32` trades, net P&L `193.06`, PF `1.9121`;
+  - long side: `69` trades, net P&L `385.79`, PF `2.0488`;
+  - short side: `60` trades, net P&L `188.08`, PF `1.5506`.
+- Symbol facts:
+  - `BTCUSDT` diagnostic-only remained negative: `55` trades, net P&L
+    `-100.67`, PF `0.6507`;
+  - `ETHUSDT` authority full sample: `70` trades, net P&L `351.81`,
+    PF `1.9044`, but recent split was negative after costs;
+  - `SOLUSDT` authority full sample: `59` trades, net P&L `222.06`,
+    PF `1.6930`, but stress split was negative after costs.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to create a first offline candidate
+  strategy spec for the selected ETH/SOL `4h` structured-compression stream,
+  with BTC diagnostic-only and no live-adjacent work.
+- Added a durable decision that this optimization authorizes an offline
+  ETH/SOL universe strategy spec only. It does not authorize BTC strategy
+  promotion or live/paper/testnet/deploy work.
+- Verification passed:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -futures-range-universe-structured-compression-optimization -out-dir results/futures-range-universe-structured-compression-optimization`
+  - `wc -l results/futures-range-universe-structured-compression-optimization/*.csv`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short` showed only intended implementation, doc, and memory
+    changes before commit.
+
 Futures range universe structured compression baseline backtest:
 
 - Review doc:

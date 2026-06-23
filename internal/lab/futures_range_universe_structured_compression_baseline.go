@@ -38,10 +38,12 @@ type FuturesRangeUniverseStructuredCompressionBaselineConfig struct {
 }
 
 type FuturesRangeUniverseStructuredCompressionCandidateConfig struct {
-	CandidateID string
-	Timeframe   string
-	Side        string
-	MaxHoldBars int
+	CandidateID                  string
+	Timeframe                    string
+	Side                         string
+	MaxHoldBars                  int
+	TargetRangeWidthMultiple     float64
+	StopBoundaryBufferRangeWidth float64
 }
 
 type FuturesRangeUniverseStructuredCompressionBaselineResult struct {
@@ -518,15 +520,20 @@ func newFuturesRangeUniverseStructuredCompressionSignalRow(candles []Candle, sym
 		return row
 	}
 	entry := candles[entryIndex]
+	targetMultiple := candidate.TargetRangeWidthMultiple
+	if targetMultiple == 0 {
+		targetMultiple = 1
+	}
+	stopBuffer := candidate.StopBoundaryBufferRangeWidth
 	row.EntryOpenTime = entry.OpenTime.UTC().Format(timeLayout)
 	row.EntryOpen = entry.Open
 	row.ExpectedEntryPrice = applySlippage(entry.Open, btCfg.SlippagePct, side, true)
 	if side == Long {
-		row.Stop = episode.High
-		row.Target = row.ExpectedEntryPrice + width
+		row.Stop = episode.High - width*stopBuffer
+		row.Target = row.ExpectedEntryPrice + width*targetMultiple
 	} else {
-		row.Stop = episode.Low
-		row.Target = row.ExpectedEntryPrice - width
+		row.Stop = episode.Low + width*stopBuffer
+		row.Target = row.ExpectedEntryPrice - width*targetMultiple
 	}
 	if !finitePositive(row.Stop) || !finitePositive(row.Target) || !finitePositive(row.ExpectedEntryPrice) {
 		row.SkippedReason = "non_positive_trade_price"
@@ -697,6 +704,12 @@ func (cfg FuturesRangeUniverseStructuredCompressionBaselineConfig) validateCandi
 	}
 	if candidate.MaxHoldBars <= 0 {
 		return fmt.Errorf("structured compression candidate %s max hold bars must be positive", candidate.CandidateID)
+	}
+	if candidate.TargetRangeWidthMultiple < 0 {
+		return fmt.Errorf("structured compression candidate %s target range-width multiple must be non-negative", candidate.CandidateID)
+	}
+	if candidate.StopBoundaryBufferRangeWidth < 0 {
+		return fmt.Errorf("structured compression candidate %s stop boundary buffer must be non-negative", candidate.CandidateID)
 	}
 	return nil
 }
