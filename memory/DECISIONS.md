@@ -227,6 +227,16 @@
   do not implement an optimizer, backtest flag, replay, walk-forward, source
   expansion, symbol expansion, or live-adjacent path until that spec is
   reviewed.
+- The futures range-first strategy construction v1 spec has selected only
+  `range_occupancy_rotation_v1` for the next bounded offline implementation.
+  The authorized future implementation is limited to BTCUSDT Binance USDT-M
+  futures, closed UTC `15m` and `1h` signal bars derived from the accepted
+  `5m` source, the declared `1,152` config grid, the fixed baseline row, and
+  the documented gates/artifacts. This does not authorize retuning or renaming
+  structured compression, breakout-retest/acceptance, clean breakout,
+  hold-inside/midline, impulse absorption, nested range-rotation, source
+  expansion, symbol expansion, live-adjacent work, or old `binance-bot`
+  strategy/scoring/live code.
 - The futures impulse absorption audit has been reviewed. Abnormal OHLCV
   impulse candles on Binance USDT-M futures data are continuation-dominant
   rather than midpoint-reclaim-dominant across every period split and tested

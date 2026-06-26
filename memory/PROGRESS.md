@@ -14,7 +14,10 @@ git history.
   range-rotation audit are exclusion evidence in their reviewed forms. The
   user-approved next posture is range-first, BTCUSDT-first strategy
   construction from scratch through documented offline backtesting and
-  optimization stages.
+  optimization stages. The first v1 construction spec now selects
+  `range_occupancy_rotation_v1`, a BTCUSDT rolling range-envelope occupancy
+  imbalance and interior-recapture grammar, for the next bounded offline
+  optimizer/backtester brief.
 - Active market target is Binance USDT-M futures, not spot. Spot-generated
   audits/reviews are historical context only unless a futures rerun explicitly
   revalidates a specific conclusion.
@@ -69,6 +72,55 @@ git history.
   expansion, or strategy package is approved from this premise.
 
 ## 2026-06-26
+
+Futures range-first strategy construction v1 spec:
+
+- Spec doc:
+  `docs/FUTURES_RANGE_FIRST_STRATEGY_CONSTRUCTION_V1_SPEC.md`.
+- Stop state:
+  `range_first_strategy_v1_spec_ready_for_optimizer_implementation`.
+- This was documentation-only. No strategy, optimizer, replay, walk-forward
+  run, CLI flag, generated result directory, artifact writer, data download,
+  live/paper/testnet path, exchange API, credential, deploy file, martingale,
+  averaging down, or two-exchange logic was added.
+- Selected v1 grammar:
+  `range_occupancy_rotation_v1`.
+- The grammar builds a rolling closed-candle range envelope, requires recent
+  closes to cluster persistently in one outer part of the range, then enters
+  only after a closed candle recaptures an interior line back toward range
+  value. It is not a structured-compression, breakout-retest, clean-breakout,
+  hold-inside/midline, impulse-absorption, or nested range-rotation reslice.
+- Source contract remains BTCUSDT Binance USDT-M futures `5m`:
+  `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`;
+  `573,984` loaded candles; open-time coverage
+  `2021-01-01T00:00:00Z` through `2026-06-16T23:55:00Z`;
+  `gap_count=0`, `duplicate_count=0`, `zero_volume_count=66`,
+  `comparison_only=false`, `validation_status=accepted`.
+- Expected V1 signal resamples:
+  - `15m`: `191,328` rows, `2021-01-01T00:00:00Z` through
+    `2026-06-16T23:45:00Z`;
+  - `1h`: `47,832` rows, `2021-01-01T00:00:00Z` through
+    `2026-06-16T23:00:00Z`.
+- Declared future implementation flag:
+  `-futures-range-first-occupancy-rotation-v1-optimization`.
+- Declared future result dir:
+  `results/futures-range-first-occupancy-rotation-v1-optimization/`.
+- Declared grid:
+  `1,152` configs plus the fixed baseline row
+  `range_occupancy_rotation_v1_1h_l48_w035_ow12_occ060_rec33_t66_h12_sb005`.
+- Common outputs for the future optimizer are locked to the fixed baseline
+  (`source_manifest.json`, `summary.csv/json`, `trades.json`); grid, ranking,
+  selected-config, comparison, skipped-signal, and selected-trade rows belong
+  only in V1-specific artifacts until a later fixed replay is approved.
+- Added a durable decision limiting the next implementation to this exact
+  BTCUSDT, range-first, `15m`/`1h`, declared-grid optimizer/backtester.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to the bounded implementation brief
+  for `range_occupancy_rotation_v1`.
+- Verification commands run:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
 
 Futures range-first strategy construction protocol:
 
