@@ -1,12 +1,12 @@
 # Range Strategy Lab
 
 Standalone Binance USDT-M futures range-strategy starter project. The current
-implemented CLI default remains BTCUSDT futures 5m data. The BTCUSDT
-higher-timeframe nested range-rotation audit has failed its no-baseline review
-gate, so there is no automatic next implementation path without a materially
-different user-approved offline range premise. Older spot-data outputs are
-historical context unless a futures rerun explicitly revalidates a specific
-conclusion.
+implemented CLI default remains BTCUSDT futures 5m data. Research is not
+stopped, but automatic reuse of failed premises is stopped: the next approved
+direction is a range-first, BTCUSDT-first strategy construction protocol that
+designs fresh offline backtesting and optimization work before any code. Older
+spot-data outputs are historical context unless a futures rerun explicitly
+revalidates a specific conclusion.
 
 ## Purpose
 
@@ -66,7 +66,8 @@ review, read the docs in this order:
 35. [docs/FUTURES_RANGE_UNIVERSE_STRUCTURED_COMPRESSION_WALK_FORWARD_REVIEW.md](docs/FUTURES_RANGE_UNIVERSE_STRUCTURED_COMPRESSION_WALK_FORWARD_REVIEW.md)
 36. [docs/FUTURES_RANGE_UNIVERSE_POST_STRUCTURED_COMPRESSION_PIVOT_REVIEW.md](docs/FUTURES_RANGE_UNIVERSE_POST_STRUCTURED_COMPRESSION_PIVOT_REVIEW.md)
 37. [docs/FUTURES_RANGE_UNIVERSE_BREAKOUT_RETEST_ACCEPTANCE_BASELINE_REVIEW.md](docs/FUTURES_RANGE_UNIVERSE_BREAKOUT_RETEST_ACCEPTANCE_BASELINE_REVIEW.md)
-38. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+38. [docs/FUTURES_RANGE_FIRST_STRATEGY_CONSTRUCTION_PROTOCOL.md](docs/FUTURES_RANGE_FIRST_STRATEGY_CONSTRUCTION_PROTOCOL.md)
+39. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 

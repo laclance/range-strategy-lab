@@ -7,12 +7,14 @@ git history.
 
 ## Current State
 
-- Scope is now offline Binance USDT-M futures range-strategy discovery. The
-  implemented CLI default remains BTCUSDT `5m`. Structured compression,
+- Scope is now offline Binance USDT-M futures range-strategy construction.
+  The implemented CLI default remains BTCUSDT `5m`. Research is not stopped,
+  but automatic reuse of failed premises is stopped: structured compression,
   breakout-retest/acceptance, and the BTCUSDT higher-timeframe nested
-  range-rotation audit are exclusion evidence in their reviewed forms; there
-  is no automatic next implementation path without a materially different
-  user-approved offline range premise.
+  range-rotation audit are exclusion evidence in their reviewed forms. The
+  user-approved next posture is range-first, BTCUSDT-first strategy
+  construction from scratch through documented offline backtesting and
+  optimization stages.
 - Active market target is Binance USDT-M futures, not spot. Spot-generated
   audits/reviews are historical context only unless a futures rerun explicitly
   revalidates a specific conclusion.
@@ -67,6 +69,41 @@ git history.
   expansion, or strategy package is approved from this premise.
 
 ## 2026-06-26
+
+Futures range-first strategy construction protocol:
+
+- Protocol doc:
+  `docs/FUTURES_RANGE_FIRST_STRATEGY_CONSTRUCTION_PROTOCOL.md`.
+- Stop state:
+  `range_first_strategy_construction_protocol_ready_for_v1_spec`.
+- This was documentation-only. No strategy, optimizer, replay, walk-forward
+  run, CLI flag, generated result directory, data download, live/paper/testnet
+  path, exchange API, credential, deploy file, martingale, averaging down, or
+  two-exchange logic was added.
+- User-approved posture:
+  - research continues as a fresh range-derived strategy construction process;
+  - scope remains range-first and BTCUSDT-first;
+  - the first construction source remains the accepted Binance USDT-M futures
+    BTCUSDT `5m` file
+    `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`;
+  - from-scratch means defining a new strategy grammar and review ladder, not
+    retuning failed structured-compression, breakout-retest, clean-breakout,
+    hold-inside/midline, impulse absorption, or nested-rotation families.
+- The protocol ladder is:
+  strategy grammar spec -> baseline backtest -> bounded optimization -> fixed
+  replay -> walk-forward robustness -> package review.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to a spec-only brief for
+  `docs/FUTURES_RANGE_FIRST_STRATEGY_CONSTRUCTION_V1_SPEC.md`; the next brief
+  should define optimizer/backtester grammar, bounds, gates, artifacts, and
+  stop states, but not implement code yet.
+- Added a durable decision that from-scratch strategy construction is allowed
+  only as offline, range-first, BTCUSDT-first work until a later approved brief
+  expands scope.
+- Verification commands run:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
 
 Futures higher-timeframe nested range rotation audit:
 

@@ -217,6 +217,16 @@
   horizon, or split gates, expand sources/symbols, package a strategy, or move
   toward paper/testnet/live/deploy from this premise without a materially
   different user-approved offline range premise and fresh review.
+- The futures range-first strategy construction protocol has been reviewed and
+  authorizes fresh strategy research from scratch, but only as offline,
+  range-first, BTCUSDT-first work until a later approved brief expands scope.
+  This authorization does not reopen failed structured-compression,
+  breakout-retest/acceptance, clean-breakout, hold-inside/midline, impulse
+  absorption, or nested range-rotation families for retuning under new names.
+  The next authorized step is a documentation-only v1 strategy grammar spec;
+  do not implement an optimizer, backtest flag, replay, walk-forward, source
+  expansion, symbol expansion, or live-adjacent path until that spec is
+  reviewed.
 - The futures impulse absorption audit has been reviewed. Abnormal OHLCV
   impulse candles on Binance USDT-M futures data are continuation-dominant
   rather than midpoint-reclaim-dominant across every period split and tested
