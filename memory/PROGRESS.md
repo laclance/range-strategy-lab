@@ -8,11 +8,11 @@ git history.
 ## Current State
 
 - Scope is now offline Binance USDT-M futures range-strategy discovery. The
-  implemented CLI default remains BTCUSDT `5m`, and the active approved
-  research path is the selected local ETH/SOL `4h` structured-compression
-  stream, with BTC diagnostic-only. BTCUSDT `5m`, buy/sell-touch, and
-  single-candle reaction ideas remain available when they are materially
-  reframed and compared inside a discovery-to-backtest funnel.
+  implemented CLI default remains BTCUSDT `5m`. Structured compression,
+  breakout-retest/acceptance, and the BTCUSDT higher-timeframe nested
+  range-rotation audit are exclusion evidence in their reviewed forms; there
+  is no automatic next implementation path without a materially different
+  user-approved offline range premise.
 - Active market target is Binance USDT-M futures, not spot. Spot-generated
   audits/reviews are historical context only unless a futures rerun explicitly
   revalidates a specific conclusion.
@@ -59,14 +59,81 @@ git history.
   bounded offline breakout-retest/acceptance baseline from existing
   range-universe discovery evidence; that baseline also failed after costs and
   is not promoted.
-- The user selected a review-only higher-timeframe premise-spec route after the
-  no-automatic-implementation stop. The resulting spec authorizes only a
-  future non-trading BTCUSDT nested range-rotation audit using closed UTC `1h`
-  child ranges inside frozen mature `4h` parent ranges. No baseline backtest,
-  optimizer, replay, walk-forward, source expansion, or strategy package is
-  approved until that audit exists and passes review.
+- The user-selected higher-timeframe nested range-rotation premise has now
+  been implemented as a non-trading BTCUSDT audit and reviewed. Source and
+  resample validation passed, but only `3` valid events appeared across the
+  full sample, all upside, so the audit failed the no-baseline gate. No
+  baseline backtest, optimizer, replay, walk-forward, source expansion, symbol
+  expansion, or strategy package is approved from this premise.
 
 ## 2026-06-26
+
+Futures higher-timeframe nested range rotation audit:
+
+- Review doc:
+  `docs/FUTURES_HIGHER_TIMEFRAME_NESTED_RANGE_ROTATION_AUDIT_REVIEW.md`.
+- CLI flag:
+  `-futures-higher-tf-nested-range-rotation-audit`.
+- Result dir:
+  `results/futures-higher-tf-nested-range-rotation-audit/`.
+- Stop state:
+  `higher_tf_nested_range_rotation_audit_failed_no_baseline`.
+- Common outputs stayed non-trading:
+  `trades.json` contains `0` trades and common `summary.csv/json` are
+  zero-trade compatibility outputs.
+- Source facts:
+  - path:
+    `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`;
+  - product/symbol/interval: Binance USDT-M futures `BTCUSDT` `5m`;
+  - rows: `573,984`;
+  - first/last open:
+    `2021-01-01T00:00:00Z` to `2026-06-16T23:55:00Z`;
+  - `gap_count=0`, `duplicate_count=0`, `zero_volume_count=66`,
+    `comparison_only=false`, `validation_status=accepted`.
+- Closed UTC resample facts:
+  - parent `4h`: `11,958` rows, first open `2021-01-01T00:00:00Z`,
+    last open `2026-06-16T20:00:00Z`, complete, accepted;
+  - child `1h`: `47,832` rows, first open `2021-01-01T00:00:00Z`,
+    last open `2026-06-16T23:00:00Z`, complete, accepted.
+- CSV line counts including headers:
+  - `futures_higher_tf_nested_range_rotation_child_ranges.csv`: `283`;
+  - `futures_higher_tf_nested_range_rotation_coverage.csv`: `3`;
+  - `futures_higher_tf_nested_range_rotation_events.csv`: `20`;
+  - `futures_higher_tf_nested_range_rotation_parent_ranges.csv`: `69`;
+  - `futures_higher_tf_nested_range_rotation_sources.csv`: `2`;
+  - `futures_higher_tf_nested_range_rotation_summary.csv`: `13`;
+  - common `summary.csv`: `13`.
+- Audit counts:
+  - parent ranges: `68`;
+  - child ranges: `282`, with `11` eligible, `262` no-valid-parent skips,
+    `8` child-width-above-40pct-parent skips, and `1` child-not-inside-parent
+    skip;
+  - event rows: `19`, with `3` valid events and skips for
+    `duplicate_child_event=9`, `event_beyond_parent_midpoint=6`, and
+    `event_wrong_rotation_side=1`;
+  - all valid events were `up`; no `down` event passed the nested geometry and
+    first-break rules.
+- Outcome facts:
+  - `2021_2022_stress`: `1` valid event, adverse parent/child invalidation;
+  - `2023_2024_oos`: `1` valid event, favorable midpoint and far quartile;
+  - `2025_2026_recent`: `1` valid event, no resolution;
+  - full sample: `3` valid events, favorable midpoint/far quartile rate
+    `33.33%`, adverse parent/child invalidation rate `33.33%`,
+    no-resolution rate `33.33%`, quick invalidation `0%`.
+- Review outcome: source/resample validation passed, but the premise failed
+  the `100` full-event gate, every `25` event split gate, and the side-balance
+  gate. This is exclusion evidence for the frozen `4h` parent / `1h` child
+  nested range-rotation audit, not permission to retune width/horizon/gates.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to a review-only no-automatic
+  implementation stop requiring a materially different user-approved offline
+  range premise before more strategy work.
+- Verification commands run:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -futures-higher-tf-nested-range-rotation-audit -out-dir results/futures-higher-tf-nested-range-rotation-audit`
+  - `wc -l results/futures-higher-tf-nested-range-rotation-audit/*.csv`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
 
 Futures higher-timeframe nested range rotation premise spec:
 

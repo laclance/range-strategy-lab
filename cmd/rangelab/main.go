@@ -24,6 +24,7 @@ var futuresRangeUniverseStructuredCompressionBaselineConfigForRun = lab.DefaultF
 var futuresRangeUniverseStructuredCompressionOptimizationConfigForRun = lab.DefaultFuturesRangeUniverseStructuredCompressionOptimizationConfig
 var futuresRangeUniverseStructuredCompressionStrategyReplayConfigForRun = lab.DefaultFuturesRangeUniverseStructuredCompressionStrategyReplayConfig
 var futuresRangeUniverseStructuredCompressionWalkForwardConfigForRun = lab.DefaultFuturesRangeUniverseStructuredCompressionWalkForwardConfig
+var futuresHigherTFNestedRangeRotationAuditConfigForRun = lab.DefaultFuturesHigherTFNestedRangeRotationAuditConfig
 
 func main() {
 	if err := run(); err != nil {
@@ -67,6 +68,7 @@ func runWithArgs(args []string) error {
 	futuresRangeUniverseStructuredCompressionOptimization := fs.Bool("futures-range-universe-structured-compression-optimization", false, "run offline futures range universe structured compression optimization")
 	futuresRangeUniverseStructuredCompressionStrategyReplay := fs.Bool("futures-range-universe-structured-compression-strategy-replay", false, "run offline futures range universe structured compression strategy replay")
 	futuresRangeUniverseStructuredCompressionWalkForwardRobustness := fs.Bool("futures-range-universe-structured-compression-walk-forward-robustness", false, "run offline futures range universe structured compression walk-forward robustness")
+	futuresHigherTFNestedRangeRotationAudit := fs.Bool("futures-higher-tf-nested-range-rotation-audit", false, "write non-trading futures higher-timeframe nested range rotation diagnostics")
 	srAudit := fs.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
 	srBoundaryAudit := fs.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
 	srBoundaryInspect := fs.Bool("sr-boundary-inspect", false, "write compact non-trading SR boundary candidate comparison diagnostics")
@@ -117,6 +119,16 @@ func runWithArgs(args []string) error {
 		FeePct:         *feePct,
 		SlippagePct:    *slippagePct,
 		MaxHoldBars:    *maxHoldBars,
+	}
+
+	tradeProducingFlagSelected := *holdInsideMidlineTouchPrototype || *futuresCleanBreakoutBaselineBacktest || *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest || *futuresRangeUniverseStructuredCompressionBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness
+	if *futuresHigherTFNestedRangeRotationAudit {
+		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
+			return fmt.Errorf("-futures-higher-tf-nested-range-rotation-audit requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
+		}
+		if tradeProducingFlagSelected {
+			return fmt.Errorf("-futures-higher-tf-nested-range-rotation-audit cannot be combined with trade-producing prototype/backtest/optimization/replay/walk-forward flags")
+		}
 	}
 
 	var strategy lab.Strategy = lab.EmptyStrategy{}
@@ -212,6 +224,7 @@ func runWithArgs(args []string) error {
 	var structuredCompressionOptimizationResult lab.FuturesRangeUniverseStructuredCompressionOptimizationResult
 	var structuredCompressionStrategyReplayResult lab.FuturesRangeUniverseStructuredCompressionStrategyReplayResult
 	var structuredCompressionWalkForwardResult lab.FuturesRangeUniverseStructuredCompressionWalkForwardResult
+	var nestedRangeRotationResult lab.FuturesHigherTFNestedRangeRotationAuditResult
 	var result lab.BacktestResult
 	if *futuresCleanBreakoutBaselineBacktest {
 		var err error
@@ -706,6 +719,59 @@ func runWithArgs(args []string) error {
 			len(structuredCompressionWalkForwardResult.RankingRows),
 			structuredCompressionWalkForwardResult.FrozenConfigID,
 			lab.FuturesRangeUniverseStructuredCompressionWalkForwardStopState(structuredCompressionWalkForwardResult.FoldRows),
+		)
+	}
+	if *futuresHigherTFNestedRangeRotationAudit {
+		nestedCfg := futuresHigherTFNestedRangeRotationAuditConfigForRun()
+		var err error
+		nestedRangeRotationResult, err = lab.RunFuturesHigherTFNestedRangeRotationAudit(candles, sourceManifest, nestedCfg, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_higher_tf_nested_range_rotation_sources.json"), nestedRangeRotationResult.SourceRows); err != nil {
+			return err
+		}
+		if err := writeFuturesHigherTFNestedRangeRotationSourcesCSV(filepath.Join(*outDir, "futures_higher_tf_nested_range_rotation_sources.csv"), nestedRangeRotationResult.SourceRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_higher_tf_nested_range_rotation_coverage.json"), nestedRangeRotationResult.CoverageRows); err != nil {
+			return err
+		}
+		if err := writeFuturesHigherTFNestedRangeRotationCoverageCSV(filepath.Join(*outDir, "futures_higher_tf_nested_range_rotation_coverage.csv"), nestedRangeRotationResult.CoverageRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_higher_tf_nested_range_rotation_parent_ranges.json"), nestedRangeRotationResult.ParentRangeRows); err != nil {
+			return err
+		}
+		if err := writeFuturesHigherTFNestedRangeRotationParentRangesCSV(filepath.Join(*outDir, "futures_higher_tf_nested_range_rotation_parent_ranges.csv"), nestedRangeRotationResult.ParentRangeRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_higher_tf_nested_range_rotation_child_ranges.json"), nestedRangeRotationResult.ChildRangeRows); err != nil {
+			return err
+		}
+		if err := writeFuturesHigherTFNestedRangeRotationChildRangesCSV(filepath.Join(*outDir, "futures_higher_tf_nested_range_rotation_child_ranges.csv"), nestedRangeRotationResult.ChildRangeRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_higher_tf_nested_range_rotation_events.json"), nestedRangeRotationResult.EventRows); err != nil {
+			return err
+		}
+		if err := writeFuturesHigherTFNestedRangeRotationEventsCSV(filepath.Join(*outDir, "futures_higher_tf_nested_range_rotation_events.csv"), nestedRangeRotationResult.EventRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_higher_tf_nested_range_rotation_summary.json"), nestedRangeRotationResult.SummaryRows); err != nil {
+			return err
+		}
+		if err := writeFuturesHigherTFNestedRangeRotationSummaryCSV(filepath.Join(*outDir, "futures_higher_tf_nested_range_rotation_summary.csv"), nestedRangeRotationResult.SummaryRows); err != nil {
+			return err
+		}
+		fmt.Printf("futures_higher_tf_nested_range_rotation_audit source_rows=%d coverage_rows=%d parent_ranges=%d child_ranges=%d events=%d summary_rows=%d stop_state=%s\n",
+			len(nestedRangeRotationResult.SourceRows),
+			len(nestedRangeRotationResult.CoverageRows),
+			len(nestedRangeRotationResult.ParentRangeRows),
+			len(nestedRangeRotationResult.ChildRangeRows),
+			len(nestedRangeRotationResult.EventRows),
+			len(nestedRangeRotationResult.SummaryRows),
+			lab.FuturesHigherTFNestedRangeRotationAuditStopState(nestedRangeRotationResult),
 		)
 	}
 	var srRows []lab.SRAuditRow
@@ -2734,6 +2800,30 @@ func writeFuturesRangeUniverseStructuredCompressionWalkForwardSummaryCSV(path st
 }
 
 func writeFuturesRangeUniverseStructuredCompressionWalkForwardRankingsCSV(path string, rows []lab.FuturesRangeUniverseStructuredCompressionWalkForwardRankingRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesHigherTFNestedRangeRotationSourcesCSV(path string, rows []lab.FuturesHigherTFNestedRangeRotationSourceRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesHigherTFNestedRangeRotationCoverageCSV(path string, rows []lab.FuturesHigherTFNestedRangeRotationCoverageRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesHigherTFNestedRangeRotationParentRangesCSV(path string, rows []lab.FuturesHigherTFNestedRangeRotationParentRangeRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesHigherTFNestedRangeRotationChildRangesCSV(path string, rows []lab.FuturesHigherTFNestedRangeRotationChildRangeRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesHigherTFNestedRangeRotationEventsCSV(path string, rows []lab.FuturesHigherTFNestedRangeRotationEventRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesHigherTFNestedRangeRotationSummaryCSV(path string, rows []lab.FuturesHigherTFNestedRangeRotationSummaryRow) error {
 	return writeJSONTaggedCSV(path, rows)
 }
 

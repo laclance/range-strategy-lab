@@ -1,4 +1,4 @@
-# Next Codex Brief: Futures Higher-Timeframe Nested Range Rotation Audit
+# Next Codex Brief: Futures Range-Strategy No Automatic Implementation Stop
 
 ```text
 We are in /home/lance/range-strategy-lab, a standalone offline Go project for
@@ -8,164 +8,97 @@ Before work:
 - Read AGENTS.md.
 - Read memory/README.md, memory/PROGRESS.md, and memory/DECISIONS.md.
 - Read README.md as the docs index.
-- Read only the docs relevant to this task:
+- Read only the docs relevant to the user's request. For the current stop
+  state, the most relevant docs are:
+  - docs/FUTURES_HIGHER_TIMEFRAME_NESTED_RANGE_ROTATION_AUDIT_REVIEW.md
   - docs/FUTURES_HIGHER_TIMEFRAME_NESTED_RANGE_ROTATION_PREMISE_SPEC.md
-  - docs/FUTURES_HIGHER_TIMEFRAME_RANGE_SOURCE_SPEC.md
   - docs/FUTURES_RANGE_UNIVERSE_BREAKOUT_RETEST_ACCEPTANCE_BASELINE_REVIEW.md
   - docs/FUTURES_RANGE_UNIVERSE_STRUCTURED_COMPRESSION_WALK_FORWARD_REVIEW.md
+  - docs/FUTURES_RANGE_UNIVERSE_DISCOVERY_REVIEW.md
   - docs/FUTURES_HYPOTHESIS_PIVOT_INVENTORY.md
   - docs/VERIFICATION.md
 - Check git status before editing.
 
 Current state:
-- Structured compression passed a fixed ETH/SOL replay but failed
-  walk-forward robustness; stop state:
+- The project is offline Binance USDT-M futures range-strategy research.
+- Default CLI behavior remains BTCUSDT futures 5m with `lab.EmptyStrategy`
+  unless an explicit offline audit/backtest flag is passed.
+- Structured compression passed one fixed ETH/SOL replay, then failed
+  walk-forward robustness.
+- Structured-compression walk-forward stop state:
   structured_compression_walk_forward_fragile_needs_review.
 - Breakout-retest/acceptance was the one automatic materially different
-  follow-up, but its fixed-rule baseline failed after costs; stop state:
+  follow-up from the post-compression pivot review, but its fixed-rule
+  baseline failed after costs.
+- Breakout-retest/acceptance stop state:
   breakout_retest_acceptance_baseline_failed_no_promotion.
-- The user approved option 2: a review-only higher-timeframe premise spec
-  rather than another automatic backtest.
-- The new premise spec is:
-  docs/FUTURES_HIGHER_TIMEFRAME_NESTED_RANGE_ROTATION_PREMISE_SPEC.md.
-- Premise stop state:
-  higher_tf_nested_range_rotation_premise_ready_for_audit.
-- The premise is BTCUSDT-only, range-only, and non-trading:
-  closed UTC 1h child ranges nested inside frozen mature closed UTC 4h parent
-  ranges, measuring internal rotation to parent midpoint/far quartile before
-  child-range invalidation.
-- This is not a rescue retune of structured compression, clean breakout,
-  breakout retest, hold-inside/midline, impulse absorption, mature balance
-  persistence, or the failed range-universe families.
+- The user then approved a higher-timeframe nested range-rotation premise:
+  closed UTC 1h child ranges inside frozen mature closed UTC 4h parent ranges,
+  measuring internal rotation toward parent midpoint/far quartile before
+  invalidation.
+- That premise has now been implemented as a non-trading audit, run, and
+  reviewed.
+- Nested range-rotation audit stop state:
+  higher_tf_nested_range_rotation_audit_failed_no_baseline.
+- Source and resample validation passed for the accepted BTCUSDT Binance
+  USDT-M futures data:
+  - source rows: 573,984;
+  - coverage: 2021-01-01T00:00:00Z through 2026-06-16T23:55:00Z;
+  - gap_count=0, duplicate_count=0, zero_volume_count=66;
+  - closed UTC 4h rows: 11,958 through 2026-06-16T20:00:00Z;
+  - closed UTC 1h rows: 47,832 through 2026-06-16T23:00:00Z.
+- The audit found 68 parent ranges, 282 child ranges, 11 eligible children,
+  and only 3 valid full-sample events, all upside. No downside event passed.
+- The failure is strategy-premise/count-gate evidence, not a source-gap stop.
 
 Goal:
-- Implement a non-trading audit behind:
-  -futures-higher-tf-nested-range-rotation-audit
-- Reuse existing Binance USDT-M futures source validation, closed UTC resample
-  behavior, mature range episode/detector plumbing, artifact writer patterns,
-  split labels, and zero-trade default compatibility outputs.
-- Do not add entries, exits, P&L, strategy replacement, optimizer, replay,
-  walk-forward, grid, live/paper/testnet wiring, exchange API, credentials,
-  deploy scripts, data downloads, symbol expansion, martingale, averaging down,
+- Review-only stop unless the user explicitly supplies a materially different
+  offline range-strategy premise.
+- Do not implement a new strategy, optimizer, replay, walk-forward, grid,
+  source expansion, symbol expansion, or result-producing run from the closed
+  or fragile families without user input.
+- If the user asks what is available, inventory the current docs and present a
+  short choice set of materially different offline premises, clearly marking
+  closed families as exclusion evidence.
+
+Boundaries:
+- Do not retune structured compression.
+- Do not retune breakout_retest_acceptance target, stop, max hold, timeframe,
+  side, symbol set, selection rules, or review gates around the failed result.
+- Do not retune the nested range-rotation 40% child-width gate, 24 bar outcome
+  horizon, 6 bar quick-invalidation horizon, parent/child timeframes, detector
+  profile, or split gates around the failed result.
+- Do not reopen the failed 1h structured-compression surface.
+- Do not rerun failed clean-breakout, hold-inside/midline, impulse absorption,
+  boundary touch rejection, single-candle wick rejection, failed breakout
+  re-entry, mature balance persistence, breakout_retest_acceptance, or
+  nested range-rotation as entries unless the user supplies a materially new
+  data or structure premise.
+- Do not add live orders, paper/testnet, exchange API keys, deploy scripts,
+  credentials, data downloads, broad symbol mining, martingale, averaging down,
   or two-exchange logic.
 
-Source requirements:
-- Parent source must be the accepted BTCUSDT Binance USDT-M futures 5m CSV:
-  ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv
-- Required source facts:
-  - loaded candles: 573,984;
-  - first open: 2021-01-01T00:00:00Z;
-  - last open: 2026-06-16T23:55:00Z;
-  - gap_count=0, duplicate_count=0, zero_volume_count=66,
-    comparison_only=false, validation_status=accepted.
-- Required closed UTC resamples:
-  - 1h rows: 47,832, last open 2026-06-16T23:00:00Z;
-  - 4h rows: 11,958, last open 2026-06-16T20:00:00Z.
-- Reject spot/comparison sources.
+Expected review-only shape if the user asks for next options:
+- Start from current docs only.
+- Treat structured compression walk-forward, breakout-retest/acceptance
+  baseline, and nested range-rotation audit as exclusion evidence.
+- Separate reusable infrastructure from rejected strategy premises.
+- End with either:
+  - a user-approved bounded offline implementation brief for a materially
+    different premise, or
+  - a no-implementation stop that says no automatic strategy work is
+    authorized.
 
-Audit rules:
-- Detector profile: p30_c12_bollinger_on_adx_off.
-- Parent timeframe: 4h.
-- Child timeframe: 1h.
-- A parent range is mature after at least 12 consecutive detector-qualified
-  4h bars; freeze parent high, low, midpoint, upper quartile, and lower
-  quartile at the first mature 4h close.
-- Ignore child candidates after a closed 4h candle closes outside the frozen
-  parent range.
-- A child range is mature after at least 12 consecutive detector-qualified
-  1h bars.
-- Child range eligibility:
-  - high/low fully inside frozen parent range;
-  - positive width;
-  - width no more than 40% of parent width;
-  - midpoint in parent lower half for upside rotation candidates;
-  - midpoint in parent upper half for downside rotation candidates;
-  - at most one event per child range.
-- Event definitions:
-  - nested_rotation_up: first closed 1h candle after child maturity closes
-    above child high, remains inside parent range, closes below parent
-    midpoint, and child midpoint is below parent midpoint;
-  - nested_rotation_down: first closed 1h candle after child maturity closes
-    below child low, remains inside parent range, closes above parent
-    midpoint, and child midpoint is above parent midpoint.
-- Outcome horizon: 24 closed 1h bars after the event candle.
-- Quick invalidation horizon: 6 closed 1h bars.
-- Record favorable midpoint, favorable far quartile, adverse child
-  invalidation, adverse parent invalidation, no resolution, quick invalidation,
-  and excursion fields exactly enough to support the review gate in the spec.
-- Skip and count missing coverage, invalid widths, child not inside parent,
-  child width above 40%, child midpoint in the wrong parent half, event outside
-  parent, event already beyond parent midpoint, and duplicate child events.
-
-Outputs:
-- Write artifacts under:
-  results/futures-higher-tf-nested-range-rotation-audit/
-- Required specific artifacts:
-  - futures_higher_tf_nested_range_rotation_sources.csv/json
-  - futures_higher_tf_nested_range_rotation_coverage.csv/json
-  - futures_higher_tf_nested_range_rotation_parent_ranges.csv/json
-  - futures_higher_tf_nested_range_rotation_child_ranges.csv/json
-  - futures_higher_tf_nested_range_rotation_events.csv/json
-  - futures_higher_tf_nested_range_rotation_summary.csv/json
-- Also write common source_manifest.json, summary.csv/json, and trades.json.
-- Common summary/trades must remain zero-trade compatibility outputs.
-- Add a review doc after the run:
-  docs/FUTURES_HIGHER_TIMEFRAME_NESTED_RANGE_ROTATION_AUDIT_REVIEW.md
-- Add the review doc to README.md.
-
-Stop states:
-- higher_tf_nested_range_rotation_audit_source_gap
-- higher_tf_nested_range_rotation_audit_no_candidate_events
-- higher_tf_nested_range_rotation_audit_rejected_as_closed_family_reslice
-- higher_tf_nested_range_rotation_audit_failed_no_baseline
-- higher_tf_nested_range_rotation_audit_ready_for_baseline_brief
-
-Review gate:
-- Pass only if source/resample validation passes; at least 100 full-sample
-  events exist; every period split has at least 25 events; both sides have at
-  least 25 full-sample events or the weaker side is explicitly excluded from
-  any future baseline; favorable midpoint beats adverse child invalidation and
-  quick invalidation in every period split; favorable far-quartile rate is at
-  least 20% in every split; average favorable excursion exceeds average adverse
-  excursion in every split; and the result is not carried entirely by one
-  historical regime.
-- Fail if the only way to pass is to change the 40% child-width gate, 24 bar
-  outcome horizon, 6 bar quick-invalidation horizon, or split gates after
-  seeing results.
-
-Test plan:
-- Add focused lab tests for:
-  - 1h/4h closed UTC resample source acceptance;
-  - parent range maturity and frozen parent geometry;
-  - child range eligibility and skip reasons;
-  - nested_rotation_up and nested_rotation_down event emission;
-  - duplicate child event handling;
-  - outcome labeling order for favorable midpoint, far quartile, adverse child
-    invalidation, adverse parent invalidation, no resolution, and quick
-    invalidation;
-  - summary gate pass/fail stop-state selection.
-- Add CLI tests proving:
-  - default runs do not write nested range rotation artifacts;
-  - the new flag writes all required artifacts;
-  - spot comparison is rejected;
-  - combinations with trade-producing baseline/replay/optimization/
-    walk-forward flags are rejected.
-
-Verification:
+Verification for any documentation-only update:
 - env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
-- env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -futures-higher-tf-nested-range-rotation-audit -out-dir results/futures-higher-tf-nested-range-rotation-audit
-- wc -l results/futures-higher-tf-nested-range-rotation-audit/*.csv
 - rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
 - git diff --check
 - git status --short
 
 Closeout:
-- Update memory/PROGRESS.md with exact commands, result path, source/resample
-  facts, CSV line counts, event counts, summary outcome, and stop state.
-- Update memory/DECISIONS.md only if the audit creates a durable
-  promotion/no-baseline/no-strategy-change rule.
-- Replace memory/NEXT_CODEX_BRIEF.md based on the final stop state.
-- Commit the completed audit, review doc, README/memory updates, refreshed
-  next brief, and verification evidence after checks pass unless explicitly
-  told not to commit.
+- If files are changed, update memory/PROGRESS.md with exact commands and
+  factual outcomes.
+- Update memory/DECISIONS.md only for a durable user-approved rule.
+- Commit completed docs/memory updates and verification evidence after checks
+  pass unless explicitly told not to commit.
 ```

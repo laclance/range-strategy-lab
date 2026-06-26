@@ -209,6 +209,14 @@
   deployment, martingale, averaging down, or two-exchange work. A later
   baseline brief requires the nested range-rotation audit to pass source,
   resample, candidate-count, split-stability, side-balance, and outcome gates.
+- The futures higher-timeframe nested range rotation audit has been reviewed
+  and failed the no-baseline gate. Source/resample validation passed, but only
+  `3` valid events appeared across the full sample and no downside event
+  passed. Do not baseline, optimize, replay, walk-forward, retune the `40%`
+  child-width gate, `24` bar outcome horizon, `6` bar quick-invalidation
+  horizon, or split gates, expand sources/symbols, package a strategy, or move
+  toward paper/testnet/live/deploy from this premise without a materially
+  different user-approved offline range premise and fresh review.
 - The futures impulse absorption audit has been reviewed. Abnormal OHLCV
   impulse candles on Binance USDT-M futures data are continuation-dominant
   rather than midpoint-reclaim-dominant across every period split and tested

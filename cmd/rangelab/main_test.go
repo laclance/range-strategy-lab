@@ -735,6 +735,83 @@ func TestRunWithArgsFuturesRangeUniverseStructuredCompressionWalkForwardFlagWrit
 	}
 }
 
+func TestRunWithArgsFuturesHigherTFNestedRangeRotationAuditFlagWritesArtifactsAndRejectsSpotComparison(t *testing.T) {
+	dir := t.TempDir()
+	futuresPath := writeCLITestCSVN(t, dir, "btcusdt_futures_um_5m_nested_rotation.csv", 96)
+	oldNestedConfig := futuresHigherTFNestedRangeRotationAuditConfigForRun
+	futuresHigherTFNestedRangeRotationAuditConfigForRun = func() lab.FuturesHigherTFNestedRangeRotationAuditConfig {
+		cfg := lab.DefaultFuturesHigherTFNestedRangeRotationAuditConfig()
+		cfg.ApprovedSourcePath = futuresPath
+		cfg.SkipSourceFactCheck = true
+		cfg.SkipCoverageCountCheck = true
+		cfg.DetectorLookbackBarsOverride = 1
+		cfg.DetectorMinConsecutiveBars = 1
+		return cfg
+	}
+	defer func() { futuresHigherTFNestedRangeRotationAuditConfigForRun = oldNestedConfig }()
+
+	defaultOutDir := filepath.Join(dir, "default")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-out-dir", defaultOutDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(defaultOutDir, "futures_higher_tf_nested_range_rotation_events.csv")); !os.IsNotExist(err) {
+		t.Fatalf("default run should not write nested range rotation artifacts, stat err=%v", err)
+	}
+
+	outDir := filepath.Join(dir, "nested-rotation")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-higher-tf-nested-range-rotation-audit",
+		"-out-dir", outDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{
+		"source_manifest.json",
+		"summary.csv",
+		"summary.json",
+		"trades.json",
+		"futures_higher_tf_nested_range_rotation_sources.csv",
+		"futures_higher_tf_nested_range_rotation_coverage.csv",
+		"futures_higher_tf_nested_range_rotation_parent_ranges.csv",
+		"futures_higher_tf_nested_range_rotation_child_ranges.csv",
+		"futures_higher_tf_nested_range_rotation_events.csv",
+		"futures_higher_tf_nested_range_rotation_summary.csv",
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, name)); err != nil {
+			t.Fatalf("expected nested range rotation artifact %s: %v", name, err)
+		}
+	}
+
+	spotPath := writeCLITestCSV(t, dir, "btcusdt_spot_5m_test.csv")
+	err := runWithArgs([]string{
+		"-csv", spotPath,
+		"-source-product", lab.SourceProductBinanceSpot,
+		"-allow-spot-comparison",
+		"-futures-higher-tf-nested-range-rotation-audit",
+		"-out-dir", filepath.Join(dir, "spot-nested-rotation"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "requires Binance USDT-M futures source") {
+		t.Fatalf("expected nested range rotation futures-source error, got %v", err)
+	}
+
+	err = runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-higher-tf-nested-range-rotation-audit",
+		"-futures-clean-breakout-baseline-backtest",
+		"-out-dir", filepath.Join(dir, "combined-nested-rotation"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "cannot be combined") {
+		t.Fatalf("expected nested range rotation combination error, got %v", err)
+	}
+}
+
 func writeCLITestCSV(t *testing.T, dir string, name string) string {
 	return writeCLITestCSVN(t, dir, name, 2)
 }
