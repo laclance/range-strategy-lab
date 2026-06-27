@@ -1206,6 +1206,151 @@ func TestRunWithArgsFuturesRangeContextRouterAuditFlagWritesArtifactsAndRejectsC
 	}
 }
 
+func TestRunWithArgsFuturesRangeRouterRotationPremiseAuditFlagWritesArtifactsAndRejectsConflicts(t *testing.T) {
+	dir := t.TempDir()
+	futuresPath := writeCLITestCSVN(t, dir, "btcusdt_futures_um_5m_router_rotation_premise.csv", 180)
+	oldPremiseConfig := futuresRangeRouterRotationPremiseAuditConfigForRun
+	futuresRangeRouterRotationPremiseAuditConfigForRun = func() lab.FuturesRangeRouterRotationPremiseAuditConfig {
+		cfg := lab.DefaultFuturesRangeRouterRotationPremiseAuditConfig()
+		cfg.SkipCoverageCountCheck = true
+		cfg.RouterAuditConfig.StateAuditConfig.ApprovedSourcePath = futuresPath
+		cfg.RouterAuditConfig.StateAuditConfig.SkipSourceFactCheck = true
+		cfg.RouterAuditConfig.StateAuditConfig.SkipCoverageCountCheck = true
+		cfg.RouterAuditConfig.StateAuditConfig.Timeframes = []string{lab.RangeDiscoveryTimeframe15m}
+		cfg.RouterAuditConfig.StateAuditConfig.DetectorLookbackBarsOverride = 1
+		cfg.RouterAuditConfig.StateAuditConfig.DetectorMinConsecutiveBars = 1
+		cfg.RouterAuditConfig.StateAuditConfig.ShortWindowBars = 2
+		cfg.RouterAuditConfig.StateAuditConfig.MediumWindowBars = 4
+		cfg.RouterAuditConfig.StateAuditConfig.FeatureLookbackBars = 4
+		cfg.RouterAuditConfig.StateAuditConfig.LongLookbackDays = 1
+		cfg.RouterAuditConfig.StateAuditConfig.Horizons15M = []int{24}
+		cfg.RouterAuditConfig.StateAuditConfig.MinFullCohortCount = 1
+		cfg.RouterAuditConfig.StateAuditConfig.MinSplitCohortCount = 1
+		cfg.RouterAuditConfig.StateAuditConfig.MinNoTradeFullCohortCount = 1
+		cfg.RouterAuditConfig.StateAuditConfig.MinNoTradeSplitCohortCount = 1
+		cfg.RouterAuditConfig.MinFullRouterRows = 1
+		cfg.RouterAuditConfig.MinSplitRouterRows = 1
+		cfg.RouterAuditConfig.MinNoTradeFullRouterRows = 1
+		cfg.RouterAuditConfig.MinNoTradeSplitRouterRows = 1
+		cfg.MinContextSegmentsFull = 1
+		cfg.MinValidEventsFull = 1
+		cfg.MinValidEventsPerSplit = 1
+		cfg.MinValidEventsPerSide = 1
+		return cfg
+	}
+	defer func() { futuresRangeRouterRotationPremiseAuditConfigForRun = oldPremiseConfig }()
+
+	defaultOutDir := filepath.Join(dir, "default")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-out-dir", defaultOutDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(defaultOutDir, "futures_range_router_rotation_premise_summary.csv")); !os.IsNotExist(err) {
+		t.Fatalf("default run should not write router rotation premise artifacts, stat err=%v", err)
+	}
+
+	outDir := filepath.Join(dir, "premise")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-range-router-rotation-premise-audit",
+		"-out-dir", outDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{
+		"source_manifest.json",
+		"summary.csv",
+		"summary.json",
+		"trades.json",
+		"futures_range_router_rotation_premise_sources.csv",
+		"futures_range_router_rotation_premise_sources.json",
+		"futures_range_router_rotation_premise_coverage.csv",
+		"futures_range_router_rotation_premise_coverage.json",
+		"futures_range_router_rotation_premise_router_dependency.csv",
+		"futures_range_router_rotation_premise_router_dependency.json",
+		"futures_range_router_rotation_premise_context_segments.csv",
+		"futures_range_router_rotation_premise_context_segments.json",
+		"futures_range_router_rotation_premise_events.csv",
+		"futures_range_router_rotation_premise_events.json",
+		"futures_range_router_rotation_premise_outcomes.csv",
+		"futures_range_router_rotation_premise_outcomes.json",
+		"futures_range_router_rotation_premise_cohorts.csv",
+		"futures_range_router_rotation_premise_cohorts.json",
+		"futures_range_router_rotation_premise_rankings.csv",
+		"futures_range_router_rotation_premise_rankings.json",
+		"futures_range_router_rotation_premise_summary.csv",
+		"futures_range_router_rotation_premise_summary.json",
+		"futures_range_router_rotation_premise_skips.csv",
+		"futures_range_router_rotation_premise_skips.json",
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, name)); err != nil {
+			t.Fatalf("expected router rotation premise artifact %s: %v", name, err)
+		}
+	}
+	data, err := os.ReadFile(filepath.Join(outDir, "trades.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var trades []lab.Trade
+	if err := json.Unmarshal(data, &trades); err != nil {
+		t.Fatal(err)
+	}
+	if len(trades) != 0 {
+		t.Fatalf("router rotation premise audit must remain zero-trade, got %d", len(trades))
+	}
+
+	defaultDirCWD := t.TempDir()
+	t.Chdir(defaultDirCWD)
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-range-router-rotation-premise-audit",
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(defaultDirCWD, "results", "futures-range-router-rotation-premise-audit", "futures_range_router_rotation_premise_summary.csv")); err != nil {
+		t.Fatalf("expected default router rotation premise out dir artifact: %v", err)
+	}
+
+	spotPath := writeCLITestCSV(t, dir, "btcusdt_spot_5m_router_rotation_premise.csv")
+	err = runWithArgs([]string{
+		"-csv", spotPath,
+		"-source-product", lab.SourceProductBinanceSpot,
+		"-allow-spot-comparison",
+		"-futures-range-router-rotation-premise-audit",
+		"-out-dir", filepath.Join(dir, "spot-premise"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "requires Binance USDT-M futures source") {
+		t.Fatalf("expected router rotation premise futures-source error, got %v", err)
+	}
+
+	err = runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-range-router-rotation-premise-audit",
+		"-futures-clean-breakout-baseline-backtest",
+		"-out-dir", filepath.Join(dir, "combined-premise"),
+	})
+	if err == nil || !strings.Contains(err.Error(), lab.RangeRouterRotationPremiseStopStateRejectedStrategyBacktest) {
+		t.Fatalf("expected router rotation premise strategy/backtest rejection, got %v", err)
+	}
+
+	err = runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-range-router-rotation-premise-audit",
+		"-futures-range-context-router-audit",
+		"-out-dir", filepath.Join(dir, "combined-router-premise"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "cannot be combined") {
+		t.Fatalf("expected router rotation premise combination error, got %v", err)
+	}
+}
+
 func writeCLITestCSV(t *testing.T, dir string, name string) string {
 	return writeCLITestCSVN(t, dir, name, 2)
 }

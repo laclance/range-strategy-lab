@@ -46,29 +46,33 @@
 
 ## Current Research Decision
 
+- The futures range router rotation premise audit in
+  `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_AUDIT_REVIEW.md` implemented the
+  zero-trade audit behind
+  `-futures-range-router-rotation-premise-audit` and stopped at
+  `range_router_rotation_premise_audit_failed_no_premise`.
+- The reviewed premise `router_gated_boundary_reclaim_rotation_v1` is closed in
+  its reviewed form. Do not convert its `278` context segments, `97`
+  boundary-reclaim events, or the router's `1,299` `tradable_rotation` rows
+  into trades.
+- This failed premise audit does not authorize a non-trading trigger audit,
+  entries, exits, P&L backtests, optimizer grids, fixed replay, walk-forward,
+  packaging, source expansion, symbol expansion, live-adjacent work, or
+  closed-family retuning.
+- Any follow-up must be a materially different non-trading premise or context
+  audit, not a retune, rename, gate relaxation, or direct strategy conversion of
+  this boundary-reclaim surface.
 - The futures range router rotation premise spec in
-  `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md` is documentation-only
-  and stopped at
-  `range_router_rotation_premise_spec_ready_for_non_trading_audit`.
-- It authorizes only a later zero-trade non-trading audit behind
-  `-futures-range-router-rotation-premise-audit`, starting from
-  `range_context_router_v1|15m|h24|tradable_rotation` as closed-candle context.
-- The router remains context only, not an entry signal, and the
-  `1,299` `tradable_rotation` router rows must not be converted directly into
-  trades.
-- A passing premise audit may only advance to another non-trading trigger audit
-  via
-  `range_router_rotation_premise_audit_passed_needs_non_trading_trigger_audit`;
-  it still would not authorize entries, exits, P&L backtests, optimizer grids,
-  fixed replay, walk-forward, packaging, source expansion, symbol expansion,
-  live-adjacent work, or closed-family retuning.
+  `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md` is now historical
+  dependency context for the failed audit above.
 - The futures range context router audit in
   `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md` passed as a non-trading
   route-selection milestone and stopped at
   `range_context_router_passed_needs_rotation_premise_spec`.
 - The router found `2` passing no-trade cohorts and `1` passing
   `tradable_rotation` cohort, with `0` passing `trend_continuation` cohorts.
-  This authorized only the materially new rotation premise spec recorded above.
+  This authorized only the materially new rotation premise spec that has now
+  failed audit review.
 - The router audit does not authorize entries, exits, P&L backtests, optimizer
   grids, fixed replay, walk-forward, packaging, source expansion, symbol
   expansion, live-adjacent work, or closed-family retuning.
@@ -99,6 +103,7 @@ The following specs are parked and not implementation-ready from current state:
 Reviewed failed or fragile families must not be retuned, renamed, gate-relaxed,
 or promoted from their reviewed forms:
 
+- `router_gated_boundary_reclaim_rotation_v1`;
 - structured compression, including the fragile ETH/SOL authority stream;
 - breakout-retest/acceptance;
 - clean breakout continuation;

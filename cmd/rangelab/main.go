@@ -29,6 +29,7 @@ var futuresRangeFirstOccupancyRotationV1OptimizationConfigForRun = lab.DefaultFu
 var futuresRangeContextTriageAuditConfigForRun = lab.DefaultFuturesRangeContextTriageAuditConfig
 var futuresRangeStateConstructionLoopAuditConfigForRun = lab.DefaultFuturesRangeStateConstructionLoopAuditConfig
 var futuresRangeContextRouterAuditConfigForRun = lab.DefaultFuturesRangeContextRouterAuditConfig
+var futuresRangeRouterRotationPremiseAuditConfigForRun = lab.DefaultFuturesRangeRouterRotationPremiseAuditConfig
 
 func main() {
 	if err := run(); err != nil {
@@ -77,6 +78,7 @@ func runWithArgs(args []string) error {
 	futuresRangeContextTriageAudit := fs.Bool("futures-range-context-triage-audit", false, "write non-trading futures range context triage diagnostics")
 	futuresRangeStateConstructionLoopAudit := fs.Bool("futures-range-state-construction-loop-audit", false, "write non-trading futures range-state construction loop diagnostics")
 	futuresRangeContextRouterAudit := fs.Bool("futures-range-context-router-audit", false, "write non-trading futures range context router diagnostics")
+	futuresRangeRouterRotationPremiseAudit := fs.Bool("futures-range-router-rotation-premise-audit", false, "write non-trading futures range router rotation premise diagnostics")
 	srAudit := fs.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
 	srBoundaryAudit := fs.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
 	srBoundaryInspect := fs.Bool("sr-boundary-inspect", false, "write compact non-trading SR boundary candidate comparison diagnostics")
@@ -109,6 +111,9 @@ func runWithArgs(args []string) error {
 	}
 	if *futuresRangeContextRouterAudit && !outDirWasSet {
 		*outDir = "results/futures-range-context-router-audit"
+	}
+	if *futuresRangeRouterRotationPremiseAudit && !outDirWasSet {
+		*outDir = "results/futures-range-router-rotation-premise-audit"
 	}
 
 	product := *sourceProduct
@@ -163,7 +168,7 @@ func runWithArgs(args []string) error {
 		if tradeProducingFlagSelected {
 			return fmt.Errorf("-futures-range-state-construction-loop-audit cannot be combined with trade-producing prototype/backtest/optimization/replay/walk-forward flags")
 		}
-		if *detector || *detectorSweep || *detectorDurabilitySweep || *detectorContextRefinementAudit || *holdInsideDirectionalEdgeAudit || *holdInsideMidlineTransitionAudit || *holdInsideMidlineReactionAudit || *futuresImpulseAbsorptionAudit || *futuresRangeCandidateDiscoveryAudit || *futuresRangeUniverseDiscoveryAudit || *futuresHigherTFNestedRangeRotationAudit || *futuresRangeContextTriageAudit || *futuresRangeContextRouterAudit || *srAudit || *srBoundaryAudit || *srBoundaryInspect || *srRejectionTimingAudit || *srConfirmationTimingAudit || *srFalseBreakReclaimTimingAudit || *compressionBreakoutAudit || *rangeRegimeDurabilityAudit {
+		if *detector || *detectorSweep || *detectorDurabilitySweep || *detectorContextRefinementAudit || *holdInsideDirectionalEdgeAudit || *holdInsideMidlineTransitionAudit || *holdInsideMidlineReactionAudit || *futuresImpulseAbsorptionAudit || *futuresRangeCandidateDiscoveryAudit || *futuresRangeUniverseDiscoveryAudit || *futuresHigherTFNestedRangeRotationAudit || *futuresRangeContextTriageAudit || *futuresRangeContextRouterAudit || *futuresRangeRouterRotationPremiseAudit || *srAudit || *srBoundaryAudit || *srBoundaryInspect || *srRejectionTimingAudit || *srConfirmationTimingAudit || *srFalseBreakReclaimTimingAudit || *compressionBreakoutAudit || *rangeRegimeDurabilityAudit {
 			return fmt.Errorf("-futures-range-state-construction-loop-audit cannot be combined with other audit, detector, source-expansion, or diagnostic flags")
 		}
 	}
@@ -174,8 +179,19 @@ func runWithArgs(args []string) error {
 		if tradeProducingFlagSelected {
 			return fmt.Errorf("-futures-range-context-router-audit cannot be combined with trade-producing prototype/backtest/optimization/replay/walk-forward flags")
 		}
-		if *detector || *detectorSweep || *detectorDurabilitySweep || *detectorContextRefinementAudit || *holdInsideDirectionalEdgeAudit || *holdInsideMidlineTransitionAudit || *holdInsideMidlineReactionAudit || *futuresImpulseAbsorptionAudit || *futuresRangeCandidateDiscoveryAudit || *futuresRangeUniverseDiscoveryAudit || *futuresHigherTFNestedRangeRotationAudit || *futuresRangeContextTriageAudit || *futuresRangeStateConstructionLoopAudit || *srAudit || *srBoundaryAudit || *srBoundaryInspect || *srRejectionTimingAudit || *srConfirmationTimingAudit || *srFalseBreakReclaimTimingAudit || *compressionBreakoutAudit || *rangeRegimeDurabilityAudit {
+		if *detector || *detectorSweep || *detectorDurabilitySweep || *detectorContextRefinementAudit || *holdInsideDirectionalEdgeAudit || *holdInsideMidlineTransitionAudit || *holdInsideMidlineReactionAudit || *futuresImpulseAbsorptionAudit || *futuresRangeCandidateDiscoveryAudit || *futuresRangeUniverseDiscoveryAudit || *futuresHigherTFNestedRangeRotationAudit || *futuresRangeContextTriageAudit || *futuresRangeStateConstructionLoopAudit || *futuresRangeRouterRotationPremiseAudit || *srAudit || *srBoundaryAudit || *srBoundaryInspect || *srRejectionTimingAudit || *srConfirmationTimingAudit || *srFalseBreakReclaimTimingAudit || *compressionBreakoutAudit || *rangeRegimeDurabilityAudit {
 			return fmt.Errorf("-futures-range-context-router-audit cannot be combined with other audit, detector, source-expansion, or diagnostic flags")
+		}
+	}
+	if *futuresRangeRouterRotationPremiseAudit {
+		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
+			return fmt.Errorf("-futures-range-router-rotation-premise-audit requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
+		}
+		if tradeProducingFlagSelected {
+			return fmt.Errorf("%s", lab.RangeRouterRotationPremiseStopStateRejectedStrategyBacktest)
+		}
+		if *detector || *detectorSweep || *detectorDurabilitySweep || *detectorContextRefinementAudit || *holdInsideDirectionalEdgeAudit || *holdInsideMidlineTransitionAudit || *holdInsideMidlineReactionAudit || *futuresImpulseAbsorptionAudit || *futuresRangeCandidateDiscoveryAudit || *futuresRangeUniverseDiscoveryAudit || *futuresHigherTFNestedRangeRotationAudit || *futuresRangeContextTriageAudit || *futuresRangeStateConstructionLoopAudit || *futuresRangeContextRouterAudit || *srAudit || *srBoundaryAudit || *srBoundaryInspect || *srRejectionTimingAudit || *srConfirmationTimingAudit || *srFalseBreakReclaimTimingAudit || *compressionBreakoutAudit || *rangeRegimeDurabilityAudit {
+			return fmt.Errorf("-futures-range-router-rotation-premise-audit cannot be combined with other audit, detector, source-expansion, or diagnostic flags")
 		}
 	}
 
@@ -285,6 +301,7 @@ func runWithArgs(args []string) error {
 	var rangeContextTriageResult lab.FuturesRangeContextTriageAuditResult
 	var rangeStateConstructionLoopResult lab.FuturesRangeStateConstructionLoopAuditResult
 	var rangeContextRouterResult lab.FuturesRangeContextRouterAuditResult
+	var rangeRouterRotationPremiseResult lab.FuturesRangeRouterRotationPremiseAuditResult
 	var result lab.BacktestResult
 	if *futuresCleanBreakoutBaselineBacktest {
 		var err error
@@ -1127,6 +1144,86 @@ func runWithArgs(args []string) error {
 			len(rangeContextRouterResult.RankingRows),
 			rangeContextRouterResult.PassingCohorts,
 			rangeContextRouterResult.StopState,
+		)
+	}
+	if *futuresRangeRouterRotationPremiseAudit {
+		premiseCfg := futuresRangeRouterRotationPremiseAuditConfigForRun()
+		var err error
+		rangeRouterRotationPremiseResult, err = lab.RunFuturesRangeRouterRotationPremiseAudit(candles, sourceManifest, premiseCfg, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_router_rotation_premise_sources.json"), rangeRouterRotationPremiseResult.SourceRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeRouterRotationPremiseSourcesCSV(filepath.Join(*outDir, "futures_range_router_rotation_premise_sources.csv"), rangeRouterRotationPremiseResult.SourceRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_router_rotation_premise_coverage.json"), rangeRouterRotationPremiseResult.CoverageRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeRouterRotationPremiseCoverageCSV(filepath.Join(*outDir, "futures_range_router_rotation_premise_coverage.csv"), rangeRouterRotationPremiseResult.CoverageRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_router_rotation_premise_router_dependency.json"), rangeRouterRotationPremiseResult.DependencyRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeRouterRotationPremiseRouterDependencyCSV(filepath.Join(*outDir, "futures_range_router_rotation_premise_router_dependency.csv"), rangeRouterRotationPremiseResult.DependencyRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_router_rotation_premise_context_segments.json"), rangeRouterRotationPremiseResult.SegmentRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeRouterRotationPremiseContextSegmentsCSV(filepath.Join(*outDir, "futures_range_router_rotation_premise_context_segments.csv"), rangeRouterRotationPremiseResult.SegmentRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_router_rotation_premise_events.json"), rangeRouterRotationPremiseResult.EventRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeRouterRotationPremiseEventsCSV(filepath.Join(*outDir, "futures_range_router_rotation_premise_events.csv"), rangeRouterRotationPremiseResult.EventRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_router_rotation_premise_outcomes.json"), rangeRouterRotationPremiseResult.OutcomeRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeRouterRotationPremiseOutcomesCSV(filepath.Join(*outDir, "futures_range_router_rotation_premise_outcomes.csv"), rangeRouterRotationPremiseResult.OutcomeRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_router_rotation_premise_cohorts.json"), rangeRouterRotationPremiseResult.CohortRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeRouterRotationPremiseCohortsCSV(filepath.Join(*outDir, "futures_range_router_rotation_premise_cohorts.csv"), rangeRouterRotationPremiseResult.CohortRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_router_rotation_premise_rankings.json"), rangeRouterRotationPremiseResult.RankingRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeRouterRotationPremiseRankingsCSV(filepath.Join(*outDir, "futures_range_router_rotation_premise_rankings.csv"), rangeRouterRotationPremiseResult.RankingRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_router_rotation_premise_summary.json"), rangeRouterRotationPremiseResult.SummaryRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeRouterRotationPremiseSummaryCSV(filepath.Join(*outDir, "futures_range_router_rotation_premise_summary.csv"), rangeRouterRotationPremiseResult.SummaryRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_router_rotation_premise_skips.json"), rangeRouterRotationPremiseResult.SkipRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeRouterRotationPremiseSkipsCSV(filepath.Join(*outDir, "futures_range_router_rotation_premise_skips.csv"), rangeRouterRotationPremiseResult.SkipRows); err != nil {
+			return err
+		}
+		fmt.Printf("futures_range_router_rotation_premise_audit source_rows=%d coverage_rows=%d router_dependency_rows=%d context_segments=%d events=%d outcomes=%d cohort_rows=%d ranking_rows=%d passing_cohorts=%d stop_state=%s\n",
+			len(rangeRouterRotationPremiseResult.SourceRows),
+			len(rangeRouterRotationPremiseResult.CoverageRows),
+			len(rangeRouterRotationPremiseResult.DependencyRows),
+			len(rangeRouterRotationPremiseResult.SegmentRows),
+			len(rangeRouterRotationPremiseResult.EventRows),
+			len(rangeRouterRotationPremiseResult.OutcomeRows),
+			len(rangeRouterRotationPremiseResult.CohortRows),
+			len(rangeRouterRotationPremiseResult.RankingRows),
+			rangeRouterRotationPremiseResult.PassingCohorts,
+			rangeRouterRotationPremiseResult.StopState,
 		)
 	}
 	var srRows []lab.SRAuditRow
@@ -3323,6 +3420,46 @@ func writeFuturesRangeContextRouterSummaryCSV(path string, rows []lab.FuturesRan
 }
 
 func writeFuturesRangeContextRouterSkipsCSV(path string, rows []lab.FuturesRangeContextRouterSkipRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeRouterRotationPremiseSourcesCSV(path string, rows []lab.FuturesRangeRouterRotationPremiseSourceRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeRouterRotationPremiseCoverageCSV(path string, rows []lab.FuturesRangeRouterRotationPremiseCoverageRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeRouterRotationPremiseRouterDependencyCSV(path string, rows []lab.FuturesRangeRouterRotationPremiseRouterDependencyRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeRouterRotationPremiseContextSegmentsCSV(path string, rows []lab.FuturesRangeRouterRotationPremiseContextSegmentRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeRouterRotationPremiseEventsCSV(path string, rows []lab.FuturesRangeRouterRotationPremiseEventRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeRouterRotationPremiseOutcomesCSV(path string, rows []lab.FuturesRangeRouterRotationPremiseOutcomeRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeRouterRotationPremiseCohortsCSV(path string, rows []lab.FuturesRangeRouterRotationPremiseCohortRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeRouterRotationPremiseRankingsCSV(path string, rows []lab.FuturesRangeRouterRotationPremiseRankingRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeRouterRotationPremiseSummaryCSV(path string, rows []lab.FuturesRangeRouterRotationPremiseSummaryRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeRouterRotationPremiseSkipsCSV(path string, rows []lab.FuturesRangeRouterRotationPremiseSkipRow) error {
 	return writeJSONTaggedCSV(path, rows)
 }
 

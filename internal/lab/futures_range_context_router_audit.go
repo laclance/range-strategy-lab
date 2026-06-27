@@ -49,17 +49,18 @@ type FuturesRangeContextRouterAuditConfig struct {
 }
 
 type FuturesRangeContextRouterAuditResult struct {
-	SourceRows     []FuturesRangeContextRouterSourceRow   `json:"source_rows"`
-	CoverageRows   []FuturesRangeContextRouterCoverageRow `json:"coverage_rows"`
-	RuleRows       []FuturesRangeContextRouterRuleRow     `json:"rule_rows"`
-	Rows           []FuturesRangeContextRouterRow         `json:"rows"`
-	CohortRows     []FuturesRangeContextRouterCohortRow   `json:"cohort_rows"`
-	RankingRows    []FuturesRangeContextRouterRankingRow  `json:"ranking_rows"`
-	SummaryRows    []FuturesRangeContextRouterSummaryRow  `json:"summary_rows"`
-	SkipRows       []FuturesRangeContextRouterSkipRow     `json:"skip_rows"`
-	PassingCohorts int                                    `json:"passing_cohorts"`
-	StopState      string                                 `json:"stop_state"`
-	StateStopState string                                 `json:"state_stop_state"`
+	SourceRows     []FuturesRangeContextRouterSourceRow        `json:"source_rows"`
+	CoverageRows   []FuturesRangeContextRouterCoverageRow      `json:"coverage_rows"`
+	RuleRows       []FuturesRangeContextRouterRuleRow          `json:"rule_rows"`
+	Rows           []FuturesRangeContextRouterRow              `json:"rows"`
+	CohortRows     []FuturesRangeContextRouterCohortRow        `json:"cohort_rows"`
+	RankingRows    []FuturesRangeContextRouterRankingRow       `json:"ranking_rows"`
+	SummaryRows    []FuturesRangeContextRouterSummaryRow       `json:"summary_rows"`
+	SkipRows       []FuturesRangeContextRouterSkipRow          `json:"skip_rows"`
+	PassingCohorts int                                         `json:"passing_cohorts"`
+	StopState      string                                      `json:"stop_state"`
+	StateStopState string                                      `json:"state_stop_state"`
+	StateRows      []FuturesRangeStateConstructionLoopStateRow `json:"-"`
 }
 
 type FuturesRangeContextRouterSourceRow struct {
@@ -283,7 +284,7 @@ func RunFuturesRangeContextRouterAudit(candles []Candle, manifest SourceManifest
 		return FuturesRangeContextRouterAuditResult{}, err
 	}
 
-	result := FuturesRangeContextRouterAuditResult{StateStopState: stateResult.StopState}
+	result := FuturesRangeContextRouterAuditResult{StateStopState: stateResult.StopState, StateRows: stateResult.StateRows}
 	sourcePass := rangeStateConstructionLoopSourceResamplePass(stateResult.SourceRows, stateResult.CoverageRows)
 	result.SourceRows = rangeContextRouterSourceRows(stateResult.SourceRows, stateResult.StopState, sourcePass)
 	result.CoverageRows = rangeContextRouterCoverageRows(stateResult.CoverageRows, stateResult.StateRows, nil, sourcePass)
