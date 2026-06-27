@@ -24,15 +24,16 @@ git history.
   acceptance, clean breakout continuation, hold-inside/midline, impulse
   absorption, higher-timeframe nested range rotation, `range_occupancy_rotation_v1`,
   and range quality/session/failure-mode triage cohorts in their reviewed forms.
-- The latest user-approved direction is a broader construction loop: combine
-  range geometry with volatility, trend, impulse, and OHLCV liquidity or
-  participation state before any new entry is specified.
-- The next implementation-ready doc is
-  `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_SPEC.md`. It authorizes only a
-  non-trading BTCUSDT state audit behind a future explicit flag. It does not
-  authorize a strategy, entry, exit, optimizer, replay, walk-forward, symbol
-  expansion, source expansion, live/paper/testnet path, exchange API, deploy
-  file, martingale, averaging down, or two-exchange logic.
+- The latest completed audit is
+  `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_REVIEW.md`. It passed source and
+  resample validation and stopped at
+  `range_state_construction_loop_audit_passed_needs_router_spec`.
+- The audit found mixed route evidence: `52` passing `no_trade_toxic` cohorts
+  and `6` passing `tradable_rotation_candidate` cohorts. This authorizes only a
+  later non-trading router spec/audit path; it does not authorize a strategy,
+  entry, exit, optimizer, replay, walk-forward, symbol expansion, source
+  expansion, live/paper/testnet path, exchange API, deploy file, martingale,
+  averaging down, or two-exchange logic.
 - Parked future directions are documented but not implementation-ready:
   range context router, volatility-aware exits, BTC regime plus ETH/SOL context,
   spread-range/pair-range work, and derivatives context source expansion.
@@ -61,6 +62,49 @@ Future range-strategy directions and specs:
   `rg`, `git diff --check`, or `git status` were run in this chat. The next
   Codex brief requires those checks during implementation closeout.
 
+Futures range-state construction loop audit implementation:
+
+- Added `-futures-range-state-construction-loop-audit`.
+- Added audit implementation and tests for source/coverage gates, closed-candle
+  state construction, forward-label separation, route cohort gates, stop-state
+  selection, CLI artifacts, spot rejection, and conflicting flag rejection.
+- Result directory:
+  `results/futures-range-state-construction-loop-audit/`.
+- Source facts: `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`;
+  Binance USDT-M futures `BTCUSDT` `5m`; `573,984` loaded candles;
+  `2021-01-01T00:00:00Z` through `2026-06-16T23:55:00Z`;
+  `gap_count=0`, `duplicate_count=0`, `zero_volume_count=66`,
+  `comparison_only=false`, `validation_status=accepted`.
+- Closed UTC resample rows: `15m=191,328`, `1h=47,832`, `4h=11,958`; all
+  accepted with `gap_count=0`, `duplicate_count=0`,
+  `missing_child_open_count=0`, and complete buckets.
+- Generated artifact counts: states `29,784`, labels `89,352`, cohorts
+  `68,796`, rankings `16,335`, passing cohorts `58`.
+- Passing route counts: `no_trade_toxic=52`,
+  `tradable_rotation_candidate=6`, `trend_continuation_candidate=0`.
+- Common outputs stayed zero-trade compatible; `trades.json` contains no trades.
+- Review doc:
+  `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_REVIEW.md`.
+- Stop state:
+  `range_state_construction_loop_audit_passed_needs_router_spec`.
+- Commands run:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -futures-range-state-construction-loop-audit -out-dir results/futures-range-state-construction-loop-audit`
+  - `wc -l results/futures-range-state-construction-loop-audit/*.csv`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+- Verification outcomes: tests passed; audit rerun reproduced `state_rows=29784`,
+  `label_rows=89352`, `cohort_rows=68796`, `ranking_rows=16335`,
+  `passing_cohorts=58`, and stop state
+  `range_state_construction_loop_audit_passed_needs_router_spec`;
+  CSV line-count check totaled `204,345`; `rg` found only canonical
+  `memory/NEXT_CODEX_BRIEF.md` references; `git diff --check` passed; pre-commit
+  status showed only intended code, docs, and memory changes.
+- Current next step: implement only a non-trading range context router audit
+  from the passing state review; do not build an entry strategy from this
+  result.
+
 Recent failed premise evidence to preserve:
 
 - `docs/FUTURES_RANGE_CONTEXT_TRIAGE_AUDIT_REVIEW.md`: source/resampling passed,
@@ -83,12 +127,14 @@ Recent failed premise evidence to preserve:
 Use `README.md` as the full docs index. The most relevant current docs are:
 
 1. `docs/FUTURES_RANGE_STRATEGY_FUTURE_DIRECTIONS_RESEARCH_MAP.md`.
-2. `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_SPEC.md`.
-3. `docs/FUTURES_RANGE_CONTEXT_TRIAGE_AUDIT_REVIEW.md`.
-4. `docs/FUTURES_RANGE_FIRST_OCCUPANCY_ROTATION_V1_OPTIMIZATION_REVIEW.md`.
-5. `docs/FUTURES_RANGE_UNIVERSE_STRUCTURED_COMPRESSION_WALK_FORWARD_REVIEW.md`.
-6. `docs/FUTURES_RANGE_UNIVERSE_BREAKOUT_RETEST_ACCEPTANCE_BASELINE_REVIEW.md`.
-7. `memory/NEXT_CODEX_BRIEF.md`.
+2. `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_REVIEW.md`.
+3. `docs/FUTURES_RANGE_CONTEXT_ROUTER_SPEC.md`.
+4. `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_SPEC.md`.
+5. `docs/FUTURES_RANGE_CONTEXT_TRIAGE_AUDIT_REVIEW.md`.
+6. `docs/FUTURES_RANGE_FIRST_OCCUPANCY_ROTATION_V1_OPTIMIZATION_REVIEW.md`.
+7. `docs/FUTURES_RANGE_UNIVERSE_STRUCTURED_COMPRESSION_WALK_FORWARD_REVIEW.md`.
+8. `docs/FUTURES_RANGE_UNIVERSE_BREAKOUT_RETEST_ACCEPTANCE_BASELINE_REVIEW.md`.
+9. `memory/NEXT_CODEX_BRIEF.md`.
 
 Historical details remain in the focused docs and git history rather than this
 always-read memory file.

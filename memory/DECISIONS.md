@@ -46,28 +46,29 @@
 
 ## Current Research Decision
 
-- The next implementation-ready research direction is the futures range-state
-  construction loop in `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_SPEC.md`.
-- That spec authorizes only a non-trading BTCUSDT state audit from the accepted
-  `5m` futures source and closed UTC `15m`, `1h`, and `4h` resamples.
-- The audit must combine range geometry, volatility state, trend state, impulse
-  state, and OHLCV liquidity/participation proxies before any new entry is
-  specified.
-- The audit must produce zero trades and keep common outputs zero-trade
-  compatible.
-- Passing the audit may authorize only a later documentation-only router or
-  strategy-premise spec. It does not authorize entries, exits, P&L backtests,
+- The futures range-state construction loop audit in
+  `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_REVIEW.md` passed as a
+  non-trading state/router discovery milestone and stopped at
+  `range_state_construction_loop_audit_passed_needs_router_spec`.
+- The audit found mixed passing route evidence: `52` `no_trade_toxic` cohorts
+  and `6` `tradable_rotation_candidate` cohorts. This authorizes only a later
+  non-trading range context router spec/audit path.
+- The range-state audit does not authorize entries, exits, P&L backtests,
   optimizer grids, fixed replay, walk-forward, packaging, source expansion,
   symbol expansion, live-adjacent work, or closed-family retuning.
-- The intended stop state for the current docs milestone is
-  `range_state_construction_loop_spec_ready_for_audit_implementation`.
+- The next allowed implementation direction is the router path described in
+  `docs/FUTURES_RANGE_CONTEXT_ROUTER_SPEC.md`, bounded by the review result.
+  The router must remain zero-trade compatible and must assign closed-candle
+  route labels only; it is not an entry strategy.
 
 ## Parked Future Direction Decisions
 
 The following specs are parked and not implementation-ready from current state:
 
-- `docs/FUTURES_RANGE_CONTEXT_ROUTER_SPEC.md`: may start only if the range-state
-  audit passes and explicitly authorizes router work.
+- `docs/FUTURES_RANGE_CONTEXT_ROUTER_SPEC.md`: is now the only next allowed
+  path because the range-state audit stopped with
+  `range_state_construction_loop_audit_passed_needs_router_spec`; implementation
+  must remain non-trading and zero-trade compatible.
 - `docs/FUTURES_VOLATILITY_AWARE_EXIT_MODEL_SPEC.md`: may start only after a
   materially new entry template first shows gross edge before costs.
 - `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md`: may start only with user
@@ -108,6 +109,11 @@ patterns, and detector/range episode helpers as feature extraction only.
   find a gated strategy premise. Do not create a strategy, baseline, optimizer,
   replay, walk-forward, package, retune, source expansion, symbol expansion, or
   live-adjacent path from that audit.
+- The futures range-state construction loop audit passed as a mixed router
+  discovery milestone, not a strategy premise. It identified both toxic filters
+  and rotation candidates, so do not create an entry, backtest, optimizer,
+  replay, walk-forward, package, source expansion, symbol expansion, or
+  live-adjacent path directly from it.
 - The futures range-first occupancy rotation V1 optimizer evaluated the declared
   `1,152` row grid, the fixed baseline lost after costs, and `0` grid rows
   passed. Do not create a fixed replay or retune the grammar.

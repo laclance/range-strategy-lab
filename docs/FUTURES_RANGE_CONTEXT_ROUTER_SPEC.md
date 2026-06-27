@@ -5,28 +5,25 @@ Date: 2026-06-27
 ## Verdict
 
 Stop state:
-`range_context_router_spec_parked_pending_range_state_audit`.
+`range_context_router_spec_ready_for_audit_implementation`.
 
-This is a documentation-only parked spec. It records the intended second step if
-the range-state construction loop audit finds stable usable or toxic states. It
-does not authorize implementation yet.
+This spec is now implementation-ready because
+`docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_REVIEW.md` stopped at
+`range_state_construction_loop_audit_passed_needs_router_spec`.
 
-No strategy, entry, exit, optimizer, replay, walk-forward run, source expansion,
-symbol expansion, generated result directory, data download, paper/testnet/live
-path, exchange API, credential, deploy file, martingale, averaging down, or
-two-exchange logic is approved by this document.
+It authorizes only a non-trading router audit. No strategy, entry, exit,
+optimizer, replay, walk-forward run, source expansion, symbol expansion, data
+download, paper/testnet/live path, exchange API, credential, deploy file,
+martingale, averaging down, or two-exchange logic is approved by this document.
 
 ## Dependency
 
-This spec may become implementation-ready only if
-`docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_REVIEW.md` later stops with one of:
+This spec became implementation-ready because
+`docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_REVIEW.md` stopped with:
 
-- `range_state_construction_loop_audit_passed_no_trade_filter_only`;
 - `range_state_construction_loop_audit_passed_needs_router_spec`;
-- `range_state_construction_loop_audit_passed_needs_strategy_premise_spec`.
 
-If the range-state audit fails with no usable state, this router spec remains
-parked and must not be implemented by retuning feature buckets or relaxing gates.
+Do not implement this router by retuning feature buckets or relaxing gates.
 
 ## Intent
 
@@ -154,5 +151,6 @@ live-adjacent work, symbol expansion, source expansion, or gate relaxation.
 
 ## Review Rule
 
-Do not implement this spec until the range-state construction loop review exists
-and explicitly authorizes the router as the next step.
+The range-state construction loop review now exists and explicitly authorizes
+the router as the next step. Keep the implementation non-trading and
+zero-trade compatible.

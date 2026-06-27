@@ -1001,6 +1001,107 @@ func TestRunWithArgsFuturesRangeContextTriageAuditFlagWritesArtifactsAndRejectsS
 	}
 }
 
+func TestRunWithArgsFuturesRangeStateConstructionLoopAuditFlagWritesArtifactsAndRejectsConflicts(t *testing.T) {
+	dir := t.TempDir()
+	futuresPath := writeCLITestCSVN(t, dir, "btcusdt_futures_um_5m_state_loop.csv", 96)
+	oldStateConfig := futuresRangeStateConstructionLoopAuditConfigForRun
+	futuresRangeStateConstructionLoopAuditConfigForRun = func() lab.FuturesRangeStateConstructionLoopAuditConfig {
+		cfg := lab.DefaultFuturesRangeStateConstructionLoopAuditConfig()
+		cfg.ApprovedSourcePath = futuresPath
+		cfg.SkipSourceFactCheck = true
+		cfg.SkipCoverageCountCheck = true
+		cfg.Timeframes = []string{lab.RangeDiscoveryTimeframe15m}
+		cfg.DetectorLookbackBarsOverride = 1
+		cfg.DetectorMinConsecutiveBars = 1
+		cfg.ShortWindowBars = 2
+		cfg.MediumWindowBars = 4
+		cfg.FeatureLookbackBars = 4
+		cfg.LongLookbackDays = 1
+		cfg.Horizons15M = []int{2}
+		cfg.MinFullCohortCount = 1
+		cfg.MinSplitCohortCount = 1
+		cfg.MinNoTradeFullCohortCount = 1
+		cfg.MinNoTradeSplitCohortCount = 1
+		return cfg
+	}
+	defer func() { futuresRangeStateConstructionLoopAuditConfigForRun = oldStateConfig }()
+
+	defaultOutDir := filepath.Join(dir, "default")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-out-dir", defaultOutDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(defaultOutDir, "futures_range_state_construction_loop_summary.csv")); !os.IsNotExist(err) {
+		t.Fatalf("default run should not write range-state construction artifacts, stat err=%v", err)
+	}
+
+	outDir := filepath.Join(dir, "state-loop")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-range-state-construction-loop-audit",
+		"-out-dir", outDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{
+		"source_manifest.json",
+		"summary.csv",
+		"summary.json",
+		"trades.json",
+		"futures_range_state_construction_loop_sources.csv",
+		"futures_range_state_construction_loop_coverage.csv",
+		"futures_range_state_construction_loop_feature_windows.csv",
+		"futures_range_state_construction_loop_states.csv",
+		"futures_range_state_construction_loop_labels.csv",
+		"futures_range_state_construction_loop_cohorts.csv",
+		"futures_range_state_construction_loop_rankings.csv",
+		"futures_range_state_construction_loop_summary.csv",
+		"futures_range_state_construction_loop_skips.csv",
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, name)); err != nil {
+			t.Fatalf("expected range-state construction artifact %s: %v", name, err)
+		}
+	}
+	data, err := os.ReadFile(filepath.Join(outDir, "trades.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var trades []lab.Trade
+	if err := json.Unmarshal(data, &trades); err != nil {
+		t.Fatal(err)
+	}
+	if len(trades) != 0 {
+		t.Fatalf("range-state construction audit must remain zero-trade, got %d", len(trades))
+	}
+
+	spotPath := writeCLITestCSV(t, dir, "btcusdt_spot_5m_state_loop.csv")
+	err = runWithArgs([]string{
+		"-csv", spotPath,
+		"-source-product", lab.SourceProductBinanceSpot,
+		"-allow-spot-comparison",
+		"-futures-range-state-construction-loop-audit",
+		"-out-dir", filepath.Join(dir, "spot-state-loop"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "requires Binance USDT-M futures source") {
+		t.Fatalf("expected range-state construction futures-source error, got %v", err)
+	}
+
+	err = runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-range-state-construction-loop-audit",
+		"-futures-range-context-triage-audit",
+		"-out-dir", filepath.Join(dir, "combined-state-loop"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "cannot be combined") {
+		t.Fatalf("expected range-state construction combination error, got %v", err)
+	}
+}
+
 func writeCLITestCSV(t *testing.T, dir string, name string) string {
 	return writeCLITestCSVN(t, dir, name, 2)
 }

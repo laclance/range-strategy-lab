@@ -27,6 +27,7 @@ var futuresRangeUniverseStructuredCompressionWalkForwardConfigForRun = lab.Defau
 var futuresHigherTFNestedRangeRotationAuditConfigForRun = lab.DefaultFuturesHigherTFNestedRangeRotationAuditConfig
 var futuresRangeFirstOccupancyRotationV1OptimizationConfigForRun = lab.DefaultFuturesRangeFirstOccupancyRotationV1OptimizationConfig
 var futuresRangeContextTriageAuditConfigForRun = lab.DefaultFuturesRangeContextTriageAuditConfig
+var futuresRangeStateConstructionLoopAuditConfigForRun = lab.DefaultFuturesRangeStateConstructionLoopAuditConfig
 
 func main() {
 	if err := run(); err != nil {
@@ -73,6 +74,7 @@ func runWithArgs(args []string) error {
 	futuresHigherTFNestedRangeRotationAudit := fs.Bool("futures-higher-tf-nested-range-rotation-audit", false, "write non-trading futures higher-timeframe nested range rotation diagnostics")
 	futuresRangeFirstOccupancyRotationV1Optimization := fs.Bool("futures-range-first-occupancy-rotation-v1-optimization", false, "run offline futures range-first occupancy rotation v1 optimization")
 	futuresRangeContextTriageAudit := fs.Bool("futures-range-context-triage-audit", false, "write non-trading futures range context triage diagnostics")
+	futuresRangeStateConstructionLoopAudit := fs.Bool("futures-range-state-construction-loop-audit", false, "write non-trading futures range-state construction loop diagnostics")
 	srAudit := fs.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
 	srBoundaryAudit := fs.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
 	srBoundaryInspect := fs.Bool("sr-boundary-inspect", false, "write compact non-trading SR boundary candidate comparison diagnostics")
@@ -91,11 +93,18 @@ func runWithArgs(args []string) error {
 	}
 
 	sourceProductWasSet := false
+	outDirWasSet := false
 	fs.Visit(func(f *flag.Flag) {
 		if f.Name == "source-product" {
 			sourceProductWasSet = true
 		}
+		if f.Name == "out-dir" {
+			outDirWasSet = true
+		}
 	})
+	if *futuresRangeStateConstructionLoopAudit && !outDirWasSet {
+		*outDir = "results/futures-range-state-construction-loop-audit"
+	}
 
 	product := *sourceProduct
 	if *csvPath == defaultCSVPath && !sourceProductWasSet {
@@ -140,6 +149,17 @@ func runWithArgs(args []string) error {
 		}
 		if tradeProducingFlagSelected {
 			return fmt.Errorf("-futures-range-context-triage-audit cannot be combined with trade-producing prototype/backtest/optimization/replay/walk-forward flags")
+		}
+	}
+	if *futuresRangeStateConstructionLoopAudit {
+		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
+			return fmt.Errorf("-futures-range-state-construction-loop-audit requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
+		}
+		if tradeProducingFlagSelected {
+			return fmt.Errorf("-futures-range-state-construction-loop-audit cannot be combined with trade-producing prototype/backtest/optimization/replay/walk-forward flags")
+		}
+		if *detector || *detectorSweep || *detectorDurabilitySweep || *detectorContextRefinementAudit || *holdInsideDirectionalEdgeAudit || *holdInsideMidlineTransitionAudit || *holdInsideMidlineReactionAudit || *futuresImpulseAbsorptionAudit || *futuresRangeCandidateDiscoveryAudit || *futuresRangeUniverseDiscoveryAudit || *futuresHigherTFNestedRangeRotationAudit || *futuresRangeContextTriageAudit || *srAudit || *srBoundaryAudit || *srBoundaryInspect || *srRejectionTimingAudit || *srConfirmationTimingAudit || *srFalseBreakReclaimTimingAudit || *compressionBreakoutAudit || *rangeRegimeDurabilityAudit {
+			return fmt.Errorf("-futures-range-state-construction-loop-audit cannot be combined with other audit, detector, source-expansion, or diagnostic flags")
 		}
 	}
 
@@ -247,6 +267,7 @@ func runWithArgs(args []string) error {
 	var nestedRangeRotationResult lab.FuturesHigherTFNestedRangeRotationAuditResult
 	var occupancyRotationV1Result lab.FuturesRangeFirstOccupancyRotationV1OptimizationResult
 	var rangeContextTriageResult lab.FuturesRangeContextTriageAuditResult
+	var rangeStateConstructionLoopResult lab.FuturesRangeStateConstructionLoopAuditResult
 	var result lab.BacktestResult
 	if *futuresCleanBreakoutBaselineBacktest {
 		var err error
@@ -950,6 +971,79 @@ func runWithArgs(args []string) error {
 			len(rangeContextTriageResult.RankingRows),
 			rangeContextTriageResult.PassingCohorts,
 			rangeContextTriageResult.StopState,
+		)
+	}
+	if *futuresRangeStateConstructionLoopAudit {
+		stateCfg := futuresRangeStateConstructionLoopAuditConfigForRun()
+		var err error
+		rangeStateConstructionLoopResult, err = lab.RunFuturesRangeStateConstructionLoopAudit(candles, sourceManifest, stateCfg, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_state_construction_loop_sources.json"), rangeStateConstructionLoopResult.SourceRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeStateConstructionLoopSourcesCSV(filepath.Join(*outDir, "futures_range_state_construction_loop_sources.csv"), rangeStateConstructionLoopResult.SourceRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_state_construction_loop_coverage.json"), rangeStateConstructionLoopResult.CoverageRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeStateConstructionLoopCoverageCSV(filepath.Join(*outDir, "futures_range_state_construction_loop_coverage.csv"), rangeStateConstructionLoopResult.CoverageRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_state_construction_loop_feature_windows.json"), rangeStateConstructionLoopResult.FeatureWindowRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeStateConstructionLoopFeatureWindowsCSV(filepath.Join(*outDir, "futures_range_state_construction_loop_feature_windows.csv"), rangeStateConstructionLoopResult.FeatureWindowRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_state_construction_loop_states.json"), rangeStateConstructionLoopResult.StateRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeStateConstructionLoopStatesCSV(filepath.Join(*outDir, "futures_range_state_construction_loop_states.csv"), rangeStateConstructionLoopResult.StateRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_state_construction_loop_labels.json"), rangeStateConstructionLoopResult.LabelRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeStateConstructionLoopLabelsCSV(filepath.Join(*outDir, "futures_range_state_construction_loop_labels.csv"), rangeStateConstructionLoopResult.LabelRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_state_construction_loop_cohorts.json"), rangeStateConstructionLoopResult.CohortRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeStateConstructionLoopCohortsCSV(filepath.Join(*outDir, "futures_range_state_construction_loop_cohorts.csv"), rangeStateConstructionLoopResult.CohortRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_state_construction_loop_rankings.json"), rangeStateConstructionLoopResult.RankingRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeStateConstructionLoopRankingsCSV(filepath.Join(*outDir, "futures_range_state_construction_loop_rankings.csv"), rangeStateConstructionLoopResult.RankingRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_state_construction_loop_summary.json"), rangeStateConstructionLoopResult.SummaryRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeStateConstructionLoopSummaryCSV(filepath.Join(*outDir, "futures_range_state_construction_loop_summary.csv"), rangeStateConstructionLoopResult.SummaryRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_state_construction_loop_skips.json"), rangeStateConstructionLoopResult.SkipRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeStateConstructionLoopSkipsCSV(filepath.Join(*outDir, "futures_range_state_construction_loop_skips.csv"), rangeStateConstructionLoopResult.SkipRows); err != nil {
+			return err
+		}
+		fmt.Printf("futures_range_state_construction_loop_audit source_rows=%d coverage_rows=%d feature_window_rows=%d state_rows=%d label_rows=%d cohort_rows=%d ranking_rows=%d passing_cohorts=%d stop_state=%s\n",
+			len(rangeStateConstructionLoopResult.SourceRows),
+			len(rangeStateConstructionLoopResult.CoverageRows),
+			len(rangeStateConstructionLoopResult.FeatureWindowRows),
+			len(rangeStateConstructionLoopResult.StateRows),
+			len(rangeStateConstructionLoopResult.LabelRows),
+			len(rangeStateConstructionLoopResult.CohortRows),
+			len(rangeStateConstructionLoopResult.RankingRows),
+			rangeStateConstructionLoopResult.PassingCohorts,
+			rangeStateConstructionLoopResult.StopState,
 		)
 	}
 	var srRows []lab.SRAuditRow
@@ -3078,6 +3172,42 @@ func writeFuturesRangeContextTriageRankingsCSV(path string, rows []lab.FuturesRa
 }
 
 func writeFuturesRangeContextTriageSummaryCSV(path string, rows []lab.FuturesRangeContextTriageSummaryRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeStateConstructionLoopSourcesCSV(path string, rows []lab.FuturesRangeStateConstructionLoopSourceRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeStateConstructionLoopCoverageCSV(path string, rows []lab.FuturesRangeStateConstructionLoopCoverageRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeStateConstructionLoopFeatureWindowsCSV(path string, rows []lab.FuturesRangeStateConstructionLoopFeatureWindowRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeStateConstructionLoopStatesCSV(path string, rows []lab.FuturesRangeStateConstructionLoopStateRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeStateConstructionLoopLabelsCSV(path string, rows []lab.FuturesRangeStateConstructionLoopLabelRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeStateConstructionLoopCohortsCSV(path string, rows []lab.FuturesRangeStateConstructionLoopCohortRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeStateConstructionLoopRankingsCSV(path string, rows []lab.FuturesRangeStateConstructionLoopRankingRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeStateConstructionLoopSummaryCSV(path string, rows []lab.FuturesRangeStateConstructionLoopSummaryRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeStateConstructionLoopSkipsCSV(path string, rows []lab.FuturesRangeStateConstructionLoopSkipRow) error {
 	return writeJSONTaggedCSV(path, rows)
 }
 
