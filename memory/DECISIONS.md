@@ -3,292 +3,132 @@
 ## Durable Constraints
 
 - This project is offline research only.
-- Do not add live orders, exchange API keys, deploy scripts, grid, martingale, averaging down, or two-exchange execution.
-- Symbol scope is BTCUSDT by default, but the explicit 2026-06-26 range-universe
-  discovery scope also allows local ETHUSDT and SOLUSDT Binance USDT-M futures
-  sources for offline range-first discovery only.
-- Use 5m candles first.
+- Do not add live orders, exchange API keys, private account endpoints, deploy
+  scripts, martingale, averaging down, or two-exchange execution.
 - The active research market is Binance USDT-M futures, not Binance spot.
+- BTCUSDT `5m` remains the default source and default CLI identity unless a
+  reviewed scope brief explicitly expands it.
+- Local ETHUSDT and SOLUSDT Binance USDT-M futures files may be used only where
+  an approved offline range-universe or context brief explicitly allows them.
 - Use confirmed closed-candle decisions only.
-- When entries are eventually added, enter on the next bar open.
-- Keep one open position max.
+- When entries are approved by a future spec, enter on the next bar open.
+- Keep one open position max unless a later explicit engine spec changes that.
 - Use stop-first ambiguity.
 - Keep every result explainable and reproducible.
-- Do not reuse strategy, scoring, or live-execution logic from the old `binance-bot` project.
-
-## Implementation Decisions
-
+- Do not reuse strategy, scoring, order-management, live-execution, credential,
+  deploy, or portfolio coordinator logic from the old `binance-bot` project.
 - Generated outputs belong under `results/`, which remains ignored by Git.
-- Project memory is tracked under `memory/`.
-- Future Codex sessions should read `AGENTS.md` and `memory/` before nontrivial work.
+- Project memory is tracked under `memory/` and should stay compact.
+- `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt; do not keep
+  a duplicate root `CODEX_BRIEF.md`.
+
+## Source And Verification Decisions
+
 - Candle data source is part of the experiment definition. Record CSV path,
-  market type, date coverage, and row counts for any data-dependent verdict.
-  Spot-based results are not a promotion basis for the futures trading target
-  unless a futures impact review explicitly revalidates them.
-- `cmd/rangelab` enforces the active source contract before running audits or
-  backtests. The default CSV is
-  `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`; non-default CSV
-  paths must pass `-source-product`; spot paths require both
-  `-source-product binance-spot` and `-allow-spot-comparison`; every accepted
-  run writes `source_manifest.json`. The source guard rejects gaps, duplicates,
-  irregular 5m cadence, non-positive OHLC prices, non-finite values, negative
-  volume, and invalid high/low containment; zero-volume closed candles are
-  allowed and counted in the manifest.
-- The canonical next-session prompt is `memory/NEXT_CODEX_BRIEF.md`; do not
-  keep a duplicate root `CODEX_BRIEF.md`.
-- Keep tracked memory context-budgeted: always-read memory files are a compact
-  working index, not a full transcript. Treat size targets for all always-read
-  memory files as soft `300-350` line judgment bands, not hard triggers;
-  compact or split memory once an always-read file starts feeling bulky or
-  repetitive. Handoff briefs should name only task-relevant docs, not require a
-  blanket `docs/*.md` read.
-- After completing a brief or milestone, Codex should automatically run the
-  closeout checks and commit the completed repo changes unless the user
-  explicitly says not to commit.
-- Detector diagnostics are detector-only and must not create trade signals.
-- The initial balanced detector baseline is:
-  - percentile: `0.30`
-  - min consecutive bars: `12`
-  - Bollinger: on
-  - ADX: off
-- The current `p30_c12_bollinger_on_adx_off` detector is not approved as
-  context for future entry hypotheses until detector/context refinement is
-  reviewed; its durability weakness repeats across splits and it quick
-  invalidates too often after episode end.
-- The current `DefaultDetectorSweepProfiles` detector durability sweep has
-  been reviewed, and no profile is approved as future entry context. The ADX
-  comparison profile `p30_c12_bollinger_on_adx_on` is diagnostic only, not a
-  promoted detector.
-- The detector context refinement audit has been reviewed. The delayed
-  `hold_3_inside` and `hold_6_inside` context rules are the leading context
-  refinement: they materially and split-stably reduce quick invalidation and
-  trend leakage with adequate candidates, and the hold condition is
-  closed-candle knowable at the decision candle. They are still not approved as
-  entry context, because the gain is a heavy survivorship/conditioning effect,
-  residual `12` bar trend leakage stays material, and the `label_*` fields are
-  regime-durability outcomes, not P&L. No profile or context rule is promoted;
-  keep `lab.EmptyStrategy`.
-- The hold-inside directional edge audit has been reviewed. The leading
-  `hold_3_inside`/`hold_6_inside` context does not show a split-stable
-  directional edge toward the frozen range high or low. No all-bucket row
-  passes the review gate of positive worst-split favorable-minus-adverse,
-  worst-split favorable-greater-than-adverse above `50%`, and adequate
-  candidate counts; no decision-close-position bucket reaches `100` candidates
-  in every period split. Do not promote `paper_side=toward_high` or
-  `paper_side=toward_low` into entry context; keep `lab.EmptyStrategy`.
-- The hold-inside midline transition audit has been reviewed. Broad
-  `hold_3_inside`/`hold_6_inside` rows show split-stable midline touch and
-  close-across behavior by `12` bars, but the labels are not entry context or
-  strategy inputs. Treat the midline as a non-trading observation point for a
-  follow-up reindexed midline-event audit; do not promote current midline
-  transition labels into entries, exits, scoring, sizing, or strategy logic.
-- The futures data impact review revalidated only `hold_3_inside` + first
-  `mid_touch` within `12` bars, with event close in the frozen range `mid_50`
-  bucket, for a first minimal offline entry prototype on Binance USDT-M futures
-  data. This is not strategy promotion or live approval; keep
-  `lab.EmptyStrategy` until that prototype exists and is reviewed. The old
-  spot-based approval is historical comparison only. `hold_6_inside`,
-  `mid_close_across`, side-specific cohorts, and `hold_3_inside_mid_50` remain
-  diagnostic after the futures review.
-- The minimal futures midline touch prototype has been reviewed. The exact
-  close-back template for `hold_3_inside` + first `mid_touch` within `12` bars
-  + event close-position bucket `mid_50`, with same-side boundary stop,
-  opposite-boundary target, next-bar-open entry, and `6` bar time stop, failed
-  on Binance USDT-M futures data. Do not promote, parameter-tune, broaden, or
-  live-wire this hold-inside/midline entry family without a materially new
-  non-trading premise and fresh review.
-- The futures hypothesis pivot inventory has been reviewed. Closed or
-  diagnostic families should not be retried, narrowed, or converted into
-  entries without a materially new futures hypothesis or data premise. Legacy
-  spot-only evidence cannot promote futures work. The reviewed families are now
-  an exclusion map plus reusable infrastructure until a new premise is supplied.
-- The project is now range-first broad rather than narrowly range-only. Do not
-  treat prior no-promotion reviews as permanent bans on `5m`, buy/sell-touch,
-  single-candle reaction, boundary rejection, failed-break re-entry, or
-  breakout-continuation ideas. The banned action is rerunning the exact failed
-  template under a new name; materially reframed BTCUSDT futures range ideas
-  may compete in a broad discovery audit and should move quickly to a baseline
-  backtest brief if the discovery gate passes.
-- The futures range candidate discovery audit has been reviewed. Only clean
-  breakout continuation passed the balanced discovery gate. The next authorized
-  baseline backtest is limited to the top non-duplicative `4h` up-breakout
-  `h12` and `1h` all-side clean-breakout `h12` candidates. Boundary touch
-  rejection, single-candle wick rejection, failed breakout re-entry, and mature
-  balance persistence did not pass this discovery gate and should not be
-  backtested from this milestone.
-- The futures clean breakout baseline has been reviewed. The independent
-  `4h` up-breakout `h12` and `1h` all-side clean-breakout `h12` candidates
-  both failed after costs on Binance USDT-M futures data, with negative full
-  net P&L and negative `2023_2024_oos` plus `2025_2026_recent` splits. Do not
-  optimize, live-wire, paper/testnet, automatically expand to `15m`, or combine
-  these clean breakout candidates into a portfolio-style stream from this
-  result. A portfolio stream or `15m` comparison requires a new user-approved
-  premise.
-- The futures range universe discovery spec explicitly broadens this lab from
-  BTCUSDT-only to a local BTC/ETH/SOL Binance USDT-M futures range-discovery
-  universe. This authorizes source validation and non-trading discovery only:
-  it does not authorize optimization, live wiring, paper/testnet, data
-  downloads, broad symbol mining, sibling repo mutation, or importing sibling
-  strategy results as evidence. Any passing surface must still earn a fixed-rule
-  baseline backtest before optimization.
-- The futures range universe discovery audit has been reviewed. The next
-  authorized fixed-rule baseline backtest is limited to the top
-  non-duplicative structured-compression surfaces:
-  `4h structured_compression_expansion all h6` and
-  `1h structured_compression_expansion all h12`, evaluated across local
-  BTCUSDT, ETHUSDT, and SOLUSDT Binance USDT-M futures sources.
-  `breakout_retest_acceptance` is secondary evidence only for now, and
-  `boundary_touch_rejection`, `single_candle_wick_rejection`,
-  `failed_breakout_reentry`, and `mature_balance_persistence` are not approved
-  for baseline backtest from this audit. This is not optimization, live wiring,
-  paper/testnet, broader symbol mining, data download, or strategy promotion.
-- The futures range universe structured-compression baseline has been reviewed.
-  The `4h structured_compression_expansion all h6` aggregate passed after costs
-  and is authorized for bounded offline optimization/robustness only, with BTC
-  weakness, stress-split fragility, and ETH/SOL dependence treated as explicit
-  constraints. The `1h structured_compression_expansion all h12` surface failed
-  after costs and is not approved for optimization or promotion from this
-  result. No live, paper/testnet, exchange API, deployment, data download,
-  broad symbol mining, grid, martingale, averaging down, or two-exchange path
-  is approved.
-- The futures range universe structured-compression optimization has been
-  reviewed. The selected `4h` configuration is
-  `sc4h_btc_diagnostic_eth_sol_cw2_h12_t1_00_sb0_00`: ETHUSDT and SOLUSDT are
-  the authority symbols, while BTCUSDT is diagnostic-only and remains negative.
-  This authorizes a first offline candidate strategy spec for the ETH/SOL
-  universe stream only. It does not authorize BTC strategy promotion,
-  additional grid search, live wiring, paper/testnet, exchange API, deployment,
-  data download, broad symbol mining, martingale, averaging down, or
-  two-exchange work.
-- The futures range universe structured-compression strategy spec freezes the
-  selected ETH/SOL authority stream for one fixed offline replay/backtest:
-  closed UTC `4h`, detector `p30_c12_bollinger_on_adx_off`, first closed
-  breakout within `24` bars, confirmation window `2`, max hold `12`, target
-  `1.0` range width, stop buffer `0.0`, next-bar-open entry, ETHUSDT and
-  SOLUSDT authority only, BTCUSDT diagnostic-only. The replay must stop for
-  review on source mismatch, material result mismatch, BTC promotion, or any
-  grid-style retuning.
-- The futures range universe structured-compression strategy replay has been
-  reviewed and passed. It authorizes a bounded offline walk-forward robustness
-  pass only, using the already declared `4h` structured-compression grid for
-  forward-selection checks and the frozen ETH/SOL authority replay as the
-  candidate stream. It does not authorize BTCUSDT promotion, new grid
-  dimensions, new symbols, live/paper/testnet, exchange API, deployment, data
-  download, martingale, averaging down, or two-exchange work.
-- The futures range universe structured-compression walk-forward robustness
-  pass has been reviewed and is fragile. It does not authorize a candidate
-  strategy package for `sc4h_btc_diagnostic_eth_sol_cw2_h12_t1_00_sb0_00`:
-  only one of three folds selected the exact frozen config and passed, one
-  selected same-shape ETH/SOL authority config tested worse than frozen, and
-  one had no selectable training config under the multi-split `100` trade gate.
-  Do not retune around this result, relax gates, promote BTCUSDT, add new grid
-  dimensions, or move to live/paper/testnet/deploy from this stream without a
-  materially new user-approved premise and fresh review.
-- The post-structured-compression pivot review treats the failed
-  walk-forward result as exclusion evidence. The only next automatic
-  range-universe premise authorized from current docs is a bounded offline
-  `breakout_retest_acceptance` fixed-rule baseline selected from existing
-  range-universe discovery evidence. If existing discovery artifacts do not
-  contain a passing non-duplicative row, stop for user input; do not rescue
-  structured compression by retuning, reopening the failed `1h` surface,
-  relaxing gates, adding symbols, or moving to live/paper/testnet/deploy.
-- The futures range-universe breakout-retest/acceptance baseline has been
-  reviewed and failed after costs. The selected
-  `breakout_retest_acceptance_15m_all_h12` and
-  `breakout_retest_acceptance_1h_all_h12` candidates both had negative
-  full-period net P&L, negative `2023_2024_oos` and `2025_2026_recent` splits,
-  PF below `1.2`, and no positive full-period symbol transfer. Do not optimize,
-  retune, robustness-review, live-wire, paper/testnet, promote BTCUSDT, add
-  symbols, or package this breakout-retest baseline without a materially
-  different user-approved premise and fresh review.
-- The user-approved higher-timeframe nested range rotation premise authorizes
-  only a future non-trading BTCUSDT audit using closed UTC `1h` child ranges
-  inside frozen mature `4h` parent ranges. It does not authorize a baseline
-  backtest, optimizer, replay, walk-forward, source expansion, symbol
-  expansion, strategy package, live/paper/testnet path, exchange API,
-  deployment, martingale, averaging down, or two-exchange work. A later
-  baseline brief requires the nested range-rotation audit to pass source,
-  resample, candidate-count, split-stability, side-balance, and outcome gates.
-- The futures higher-timeframe nested range rotation audit has been reviewed
-  and failed the no-baseline gate. Source/resample validation passed, but only
-  `3` valid events appeared across the full sample and no downside event
-  passed. Do not baseline, optimize, replay, walk-forward, retune the `40%`
-  child-width gate, `24` bar outcome horizon, `6` bar quick-invalidation
-  horizon, or split gates, expand sources/symbols, package a strategy, or move
-  toward paper/testnet/live/deploy from this premise without a materially
-  different user-approved offline range premise and fresh review.
-- The futures range-first strategy construction protocol has been reviewed and
-  authorizes fresh strategy research from scratch, but only as offline,
-  range-first, BTCUSDT-first work until a later approved brief expands scope.
-  This authorization does not reopen failed structured-compression,
-  breakout-retest/acceptance, clean-breakout, hold-inside/midline, impulse
-  absorption, or nested range-rotation families for retuning under new names.
-  The next authorized step is a documentation-only v1 strategy grammar spec;
-  do not implement an optimizer, backtest flag, replay, walk-forward, source
-  expansion, symbol expansion, or live-adjacent path until that spec is
-  reviewed.
-- The futures range-first strategy construction v1 spec has selected only
-  `range_occupancy_rotation_v1` for the next bounded offline implementation.
-  The authorized future implementation is limited to BTCUSDT Binance USDT-M
-  futures, closed UTC `15m` and `1h` signal bars derived from the accepted
-  `5m` source, the declared `1,152` config grid, the fixed baseline row, and
-  the documented gates/artifacts. This does not authorize retuning or renaming
-  structured compression, breakout-retest/acceptance, clean breakout,
-  hold-inside/midline, impulse absorption, nested range-rotation, source
-  expansion, symbol expansion, live-adjacent work, or old `binance-bot`
-  strategy/scoring/live code.
-- The futures range-first occupancy rotation V1 optimizer has been reviewed
-  and failed. Source/resample validation passed and the full `1,152` declared
-  grid was evaluated, but the fixed baseline lost after costs and `0` grid
-  configs passed the optimizer gates. Do not create a fixed replay spec,
-  walk-forward, package review, retune, gate relaxation, symbol expansion, or
-  live-adjacent path from `range_occupancy_rotation_v1`. Further strategy work
-  requires a materially different user-approved offline range-first premise
-  and fresh spec.
-- The futures range context triage audit spec is the next user-approved
-  offline range-first premise. It authorizes only a non-trading BTCUSDT
-  futures audit that evaluates range quality, UTC session behavior, and
-  failure-mode taxonomy in parallel from closed UTC `15m`, `1h`, and `4h`
-  resamples of the accepted `5m` source. It does not authorize entries, exits,
-  P&L backtests, optimizer grids, fixed replay, walk-forward, strategy
-  packaging, source expansion, symbol expansion, live-adjacent work, or
-  retuning closed families under new names. A passing triage result may
-  authorize only a later documentation-only strategy spec.
-- The futures range context triage audit has been reviewed and failed. Source
-  and closed UTC `15m`/`1h`/`4h` resample validation passed, but no
-  range-quality, UTC-session, or quality-plus-session decision-context cohort
-  passed the declared gates. Do not create a strategy spec, baseline backtest,
-  optimizer, fixed replay, walk-forward, strategy package, retune, gate
-  relaxation, source expansion, symbol expansion, or live-adjacent path from
-  this audit without a materially different user-approved offline range-first
-  premise.
-- The futures impulse absorption audit has been reviewed. Abnormal OHLCV
-  impulse candles on Binance USDT-M futures data are continuation-dominant
-  rather than midpoint-reclaim-dominant across every period split and tested
-  horizon. Do not convert this impulse absorption surface into an entry
-  prototype, retune, paper/testnet/live path, or strategy replacement without a
-  materially new futures hypothesis or data premise.
-- The futures scope pivot remains range-strategy-only unless the user
-  explicitly changes the project objective. Higher-timeframe, multi-symbol, or
-  sibling-repo context may be considered only as range-source, range-premise,
-  process, or exclusion evidence. Non-range trend/volatility paths, broad
-  multi-pair mining, and cross-exchange execution are not authorized by a
-  range-only pivot review.
-- The futures scope pivot review paused automatic narrow BTCUSDT 5m mining and
-  produced the higher-timeframe source spec. That source contract remains valid
-  for `15m`, `1h`, and `4h` resamples, but the active next move is now the
-  range-first broad candidate discovery audit. BTC/ETH expansion stays
-  deferred until the user explicitly changes scope.
-- Higher-timeframe BTCUSDT range work must derive `15m`, `1h`, and `4h`
-  candidate bars from the accepted Binance USDT-M futures BTCUSDT 5m parent
-  source by closed UTC resampling until an explicit source or scope change is
-  reviewed. No higher-timeframe audit may start until generated coverage and
-  row counts are documented and a materially different range premise with a
-  closed-candle event and falsification rule is explicit.
-- External helper modules may be used for feature extraction and audit outputs
-  only; strategy hypotheses, entries, exits, scoring, sizing, and backtest
-  behavior stay inside this lab.
-- Pinned research helper modules:
-  - `github.com/laclance/go-sr v1.0.0`
-  - `github.com/markcheno/go-talib v0.0.0-20250114000313-ec55a20c902f`
-  - `nproject.io/gitlab/libraries/talib-cdl-go v0.0.0-20211217160304-2ed8176448cc`
+  market type, date coverage, row count, gap count, duplicate count, zero-volume
+  count, comparison-only status, and validation status for any data-dependent
+  verdict.
+- The default accepted source is
+  `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`, Binance USDT-M
+  futures `BTCUSDT` `5m`, `573,984` loaded candles from
+  `2021-01-01T00:00:00Z` through `2026-06-16T23:55:00Z`, `gap_count=0`,
+  `duplicate_count=0`, `zero_volume_count=66`, `comparison_only=false`,
+  `validation_status=accepted`.
+- Spot-based results are historical context only unless a futures impact review
+  explicitly revalidates them.
+- Source validation must reject gaps, duplicates, irregular `5m` cadence,
+  non-positive OHLC prices, non-finite values, negative volume, invalid high/low
+  containment, wrong symbol identity, wrong interval identity, and comparison-only
+  sources where promotion is required. Zero-volume closed candles may be counted
+  and allowed.
+- After completing a brief or milestone, Codex should run closeout checks and
+  commit completed repo changes unless the user explicitly says not to commit.
+
+## Current Research Decision
+
+- The next implementation-ready research direction is the futures range-state
+  construction loop in `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_SPEC.md`.
+- That spec authorizes only a non-trading BTCUSDT state audit from the accepted
+  `5m` futures source and closed UTC `15m`, `1h`, and `4h` resamples.
+- The audit must combine range geometry, volatility state, trend state, impulse
+  state, and OHLCV liquidity/participation proxies before any new entry is
+  specified.
+- The audit must produce zero trades and keep common outputs zero-trade
+  compatible.
+- Passing the audit may authorize only a later documentation-only router or
+  strategy-premise spec. It does not authorize entries, exits, P&L backtests,
+  optimizer grids, fixed replay, walk-forward, packaging, source expansion,
+  symbol expansion, live-adjacent work, or closed-family retuning.
+- The intended stop state for the current docs milestone is
+  `range_state_construction_loop_spec_ready_for_audit_implementation`.
+
+## Parked Future Direction Decisions
+
+The following specs are parked and not implementation-ready from current state:
+
+- `docs/FUTURES_RANGE_CONTEXT_ROUTER_SPEC.md`: may start only if the range-state
+  audit passes and explicitly authorizes router work.
+- `docs/FUTURES_VOLATILITY_AWARE_EXIT_MODEL_SPEC.md`: may start only after a
+  materially new entry template first shows gross edge before costs.
+- `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md`: may start only with user
+  scope approval or a later range-state review recommendation; it is a
+  non-trading context audit first, not ETH/SOL strategy promotion.
+- `docs/FUTURES_SPREAD_RANGE_STRATEGY_SPEC.md`: may start only with explicit
+  engine/source approval; spread trading requires a separate multi-leg engine
+  spec before any P&L strategy work.
+- `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md`: may start only
+  with explicit user source approval; it is market-data context only and does
+  not permit API keys, private endpoints, live/paper/testnet, or exchange order
+  paths.
+
+## Exclusion Decisions
+
+Reviewed failed or fragile families must not be retuned, renamed, gate-relaxed,
+or promoted from their reviewed forms:
+
+- structured compression, including the fragile ETH/SOL authority stream;
+- breakout-retest/acceptance;
+- clean breakout continuation;
+- hold-inside/midline;
+- impulse absorption after abnormal OHLCV candles;
+- higher-timeframe nested range rotation;
+- `range_occupancy_rotation_v1`;
+- range quality, UTC session, and failure-mode triage cohorts by themselves;
+- legacy spot-only SR rejection, confirmation, false-break, and compression
+  promotion evidence.
+
+These branches remain useful as exclusion evidence and infrastructure only.
+Reusable infrastructure includes source guards, closed UTC resampling,
+closed-candle semantics, event labels as labels only, split metrics, artifact
+patterns, and detector/range episode helpers as feature extraction only.
+
+## Historical Reviewed Decisions
+
+- The futures range-context triage audit passed source/resampling but failed to
+  find a gated strategy premise. Do not create a strategy, baseline, optimizer,
+  replay, walk-forward, package, retune, source expansion, symbol expansion, or
+  live-adjacent path from that audit.
+- The futures range-first occupancy rotation V1 optimizer evaluated the declared
+  `1,152` row grid, the fixed baseline lost after costs, and `0` grid rows
+  passed. Do not create a fixed replay or retune the grammar.
+- The structured-compression universe stream selected ETH/SOL authority with BTC
+  diagnostic-only, but walk-forward robustness was fragile. Do not package,
+  retune, promote BTC, or broaden the grid from that result.
+- The breakout-retest/acceptance baseline failed after costs on BTCUSDT,
+  ETHUSDT, and SOLUSDT. Do not optimize or robustness-review that branch.
+- The higher-timeframe nested range rotation audit produced only `3` valid
+  events across the full BTCUSDT sample. Do not build a baseline from it.
+- The impulse absorption audit found continuation-dominant behavior after
+  abnormal OHLCV impulse candles. Do not convert that surface into an entry.
+
+## Helper Module Decisions
+
+External helper modules may be used for feature extraction and audit outputs
+only. Strategy hypotheses, entries, exits, scoring, sizing, and backtest behavior
+stay inside this lab.
+
+Pinned research helper modules:
+
+- `github.com/laclance/go-sr v1.0.0`
+- `github.com/markcheno/go-talib v0.0.0-20250114000313-ec55a20c902f`
+- `nproject.io/gitlab/libraries/talib-cdl-go v0.0.0-20211217160304-2ed8176448cc`
