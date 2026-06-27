@@ -245,6 +245,15 @@
   live-adjacent path from `range_occupancy_rotation_v1`. Further strategy work
   requires a materially different user-approved offline range-first premise
   and fresh spec.
+- The futures range context triage audit spec is the next user-approved
+  offline range-first premise. It authorizes only a non-trading BTCUSDT
+  futures audit that evaluates range quality, UTC session behavior, and
+  failure-mode taxonomy in parallel from closed UTC `15m`, `1h`, and `4h`
+  resamples of the accepted `5m` source. It does not authorize entries, exits,
+  P&L backtests, optimizer grids, fixed replay, walk-forward, strategy
+  packaging, source expansion, symbol expansion, live-adjacent work, or
+  retuning closed families under new names. A passing triage result may
+  authorize only a later documentation-only strategy spec.
 - The futures impulse absorption audit has been reviewed. Abnormal OHLCV
   impulse candles on Binance USDT-M futures data are continuation-dominant
   rather than midpoint-reclaim-dominant across every period split and tested

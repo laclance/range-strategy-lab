@@ -18,7 +18,10 @@ git history.
   `range_occupancy_rotation_v1`, has now run its bounded optimizer/backtester
   and failed with no selectable grid config. No fixed replay, walk-forward,
   strategy package, retune, symbol expansion, or live-adjacent work is
-  authorized from this V1 grammar.
+  authorized from this V1 grammar. The next user-approved premise is a
+  non-trading BTCUSDT futures range-context triage audit that evaluates range
+  quality, UTC session behavior, and failure-mode taxonomy in parallel before
+  any new strategy grammar.
 - Active market target is Binance USDT-M futures, not spot. Spot-generated
   audits/reviews are historical context only unless a futures rerun explicitly
   revalidates a specific conclusion.
@@ -73,6 +76,48 @@ git history.
   expansion, or strategy package is approved from this premise.
 
 ## 2026-06-27
+
+Futures range context triage audit spec:
+
+- Spec doc:
+  `docs/FUTURES_RANGE_CONTEXT_TRIAGE_AUDIT_SPEC.md`.
+- Stop state:
+  `range_context_triage_spec_ready_for_audit_implementation`.
+- This was documentation-only. No strategy, entry, exit, optimizer, replay,
+  walk-forward run, CLI flag, generated result directory, data download,
+  live/paper/testnet path, exchange API, credential, deploy file, martingale,
+  averaging down, or two-exchange logic was added.
+- User-approved premise:
+  assess range quality, UTC session behavior, and failure-mode taxonomy in
+  one non-trading audit before attempting another strategy grammar.
+- Source contract remains BTCUSDT Binance USDT-M futures `5m`:
+  `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`;
+  `573,984` loaded candles; open-time coverage
+  `2021-01-01T00:00:00Z` through `2026-06-16T23:55:00Z`;
+  `gap_count=0`, `duplicate_count=0`, `zero_volume_count=66`,
+  `comparison_only=false`, `validation_status=accepted`.
+- The future audit is limited to closed UTC `15m`, `1h`, and `4h` resamples
+  of the accepted BTCUSDT `5m` source:
+  - `15m`: expected `191,328` rows through `2026-06-16T23:45:00Z`;
+  - `1h`: expected `47,832` rows through `2026-06-16T23:00:00Z`;
+  - `4h`: expected `11,958` rows through `2026-06-16T20:00:00Z`.
+- Future CLI flag:
+  `-futures-range-context-triage-audit`.
+- Future result dir:
+  `results/futures-range-context-triage-audit/`.
+- Future review doc:
+  `docs/FUTURES_RANGE_CONTEXT_TRIAGE_AUDIT_REVIEW.md`.
+- Added a durable decision that a passing triage result may authorize only a
+  later documentation-only strategy spec. It does not authorize entries,
+  backtests, optimization, replay, walk-forward, strategy packaging, source or
+  symbol expansion, live-adjacent work, or retuning closed families.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to the bounded implementation brief
+  for the non-trading range-context triage audit.
+- Verification commands run:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
 
 Futures range-first occupancy rotation V1 optimizer:
 
