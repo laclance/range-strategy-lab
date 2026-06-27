@@ -1,4 +1,4 @@
-# Next Codex Brief: Futures Range Post-Rotation Premise Failure Pivot
+# Next Codex Brief: Futures Range Scope Choice After BTCUSDT Price-Only Stop
 
 ```text
 We are in /home/lance/range-strategy-lab, a standalone offline Go project for
@@ -8,14 +8,16 @@ Before work:
 - Read AGENTS.md.
 - Read memory/README.md, memory/PROGRESS.md, and memory/DECISIONS.md.
 - Read README.md as the docs index.
-- Read docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_AUDIT_REVIEW.md.
-- Read docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md only for the closed
-  premise dependency details.
-- Read docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md and
-  docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_REVIEW.md only if dependency facts
-  need confirmation.
-- Read docs/FUTURES_RANGE_STRATEGY_FUTURE_DIRECTIONS_RESEARCH_MAP.md if a
-  bounded post-failure direction is needed.
+- Read docs/FUTURES_RANGE_POST_ROTATION_PREMISE_FAILURE_PIVOT_REVIEW.md.
+- Read docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_AUDIT_REVIEW.md only for the
+  failed premise evidence.
+- Read docs/FUTURES_RANGE_STRATEGY_FUTURE_DIRECTIONS_RESEARCH_MAP.md only if
+  the user asks which parked direction exists.
+- Read parked direction specs only for a user-selected lane:
+  - docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md;
+  - docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md;
+  - docs/FUTURES_SPREAD_RANGE_STRATEGY_SPEC.md;
+  - docs/FUTURES_VOLATILITY_AWARE_EXIT_MODEL_SPEC.md.
 - Check git status before editing.
 
 Current state:
@@ -33,69 +35,51 @@ Current state:
   range_state_construction_loop_audit_passed_needs_router_spec.
 - The futures range context router audit stopped at:
   range_context_router_passed_needs_rotation_premise_spec.
-- Router facts:
-  - rule_rows=58;
-  - router_rows=29,784;
-  - cohort_rows=84;
-  - ranking_rows=12;
-  - passing_cohorts=3;
-  - no_trade=13,546;
-  - tradable_rotation=1,299;
-  - trend_continuation=0;
-  - diagnostic_only=14,939;
-  - conflicts=0.
-- The router rotation premise spec named:
-  router_gated_boundary_reclaim_rotation_v1.
-- The implemented router rotation premise audit result directory is:
-  results/futures-range-router-rotation-premise-audit/
-- Premise audit facts:
-  - context_segments=278;
-  - events=97;
-  - outcomes=97;
-  - cohort_rows=12;
-  - ranking_rows=3;
-  - passing_cohorts=0;
-  - lower_events=43;
-  - upper_events=54;
-  - full_midline_outcomes=71;
-  - hard_adverse_outcomes=22;
-  - chop_or_no_resolution_outcomes=4.
-- Top failure reasons:
-  inadequate_event_count,inadequate_split_event_count,single_split_contribution_above_gate,behavior_gate_failed
-- Current effective stop state:
+- The router rotation premise audit stopped at:
   range_router_rotation_premise_audit_failed_no_premise.
+- The post-rotation premise failure pivot review stopped at:
+  range_post_rotation_premise_failure_pivot_stopped_no_next_btcusdt_price_only_audit.
+- The reviewed premise router_gated_boundary_reclaim_rotation_v1 is closed in
+  reviewed form.
+- Do not convert the 278 premise context segments, 97 boundary-reclaim events,
+  or 1,299 tradable_rotation router rows into trades.
+- No materially different BTCUSDT-only, candle-price-only range-premise audit is
+  selected from current evidence.
 
 Goal:
-Author only a documentation-only post-failure pivot review/spec that decides the
-next bounded research direction after the failed router-gated boundary-reclaim
-rotation premise.
+Do not implement anything automatically. First get an explicit user scope
+choice, then act only within that selected scope.
 
-The doc should:
-- preserve the failed verdict in
-  docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_AUDIT_REVIEW.md;
-- state that router_gated_boundary_reclaim_rotation_v1 is closed in reviewed
-  form;
-- not convert the 278 segments, 97 events, or 1,299 tradable_rotation router
-  rows into trades;
-- identify whether any materially different non-trading premise or context audit
-  is worth specifying next, or stop with no next audit if not;
-- distinguish any proposed direction from closed families:
-  range_occupancy_rotation_v1, hold-inside/midline, breakout-retest/acceptance,
-  clean breakout continuation, structured compression, impulse absorption,
-  higher-timeframe nested range rotation, range quality/session/failure-mode
-  triage by themselves, and router_gated_boundary_reclaim_rotation_v1;
-- remain documentation-only unless the user explicitly asks for implementation.
+If the user has not already chosen a lane, respond with a concise scope-choice
+question and do not edit files. The valid choices are:
+- stop with no further range audit for now;
+- documentation-only approval review for BTC/ETH/SOL context scope;
+- documentation-only approval review for derivatives market-data context scope;
+- documentation-only approval review for spread-range source/engine scope;
+- documentation-only exit-model revisit, only if the user also supplies a new
+  independent entry premise with gross-edge evidence.
 
 Boundaries:
 - Do not add Go code, strategy code, entries, exits, P&L strategy backtests,
   optimizer grids, replay, walk-forward logic, strategy packages,
   paper/testnet/live paths, exchange API, credentials, deploy files, source
   expansion, symbol expansion, broad mining, martingale, averaging down, or
-  two-exchange logic.
+  two-exchange logic without a new explicit user-approved scope brief.
 - Do not retune, rename, relax gates for, or directly repackage the failed
   router-gated boundary-reclaim rotation premise.
 - Do not import old binance-bot strategy/scoring/live code.
 - Do not use future labels as premise inputs.
+
+If the user chooses a documentation-only scope approval review:
+- Keep it docs/memory only.
+- Preserve the failed BTCUSDT price-only verdict.
+- Explain why the chosen direction is materially different from closed families:
+  range_occupancy_rotation_v1, hold-inside/midline, breakout-retest/acceptance,
+  clean breakout continuation, structured compression, impulse absorption,
+  higher-timeframe nested range rotation, range quality/session/failure-mode
+  triage by themselves, and router_gated_boundary_reclaim_rotation_v1.
+- End with either no next audit or a zero-trade audit brief that still requires
+  explicit user approval before implementation.
 
 Verification for a documentation-only closeout:
 - rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
@@ -103,8 +87,6 @@ Verification for a documentation-only closeout:
 - git status --short
 
 Closeout:
-- Add or update a focused docs/ review or spec only if a materially new bounded
-  direction is identified.
 - Update README.md docs index if a new doc is added.
 - Update memory/PROGRESS.md with exact commands and factual outcomes.
 - Update memory/DECISIONS.md only if the review creates a durable boundary,

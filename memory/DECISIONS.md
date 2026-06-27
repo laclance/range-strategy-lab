@@ -46,6 +46,15 @@
 
 ## Current Research Decision
 
+- The post-rotation premise failure pivot review in
+  `docs/FUTURES_RANGE_POST_ROTATION_PREMISE_FAILURE_PIVOT_REVIEW.md` stopped at
+  `range_post_rotation_premise_failure_pivot_stopped_no_next_btcusdt_price_only_audit`.
+  No automatic next BTCUSDT-only, candle-price-only range-premise audit is
+  selected from the current state/router/premise evidence.
+- Any further research now needs an explicit user scope choice before a
+  materially different parked direction can begin. Controlled BTC/ETH/SOL
+  context, derivatives market-data context, and spread-range source/engine work
+  remain parked; they do not authorize implementation from current state.
 - The futures range router rotation premise audit in
   `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_AUDIT_REVIEW.md` implemented the
   zero-trade audit behind

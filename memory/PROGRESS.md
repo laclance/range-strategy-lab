@@ -25,9 +25,9 @@ git history.
   absorption, higher-timeframe nested range rotation, `range_occupancy_rotation_v1`,
   and range quality/session/failure-mode triage cohorts in their reviewed forms.
 - The latest completed research doc is
-  `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_AUDIT_REVIEW.md`. It implemented
-  the zero-trade router rotation premise audit and stopped at
-  `range_router_rotation_premise_audit_failed_no_premise`.
+  `docs/FUTURES_RANGE_POST_ROTATION_PREMISE_FAILURE_PIVOT_REVIEW.md`. It keeps
+  the failed router rotation premise audit verdict intact and stops automatic
+  BTCUSDT-only, candle-price-only range-premise audits.
 - The prior dependency docs are
   `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md` and
   `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
@@ -41,6 +41,11 @@ git history.
   not authorize a strategy, entry, exit, optimizer, replay, walk-forward, symbol
   expansion, source expansion, live/paper/testnet path, exchange API, deploy
   file, martingale, averaging down, or two-exchange logic.
+- The post-rotation premise failure pivot review stopped with
+  `range_post_rotation_premise_failure_pivot_stopped_no_next_btcusdt_price_only_audit`.
+  No automatic next audit is selected. Any further work needs an explicit user
+  scope choice for a materially different parked direction such as BTC/ETH/SOL
+  context, derivatives context, or spread-range source/engine work.
 - Parked future directions are documented but not implementation-ready:
   volatility-aware exits, BTC regime plus ETH/SOL context, spread-range/pair-range
   work, and derivatives context source expansion.
@@ -264,22 +269,65 @@ Recent failed premise evidence to preserve:
 - `docs/FUTURES_HIGHER_TIMEFRAME_NESTED_RANGE_ROTATION_AUDIT_REVIEW.md`: only
   `3` valid events across the full BTCUSDT sample, so no baseline was approved.
 
+## 2026-06-28
+
+Futures range post-rotation premise failure pivot review:
+
+- Added docs-only review:
+  `docs/FUTURES_RANGE_POST_ROTATION_PREMISE_FAILURE_PIVOT_REVIEW.md`.
+- Preserved the failed audit verdict in
+  `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_AUDIT_REVIEW.md` and kept
+  `router_gated_boundary_reclaim_rotation_v1` closed in reviewed form.
+- Source facts remain:
+  `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`;
+  Binance USDT-M futures `BTCUSDT` `5m`; `573,984` loaded candles;
+  `2021-01-01T00:00:00Z` through `2026-06-16T23:55:00Z`;
+  `gap_count=0`, `duplicate_count=0`, `zero_volume_count=66`,
+  `comparison_only=false`, `validation_status=accepted`.
+- Dependency facts preserved: state audit stopped at
+  `range_state_construction_loop_audit_passed_needs_router_spec`; router audit
+  stopped at `range_context_router_passed_needs_rotation_premise_spec`; premise
+  audit stopped at `range_router_rotation_premise_audit_failed_no_premise`.
+- Premise audit facts preserved: context segments `278`, events `97`, outcomes
+  `97`, cohort rows `12`, ranking rows `3`, passing cohorts `0`, lower events
+  `43`, upper events `54`, midline outcomes `71`, hard-adverse outcomes `22`,
+  and chop/no-resolution outcomes `4`.
+- Pivot decision: no materially different BTCUSDT-only, candle-price-only
+  range-premise audit is worth specifying next from current evidence. Do not
+  convert the `278` segments, `97` events, or `1,299` `tradable_rotation`
+  router rows into trades.
+- Stop state:
+  `range_post_rotation_premise_failure_pivot_stopped_no_next_btcusdt_price_only_audit`.
+- Current next step: no automatic implementation. A future session should first
+  obtain an explicit user scope choice before BTC/ETH/SOL context, derivatives
+  context, spread-range source/engine work, or a no-further-audit stop is
+  pursued.
+- Commands run:
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+- Verification outcomes: brief-reference scan found canonical
+  `memory/NEXT_CODEX_BRIEF.md` references and checklist mentions only;
+  `git diff --check` passed; pre-commit status showed only intended docs and
+  memory changes.
+
 ## Milestone Index
 
 Use `README.md` as the full docs index. The most relevant current docs are:
 
-1. `docs/FUTURES_RANGE_STRATEGY_FUTURE_DIRECTIONS_RESEARCH_MAP.md`.
+1. `docs/FUTURES_RANGE_POST_ROTATION_PREMISE_FAILURE_PIVOT_REVIEW.md`.
 2. `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_AUDIT_REVIEW.md`.
-3. `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md`.
-4. `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
-5. `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_REVIEW.md`.
-6. `docs/FUTURES_RANGE_CONTEXT_ROUTER_SPEC.md`.
-7. `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_SPEC.md`.
-8. `docs/FUTURES_RANGE_CONTEXT_TRIAGE_AUDIT_REVIEW.md`.
-9. `docs/FUTURES_RANGE_FIRST_OCCUPANCY_ROTATION_V1_OPTIMIZATION_REVIEW.md`.
-10. `docs/FUTURES_RANGE_UNIVERSE_STRUCTURED_COMPRESSION_WALK_FORWARD_REVIEW.md`.
-11. `docs/FUTURES_RANGE_UNIVERSE_BREAKOUT_RETEST_ACCEPTANCE_BASELINE_REVIEW.md`.
-12. `memory/NEXT_CODEX_BRIEF.md`.
+3. `docs/FUTURES_RANGE_STRATEGY_FUTURE_DIRECTIONS_RESEARCH_MAP.md`.
+4. `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md`.
+5. `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
+6. `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_REVIEW.md`.
+7. `docs/FUTURES_RANGE_CONTEXT_ROUTER_SPEC.md`.
+8. `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_SPEC.md`.
+9. `docs/FUTURES_RANGE_CONTEXT_TRIAGE_AUDIT_REVIEW.md`.
+10. `docs/FUTURES_RANGE_FIRST_OCCUPANCY_ROTATION_V1_OPTIMIZATION_REVIEW.md`.
+11. `docs/FUTURES_RANGE_UNIVERSE_STRUCTURED_COMPRESSION_WALK_FORWARD_REVIEW.md`.
+12. `docs/FUTURES_RANGE_UNIVERSE_BREAKOUT_RETEST_ACCEPTANCE_BASELINE_REVIEW.md`.
+13. `memory/NEXT_CODEX_BRIEF.md`.
 
 Historical details remain in the focused docs and git history rather than this
 always-read memory file.

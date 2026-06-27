@@ -10,10 +10,12 @@ range-context triage audit also failed to find a gated strategy premise from
 range quality, UTC session, or failure-mode cohorts. The later range-state
 construction loop and range context router audits passed only as non-trading
 route-selection milestones. The router rotation premise audit has now failed
-with no usable premise; no entry, exit, P&L backtest, optimizer, replay, or
-walk-forward run is authorized by the router, premise spec, or premise audit
-result. Older spot-data outputs are historical context unless a futures rerun
-explicitly revalidates a specific conclusion.
+with no usable premise, and the post-failure pivot review stops automatic
+BTCUSDT-only price-range audit work until the user makes an explicit scope
+choice. No entry, exit, P&L backtest, optimizer, replay, or walk-forward run is
+authorized by the router, premise spec, premise audit, or pivot review. Older
+spot-data outputs are historical context unless a futures rerun explicitly
+revalidates a specific conclusion.
 
 ## Purpose
 
@@ -85,11 +87,12 @@ review, read the docs in this order:
 47. [docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md](docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md)
 48. [docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md](docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md)
 49. [docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_AUDIT_REVIEW.md](docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_AUDIT_REVIEW.md)
-50. [docs/FUTURES_VOLATILITY_AWARE_EXIT_MODEL_SPEC.md](docs/FUTURES_VOLATILITY_AWARE_EXIT_MODEL_SPEC.md)
-51. [docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md](docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md)
-52. [docs/FUTURES_SPREAD_RANGE_STRATEGY_SPEC.md](docs/FUTURES_SPREAD_RANGE_STRATEGY_SPEC.md)
-53. [docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md](docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md)
-54. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+50. [docs/FUTURES_RANGE_POST_ROTATION_PREMISE_FAILURE_PIVOT_REVIEW.md](docs/FUTURES_RANGE_POST_ROTATION_PREMISE_FAILURE_PIVOT_REVIEW.md)
+51. [docs/FUTURES_VOLATILITY_AWARE_EXIT_MODEL_SPEC.md](docs/FUTURES_VOLATILITY_AWARE_EXIT_MODEL_SPEC.md)
+52. [docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md](docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md)
+53. [docs/FUTURES_SPREAD_RANGE_STRATEGY_SPEC.md](docs/FUTURES_SPREAD_RANGE_STRATEGY_SPEC.md)
+54. [docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md](docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md)
+55. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 
