@@ -10,18 +10,13 @@ git history.
 - Scope is now offline Binance USDT-M futures range-strategy construction.
   The implemented CLI default remains BTCUSDT `5m`. Research is not stopped,
   but automatic reuse of failed premises is stopped: structured compression,
-  breakout-retest/acceptance, and the BTCUSDT higher-timeframe nested
-  range-rotation audit are exclusion evidence in their reviewed forms. The
-  user-approved next posture is range-first, BTCUSDT-first strategy
-  construction from scratch through documented offline backtesting and
-  optimization stages. The first v1 construction implementation,
-  `range_occupancy_rotation_v1`, has now run its bounded optimizer/backtester
-  and failed with no selectable grid config. No fixed replay, walk-forward,
-  strategy package, retune, symbol expansion, or live-adjacent work is
-  authorized from this V1 grammar. The next user-approved premise is a
-  non-trading BTCUSDT futures range-context triage audit that evaluates range
-  quality, UTC session behavior, and failure-mode taxonomy in parallel before
-  any new strategy grammar.
+  breakout-retest/acceptance, the BTCUSDT higher-timeframe nested
+  range-rotation audit, `range_occupancy_rotation_v1`, and the BTCUSDT
+  range-context triage audit are exclusion evidence in their reviewed forms.
+  The range-context triage audit passed source/resample validation but failed
+  with no gated strategy premise, so no strategy spec, baseline backtest,
+  optimizer, fixed replay, walk-forward, strategy package, retune, symbol
+  expansion, or live-adjacent work is authorized from it.
 - Active market target is Binance USDT-M futures, not spot. Spot-generated
   audits/reviews are historical context only unless a futures rerun explicitly
   revalidates a specific conclusion.
@@ -76,6 +71,89 @@ git history.
   expansion, or strategy package is approved from this premise.
 
 ## 2026-06-27
+
+Futures range context triage audit:
+
+- Review doc:
+  `docs/FUTURES_RANGE_CONTEXT_TRIAGE_AUDIT_REVIEW.md`.
+- CLI flag:
+  `-futures-range-context-triage-audit`.
+- Result dir:
+  `results/futures-range-context-triage-audit/`.
+- Stop state:
+  `range_context_triage_failed_no_strategy_premise`.
+- Source facts:
+  - path:
+    `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`;
+  - product/symbol/interval: Binance USDT-M futures `BTCUSDT` `5m`;
+  - rows: `573,984`;
+  - first/last open:
+    `2021-01-01T00:00:00Z` to `2026-06-16T23:55:00Z`;
+  - `gap_count=0`, `duplicate_count=0`, `zero_volume_count=66`,
+    `comparison_only=false`, `validation_status=accepted`.
+- Closed UTC resample facts:
+  - `15m`: `191,328` rows, first open `2021-01-01T00:00:00Z`,
+    last open `2026-06-16T23:45:00Z`, complete, accepted;
+  - `1h`: `47,832` rows, first open `2021-01-01T00:00:00Z`,
+    last open `2026-06-16T23:00:00Z`, complete, accepted;
+  - `4h`: `11,958` rows, first open `2021-01-01T00:00:00Z`,
+    last open `2026-06-16T20:00:00Z`, complete, accepted.
+- Audit counts:
+  - episode rows: `3,589`;
+  - eligible mature episodes: `1,420`;
+  - failure-mode rows: `4,260`;
+  - cohort rows: `882`;
+  - ranking rows: `159`;
+  - passing cohorts: `0`.
+- Eligible episodes by timeframe:
+  - `15m`: `1,070` eligible, `1,499` skipped as `no_mature_active_bar`;
+  - `1h`: `282` eligible, `465` skipped as `no_mature_active_bar`;
+  - `4h`: `68` eligible, `205` skipped as `no_mature_active_bar`.
+- Full failure-mode label counts:
+  - `boundary_chop`: `1,706`;
+  - `clean_expansion_up`: `556`;
+  - `clean_expansion_down`: `505`;
+  - `false_break_reentry_down`: `421`;
+  - `false_break_reentry_up`: `415`;
+  - `contained_rotation`: `317`;
+  - `no_resolution`: `174`;
+  - `drift_through_up`: `84`;
+  - `drift_through_down`: `70`;
+  - `low_width_noise`: `12`.
+- Top ranked cohort:
+  `range_context_1h_h12_quality_bucket_mature_session_balanced_orderly_us_late_utc_17_23`.
+  It had `66` full-period candidates, full usable context rate `0.560606`,
+  weakest split usable rate `0.391304`, full toxic context rate `0.439394`,
+  and worst split toxic rate `0.608696`; it failed count, usable-rate, and
+  toxic-rate gates.
+- Common outputs stayed zero-trade compatible:
+  `source_manifest.json`, `summary.csv/json`, and `trades.json`.
+- CSV line counts including headers:
+  - `futures_range_context_triage_sources.csv`: `2`;
+  - `futures_range_context_triage_coverage.csv`: `4`;
+  - `futures_range_context_triage_episodes.csv`: `3,590`;
+  - `futures_range_context_triage_quality.csv`: `3,590`;
+  - `futures_range_context_triage_sessions.csv`: `533`;
+  - `futures_range_context_triage_failure_modes.csv`: `4,261`;
+  - `futures_range_context_triage_cohorts.csv`: `883`;
+  - `futures_range_context_triage_rankings.csv`: `160`;
+  - `futures_range_context_triage_summary.csv`: `38`;
+  - common `summary.csv`: `13`.
+- Review outcome: source and resample validation passed, but no
+  range-quality, UTC-session, or quality-plus-session decision-context cohort
+  passed gates. No strategy spec, baseline backtest, optimizer, fixed replay,
+  walk-forward, strategy package, retune, symbol expansion, or live-adjacent
+  work is authorized from this audit.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to a review-only stop requiring a
+  materially different user-approved offline range-first premise before any
+  further implementation.
+- Verification commands run:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -futures-range-context-triage-audit -out-dir results/futures-range-context-triage-audit`
+  - `wc -l results/futures-range-context-triage-audit/*.csv`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
 
 Futures range context triage audit spec:
 

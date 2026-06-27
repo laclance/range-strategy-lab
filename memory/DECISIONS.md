@@ -254,6 +254,14 @@
   packaging, source expansion, symbol expansion, live-adjacent work, or
   retuning closed families under new names. A passing triage result may
   authorize only a later documentation-only strategy spec.
+- The futures range context triage audit has been reviewed and failed. Source
+  and closed UTC `15m`/`1h`/`4h` resample validation passed, but no
+  range-quality, UTC-session, or quality-plus-session decision-context cohort
+  passed the declared gates. Do not create a strategy spec, baseline backtest,
+  optimizer, fixed replay, walk-forward, strategy package, retune, gate
+  relaxation, source expansion, symbol expansion, or live-adjacent path from
+  this audit without a materially different user-approved offline range-first
+  premise.
 - The futures impulse absorption audit has been reviewed. Abnormal OHLCV
   impulse candles on Binance USDT-M futures data are continuation-dominant
   rather than midpoint-reclaim-dominant across every period split and tested

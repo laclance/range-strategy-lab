@@ -5,11 +5,11 @@ implemented CLI default remains BTCUSDT futures 5m data. Research is not
 stopped, but automatic reuse of failed premises is stopped. The user-approved
 range-first, BTCUSDT-first construction protocol produced and tested the first
 V1 grammar, BTCUSDT range occupancy rotation, and that optimizer review failed
-with no selected config for fixed replay. The next authorized path is a
-non-trading futures range-context triage audit that assesses range quality,
-session behavior, and failure modes before any new strategy grammar. Older
-spot-data outputs are historical context unless a futures rerun explicitly
-revalidates a specific conclusion.
+with no selected config for fixed replay. The follow-up non-trading
+range-context triage audit also failed to find a gated strategy premise from
+range quality, UTC session, or failure-mode cohorts. Older spot-data outputs
+are historical context unless a futures rerun explicitly revalidates a
+specific conclusion.
 
 ## Purpose
 
@@ -73,7 +73,8 @@ review, read the docs in this order:
 39. [docs/FUTURES_RANGE_FIRST_STRATEGY_CONSTRUCTION_V1_SPEC.md](docs/FUTURES_RANGE_FIRST_STRATEGY_CONSTRUCTION_V1_SPEC.md)
 40. [docs/FUTURES_RANGE_FIRST_OCCUPANCY_ROTATION_V1_OPTIMIZATION_REVIEW.md](docs/FUTURES_RANGE_FIRST_OCCUPANCY_ROTATION_V1_OPTIMIZATION_REVIEW.md)
 41. [docs/FUTURES_RANGE_CONTEXT_TRIAGE_AUDIT_SPEC.md](docs/FUTURES_RANGE_CONTEXT_TRIAGE_AUDIT_SPEC.md)
-42. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+42. [docs/FUTURES_RANGE_CONTEXT_TRIAGE_AUDIT_REVIEW.md](docs/FUTURES_RANGE_CONTEXT_TRIAGE_AUDIT_REVIEW.md)
+43. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 

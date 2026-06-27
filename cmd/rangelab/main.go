@@ -26,6 +26,7 @@ var futuresRangeUniverseStructuredCompressionStrategyReplayConfigForRun = lab.De
 var futuresRangeUniverseStructuredCompressionWalkForwardConfigForRun = lab.DefaultFuturesRangeUniverseStructuredCompressionWalkForwardConfig
 var futuresHigherTFNestedRangeRotationAuditConfigForRun = lab.DefaultFuturesHigherTFNestedRangeRotationAuditConfig
 var futuresRangeFirstOccupancyRotationV1OptimizationConfigForRun = lab.DefaultFuturesRangeFirstOccupancyRotationV1OptimizationConfig
+var futuresRangeContextTriageAuditConfigForRun = lab.DefaultFuturesRangeContextTriageAuditConfig
 
 func main() {
 	if err := run(); err != nil {
@@ -71,6 +72,7 @@ func runWithArgs(args []string) error {
 	futuresRangeUniverseStructuredCompressionWalkForwardRobustness := fs.Bool("futures-range-universe-structured-compression-walk-forward-robustness", false, "run offline futures range universe structured compression walk-forward robustness")
 	futuresHigherTFNestedRangeRotationAudit := fs.Bool("futures-higher-tf-nested-range-rotation-audit", false, "write non-trading futures higher-timeframe nested range rotation diagnostics")
 	futuresRangeFirstOccupancyRotationV1Optimization := fs.Bool("futures-range-first-occupancy-rotation-v1-optimization", false, "run offline futures range-first occupancy rotation v1 optimization")
+	futuresRangeContextTriageAudit := fs.Bool("futures-range-context-triage-audit", false, "write non-trading futures range context triage diagnostics")
 	srAudit := fs.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
 	srBoundaryAudit := fs.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
 	srBoundaryInspect := fs.Bool("sr-boundary-inspect", false, "write compact non-trading SR boundary candidate comparison diagnostics")
@@ -130,6 +132,14 @@ func runWithArgs(args []string) error {
 		}
 		if tradeProducingFlagSelected {
 			return fmt.Errorf("-futures-higher-tf-nested-range-rotation-audit cannot be combined with trade-producing prototype/backtest/optimization/replay/walk-forward flags")
+		}
+	}
+	if *futuresRangeContextTriageAudit {
+		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
+			return fmt.Errorf("-futures-range-context-triage-audit requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
+		}
+		if tradeProducingFlagSelected {
+			return fmt.Errorf("-futures-range-context-triage-audit cannot be combined with trade-producing prototype/backtest/optimization/replay/walk-forward flags")
 		}
 	}
 
@@ -236,6 +246,7 @@ func runWithArgs(args []string) error {
 	var structuredCompressionWalkForwardResult lab.FuturesRangeUniverseStructuredCompressionWalkForwardResult
 	var nestedRangeRotationResult lab.FuturesHigherTFNestedRangeRotationAuditResult
 	var occupancyRotationV1Result lab.FuturesRangeFirstOccupancyRotationV1OptimizationResult
+	var rangeContextTriageResult lab.FuturesRangeContextTriageAuditResult
 	var result lab.BacktestResult
 	if *futuresCleanBreakoutBaselineBacktest {
 		var err error
@@ -865,6 +876,80 @@ func runWithArgs(args []string) error {
 			len(nestedRangeRotationResult.EventRows),
 			len(nestedRangeRotationResult.SummaryRows),
 			lab.FuturesHigherTFNestedRangeRotationAuditStopState(nestedRangeRotationResult),
+		)
+	}
+	if *futuresRangeContextTriageAudit {
+		triageCfg := futuresRangeContextTriageAuditConfigForRun()
+		var err error
+		rangeContextTriageResult, err = lab.RunFuturesRangeContextTriageAudit(candles, sourceManifest, triageCfg, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_context_triage_sources.json"), rangeContextTriageResult.SourceRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeContextTriageSourcesCSV(filepath.Join(*outDir, "futures_range_context_triage_sources.csv"), rangeContextTriageResult.SourceRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_context_triage_coverage.json"), rangeContextTriageResult.CoverageRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeContextTriageCoverageCSV(filepath.Join(*outDir, "futures_range_context_triage_coverage.csv"), rangeContextTriageResult.CoverageRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_context_triage_episodes.json"), rangeContextTriageResult.EpisodeRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeContextTriageEpisodesCSV(filepath.Join(*outDir, "futures_range_context_triage_episodes.csv"), rangeContextTriageResult.EpisodeRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_context_triage_quality.json"), rangeContextTriageResult.QualityRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeContextTriageQualityCSV(filepath.Join(*outDir, "futures_range_context_triage_quality.csv"), rangeContextTriageResult.QualityRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_context_triage_sessions.json"), rangeContextTriageResult.SessionRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeContextTriageSessionsCSV(filepath.Join(*outDir, "futures_range_context_triage_sessions.csv"), rangeContextTriageResult.SessionRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_context_triage_failure_modes.json"), rangeContextTriageResult.FailureModeRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeContextTriageFailureModesCSV(filepath.Join(*outDir, "futures_range_context_triage_failure_modes.csv"), rangeContextTriageResult.FailureModeRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_context_triage_cohorts.json"), rangeContextTriageResult.CohortRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeContextTriageCohortsCSV(filepath.Join(*outDir, "futures_range_context_triage_cohorts.csv"), rangeContextTriageResult.CohortRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_context_triage_rankings.json"), rangeContextTriageResult.RankingRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeContextTriageRankingsCSV(filepath.Join(*outDir, "futures_range_context_triage_rankings.csv"), rangeContextTriageResult.RankingRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_context_triage_summary.json"), rangeContextTriageResult.SummaryRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeContextTriageSummaryCSV(filepath.Join(*outDir, "futures_range_context_triage_summary.csv"), rangeContextTriageResult.SummaryRows); err != nil {
+			return err
+		}
+		fmt.Printf("futures_range_context_triage_audit source_rows=%d coverage_rows=%d episode_rows=%d quality_rows=%d session_rows=%d failure_mode_rows=%d cohort_rows=%d ranking_rows=%d passing_cohorts=%d stop_state=%s\n",
+			len(rangeContextTriageResult.SourceRows),
+			len(rangeContextTriageResult.CoverageRows),
+			len(rangeContextTriageResult.EpisodeRows),
+			len(rangeContextTriageResult.QualityRows),
+			len(rangeContextTriageResult.SessionRows),
+			len(rangeContextTriageResult.FailureModeRows),
+			len(rangeContextTriageResult.CohortRows),
+			len(rangeContextTriageResult.RankingRows),
+			rangeContextTriageResult.PassingCohorts,
+			rangeContextTriageResult.StopState,
 		)
 	}
 	var srRows []lab.SRAuditRow
@@ -2957,6 +3042,42 @@ func writeFuturesHigherTFNestedRangeRotationEventsCSV(path string, rows []lab.Fu
 }
 
 func writeFuturesHigherTFNestedRangeRotationSummaryCSV(path string, rows []lab.FuturesHigherTFNestedRangeRotationSummaryRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeContextTriageSourcesCSV(path string, rows []lab.FuturesRangeContextTriageSourceRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeContextTriageCoverageCSV(path string, rows []lab.FuturesRangeContextTriageCoverageRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeContextTriageEpisodesCSV(path string, rows []lab.FuturesRangeContextTriageEpisodeRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeContextTriageQualityCSV(path string, rows []lab.FuturesRangeContextTriageQualityRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeContextTriageSessionsCSV(path string, rows []lab.FuturesRangeContextTriageSessionRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeContextTriageFailureModesCSV(path string, rows []lab.FuturesRangeContextTriageFailureModeRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeContextTriageCohortsCSV(path string, rows []lab.FuturesRangeContextTriageCohortRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeContextTriageRankingsCSV(path string, rows []lab.FuturesRangeContextTriageRankingRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeContextTriageSummaryCSV(path string, rows []lab.FuturesRangeContextTriageSummaryRow) error {
 	return writeJSONTaggedCSV(path, rows)
 }
 

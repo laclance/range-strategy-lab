@@ -905,6 +905,102 @@ func TestRunWithArgsFuturesRangeFirstOccupancyRotationV1OptimizationFlagWritesAr
 	}
 }
 
+func TestRunWithArgsFuturesRangeContextTriageAuditFlagWritesArtifactsAndRejectsSpotComparison(t *testing.T) {
+	dir := t.TempDir()
+	futuresPath := writeCLITestCSVN(t, dir, "btcusdt_futures_um_5m_context_triage.csv", 96)
+	oldTriageConfig := futuresRangeContextTriageAuditConfigForRun
+	futuresRangeContextTriageAuditConfigForRun = func() lab.FuturesRangeContextTriageAuditConfig {
+		cfg := lab.DefaultFuturesRangeContextTriageAuditConfig()
+		cfg.ApprovedSourcePath = futuresPath
+		cfg.SkipSourceFactCheck = true
+		cfg.SkipCoverageCountCheck = true
+		cfg.Timeframes = []string{lab.RangeDiscoveryTimeframe15m}
+		cfg.DetectorLookbackBarsOverride = 1
+		cfg.DetectorMinConsecutiveBars = 1
+		cfg.HorizonsBars = []int{2}
+		cfg.MinFullCohortCount = 1
+		cfg.MinSplitCohortCount = 1
+		cfg.MinSessionSplitCohortCount = 1
+		return cfg
+	}
+	defer func() { futuresRangeContextTriageAuditConfigForRun = oldTriageConfig }()
+
+	defaultOutDir := filepath.Join(dir, "default")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-out-dir", defaultOutDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(defaultOutDir, "futures_range_context_triage_summary.csv")); !os.IsNotExist(err) {
+		t.Fatalf("default run should not write range context triage artifacts, stat err=%v", err)
+	}
+
+	outDir := filepath.Join(dir, "triage")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-range-context-triage-audit",
+		"-out-dir", outDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{
+		"source_manifest.json",
+		"summary.csv",
+		"summary.json",
+		"trades.json",
+		"futures_range_context_triage_sources.csv",
+		"futures_range_context_triage_coverage.csv",
+		"futures_range_context_triage_episodes.csv",
+		"futures_range_context_triage_quality.csv",
+		"futures_range_context_triage_sessions.csv",
+		"futures_range_context_triage_failure_modes.csv",
+		"futures_range_context_triage_cohorts.csv",
+		"futures_range_context_triage_rankings.csv",
+		"futures_range_context_triage_summary.csv",
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, name)); err != nil {
+			t.Fatalf("expected range context triage artifact %s: %v", name, err)
+		}
+	}
+	data, err := os.ReadFile(filepath.Join(outDir, "trades.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var trades []lab.Trade
+	if err := json.Unmarshal(data, &trades); err != nil {
+		t.Fatal(err)
+	}
+	if len(trades) != 0 {
+		t.Fatalf("range context triage audit must remain zero-trade, got %d", len(trades))
+	}
+
+	spotPath := writeCLITestCSV(t, dir, "btcusdt_spot_5m_context_triage.csv")
+	err = runWithArgs([]string{
+		"-csv", spotPath,
+		"-source-product", lab.SourceProductBinanceSpot,
+		"-allow-spot-comparison",
+		"-futures-range-context-triage-audit",
+		"-out-dir", filepath.Join(dir, "spot-triage"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "requires Binance USDT-M futures source") {
+		t.Fatalf("expected range context triage futures-source error, got %v", err)
+	}
+
+	err = runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-range-context-triage-audit",
+		"-futures-range-first-occupancy-rotation-v1-optimization",
+		"-out-dir", filepath.Join(dir, "combined-triage"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "cannot be combined") {
+		t.Fatalf("expected range context triage combination error, got %v", err)
+	}
+}
+
 func writeCLITestCSV(t *testing.T, dir string, name string) string {
 	return writeCLITestCSVN(t, dir, name, 2)
 }
