@@ -2,12 +2,11 @@
 
 Standalone Binance USDT-M futures range-strategy starter project. The current
 implemented CLI default remains BTCUSDT futures 5m data. Research is not
-stopped, but automatic reuse of failed premises is stopped: the next approved
-direction is a range-first, BTCUSDT-first strategy construction protocol that
-designs fresh offline backtesting and optimization work before any code. The
-first selected v1 grammar is BTCUSDT range occupancy rotation: a rolling
-range-envelope imbalance and interior-recapture search. Older spot-data outputs
-are historical context unless a futures rerun explicitly revalidates a specific
+stopped, but automatic reuse of failed premises is stopped. The user-approved
+range-first, BTCUSDT-first construction protocol produced and tested the first
+V1 grammar, BTCUSDT range occupancy rotation, and that optimizer review failed
+with no selected config for fixed replay. Older spot-data outputs are
+historical context unless a futures rerun explicitly revalidates a specific
 conclusion.
 
 ## Purpose
@@ -70,7 +69,8 @@ review, read the docs in this order:
 37. [docs/FUTURES_RANGE_UNIVERSE_BREAKOUT_RETEST_ACCEPTANCE_BASELINE_REVIEW.md](docs/FUTURES_RANGE_UNIVERSE_BREAKOUT_RETEST_ACCEPTANCE_BASELINE_REVIEW.md)
 38. [docs/FUTURES_RANGE_FIRST_STRATEGY_CONSTRUCTION_PROTOCOL.md](docs/FUTURES_RANGE_FIRST_STRATEGY_CONSTRUCTION_PROTOCOL.md)
 39. [docs/FUTURES_RANGE_FIRST_STRATEGY_CONSTRUCTION_V1_SPEC.md](docs/FUTURES_RANGE_FIRST_STRATEGY_CONSTRUCTION_V1_SPEC.md)
-40. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+40. [docs/FUTURES_RANGE_FIRST_OCCUPANCY_ROTATION_V1_OPTIMIZATION_REVIEW.md](docs/FUTURES_RANGE_FIRST_OCCUPANCY_ROTATION_V1_OPTIMIZATION_REVIEW.md)
+41. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 

@@ -25,6 +25,7 @@ var futuresRangeUniverseStructuredCompressionOptimizationConfigForRun = lab.Defa
 var futuresRangeUniverseStructuredCompressionStrategyReplayConfigForRun = lab.DefaultFuturesRangeUniverseStructuredCompressionStrategyReplayConfig
 var futuresRangeUniverseStructuredCompressionWalkForwardConfigForRun = lab.DefaultFuturesRangeUniverseStructuredCompressionWalkForwardConfig
 var futuresHigherTFNestedRangeRotationAuditConfigForRun = lab.DefaultFuturesHigherTFNestedRangeRotationAuditConfig
+var futuresRangeFirstOccupancyRotationV1OptimizationConfigForRun = lab.DefaultFuturesRangeFirstOccupancyRotationV1OptimizationConfig
 
 func main() {
 	if err := run(); err != nil {
@@ -69,6 +70,7 @@ func runWithArgs(args []string) error {
 	futuresRangeUniverseStructuredCompressionStrategyReplay := fs.Bool("futures-range-universe-structured-compression-strategy-replay", false, "run offline futures range universe structured compression strategy replay")
 	futuresRangeUniverseStructuredCompressionWalkForwardRobustness := fs.Bool("futures-range-universe-structured-compression-walk-forward-robustness", false, "run offline futures range universe structured compression walk-forward robustness")
 	futuresHigherTFNestedRangeRotationAudit := fs.Bool("futures-higher-tf-nested-range-rotation-audit", false, "write non-trading futures higher-timeframe nested range rotation diagnostics")
+	futuresRangeFirstOccupancyRotationV1Optimization := fs.Bool("futures-range-first-occupancy-rotation-v1-optimization", false, "run offline futures range-first occupancy rotation v1 optimization")
 	srAudit := fs.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
 	srBoundaryAudit := fs.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
 	srBoundaryInspect := fs.Bool("sr-boundary-inspect", false, "write compact non-trading SR boundary candidate comparison diagnostics")
@@ -121,7 +123,7 @@ func runWithArgs(args []string) error {
 		MaxHoldBars:    *maxHoldBars,
 	}
 
-	tradeProducingFlagSelected := *holdInsideMidlineTouchPrototype || *futuresCleanBreakoutBaselineBacktest || *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest || *futuresRangeUniverseStructuredCompressionBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness
+	tradeProducingFlagSelected := *holdInsideMidlineTouchPrototype || *futuresCleanBreakoutBaselineBacktest || *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest || *futuresRangeUniverseStructuredCompressionBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness || *futuresRangeFirstOccupancyRotationV1Optimization
 	if *futuresHigherTFNestedRangeRotationAudit {
 		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
 			return fmt.Errorf("-futures-higher-tf-nested-range-rotation-audit requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
@@ -135,7 +137,7 @@ func runWithArgs(args []string) error {
 	strategyName := strategy.Name()
 	var prototypeStrategy lab.HoldInsideMidlineTouchPrototypeStrategy
 	if *holdInsideMidlineTouchPrototype {
-		if *futuresCleanBreakoutBaselineBacktest || *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest || *futuresRangeUniverseStructuredCompressionBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness {
+		if *futuresCleanBreakoutBaselineBacktest || *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest || *futuresRangeUniverseStructuredCompressionBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness || *futuresRangeFirstOccupancyRotationV1Optimization {
 			return fmt.Errorf("-hold-inside-midline-touch-prototype cannot be combined with trade-producing backtest flags")
 		}
 		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
@@ -168,7 +170,7 @@ func runWithArgs(args []string) error {
 		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
 			return fmt.Errorf("-futures-range-universe-discovery-audit requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
 		}
-		if *holdInsideMidlineTouchPrototype || *futuresCleanBreakoutBaselineBacktest || *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest || *futuresRangeUniverseStructuredCompressionBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness {
+		if *holdInsideMidlineTouchPrototype || *futuresCleanBreakoutBaselineBacktest || *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest || *futuresRangeUniverseStructuredCompressionBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness || *futuresRangeFirstOccupancyRotationV1Optimization {
 			return fmt.Errorf("-futures-range-universe-discovery-audit cannot be combined with trade-producing prototype/backtest flags")
 		}
 	}
@@ -176,7 +178,7 @@ func runWithArgs(args []string) error {
 		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
 			return fmt.Errorf("-futures-clean-breakout-baseline-backtest requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
 		}
-		if *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest || *futuresRangeUniverseStructuredCompressionBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness {
+		if *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest || *futuresRangeUniverseStructuredCompressionBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness || *futuresRangeFirstOccupancyRotationV1Optimization {
 			return fmt.Errorf("-futures-clean-breakout-baseline-backtest cannot be combined with other trade-producing range-universe flags")
 		}
 	}
@@ -184,7 +186,7 @@ func runWithArgs(args []string) error {
 		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
 			return fmt.Errorf("-futures-range-universe-breakout-retest-acceptance-baseline-backtest requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
 		}
-		if *futuresRangeUniverseStructuredCompressionBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness {
+		if *futuresRangeUniverseStructuredCompressionBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness || *futuresRangeFirstOccupancyRotationV1Optimization {
 			return fmt.Errorf("-futures-range-universe-breakout-retest-acceptance-baseline-backtest cannot be combined with structured-compression trade-producing flags")
 		}
 	}
@@ -192,7 +194,7 @@ func runWithArgs(args []string) error {
 		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
 			return fmt.Errorf("-futures-range-universe-structured-compression-baseline-backtest requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
 		}
-		if *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness {
+		if *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness || *futuresRangeFirstOccupancyRotationV1Optimization {
 			return fmt.Errorf("-futures-range-universe-structured-compression-baseline-backtest cannot be combined with other trade-producing range-universe flags")
 		}
 	}
@@ -200,7 +202,7 @@ func runWithArgs(args []string) error {
 		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
 			return fmt.Errorf("-futures-range-universe-structured-compression-optimization requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
 		}
-		if *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness {
+		if *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness || *futuresRangeFirstOccupancyRotationV1Optimization {
 			return fmt.Errorf("-futures-range-universe-structured-compression-optimization cannot be combined with structured-compression replay or walk-forward flags")
 		}
 	}
@@ -208,13 +210,21 @@ func runWithArgs(args []string) error {
 		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
 			return fmt.Errorf("-futures-range-universe-structured-compression-strategy-replay requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
 		}
-		if *futuresRangeUniverseStructuredCompressionWalkForwardRobustness {
+		if *futuresRangeUniverseStructuredCompressionWalkForwardRobustness || *futuresRangeFirstOccupancyRotationV1Optimization {
 			return fmt.Errorf("-futures-range-universe-structured-compression-strategy-replay cannot be combined with -futures-range-universe-structured-compression-walk-forward-robustness")
 		}
 	}
 	if *futuresRangeUniverseStructuredCompressionWalkForwardRobustness {
 		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
 			return fmt.Errorf("-futures-range-universe-structured-compression-walk-forward-robustness requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
+		}
+	}
+	if *futuresRangeFirstOccupancyRotationV1Optimization {
+		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
+			return fmt.Errorf("-futures-range-first-occupancy-rotation-v1-optimization requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
+		}
+		if *holdInsideMidlineTouchPrototype || *futuresCleanBreakoutBaselineBacktest || *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest || *futuresRangeUniverseStructuredCompressionBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness {
+			return fmt.Errorf("-futures-range-first-occupancy-rotation-v1-optimization cannot be combined with trade-producing prototype/baseline/optimization/replay/walk-forward flags")
 		}
 	}
 
@@ -225,6 +235,7 @@ func runWithArgs(args []string) error {
 	var structuredCompressionStrategyReplayResult lab.FuturesRangeUniverseStructuredCompressionStrategyReplayResult
 	var structuredCompressionWalkForwardResult lab.FuturesRangeUniverseStructuredCompressionWalkForwardResult
 	var nestedRangeRotationResult lab.FuturesHigherTFNestedRangeRotationAuditResult
+	var occupancyRotationV1Result lab.FuturesRangeFirstOccupancyRotationV1OptimizationResult
 	var result lab.BacktestResult
 	if *futuresCleanBreakoutBaselineBacktest {
 		var err error
@@ -279,6 +290,15 @@ func runWithArgs(args []string) error {
 		}
 		result = lab.BacktestResult{Trades: structuredCompressionWalkForwardResult.Trades}
 		strategyName = lab.FuturesRangeUniverseStructuredCompressionWalkForwardName
+	} else if *futuresRangeFirstOccupancyRotationV1Optimization {
+		var err error
+		occupancyCfg := futuresRangeFirstOccupancyRotationV1OptimizationConfigForRun()
+		occupancyRotationV1Result, err = lab.RunFuturesRangeFirstOccupancyRotationV1Optimization(candles, sourceManifest, occupancyCfg, cfg, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+		result = lab.BacktestResult{Trades: occupancyRotationV1Result.Trades}
+		strategyName = lab.FuturesRangeFirstOccupancyRotationV1OptimizationName
 	} else {
 		result = lab.RunBacktest(candles, strategy, cfg)
 	}
@@ -719,6 +739,79 @@ func runWithArgs(args []string) error {
 			len(structuredCompressionWalkForwardResult.RankingRows),
 			structuredCompressionWalkForwardResult.FrozenConfigID,
 			lab.FuturesRangeUniverseStructuredCompressionWalkForwardStopState(structuredCompressionWalkForwardResult.FoldRows),
+		)
+	}
+	if *futuresRangeFirstOccupancyRotationV1Optimization {
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_first_occupancy_rotation_v1_sources.json"), occupancyRotationV1Result.SourceRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeFirstOccupancyRotationV1SourcesCSV(filepath.Join(*outDir, "futures_range_first_occupancy_rotation_v1_sources.csv"), occupancyRotationV1Result.SourceRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_first_occupancy_rotation_v1_coverage.json"), occupancyRotationV1Result.CoverageRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeFirstOccupancyRotationV1CoverageCSV(filepath.Join(*outDir, "futures_range_first_occupancy_rotation_v1_coverage.csv"), occupancyRotationV1Result.CoverageRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_first_occupancy_rotation_v1_grid.json"), occupancyRotationV1Result.GridRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeFirstOccupancyRotationV1GridCSV(filepath.Join(*outDir, "futures_range_first_occupancy_rotation_v1_grid.csv"), occupancyRotationV1Result.GridRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_first_occupancy_rotation_v1_baseline.json"), occupancyRotationV1Result.BaselineRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeFirstOccupancyRotationV1BaselineCSV(filepath.Join(*outDir, "futures_range_first_occupancy_rotation_v1_baseline.csv"), occupancyRotationV1Result.BaselineRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_first_occupancy_rotation_v1_signals.json"), occupancyRotationV1Result.SignalRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeFirstOccupancyRotationV1SignalsCSV(filepath.Join(*outDir, "futures_range_first_occupancy_rotation_v1_signals.csv"), occupancyRotationV1Result.SignalRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_first_occupancy_rotation_v1_trades.json"), occupancyRotationV1Result.TradeRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeFirstOccupancyRotationV1TradesCSV(filepath.Join(*outDir, "futures_range_first_occupancy_rotation_v1_trades.csv"), occupancyRotationV1Result.TradeRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_first_occupancy_rotation_v1_summary.json"), occupancyRotationV1Result.SummaryRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeFirstOccupancyRotationV1SummaryCSV(filepath.Join(*outDir, "futures_range_first_occupancy_rotation_v1_summary.csv"), occupancyRotationV1Result.SummaryRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_first_occupancy_rotation_v1_rankings.json"), occupancyRotationV1Result.RankingRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeFirstOccupancyRotationV1RankingsCSV(filepath.Join(*outDir, "futures_range_first_occupancy_rotation_v1_rankings.csv"), occupancyRotationV1Result.RankingRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_first_occupancy_rotation_v1_selection.json"), occupancyRotationV1Result.SelectionRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeFirstOccupancyRotationV1SelectionCSV(filepath.Join(*outDir, "futures_range_first_occupancy_rotation_v1_selection.csv"), occupancyRotationV1Result.SelectionRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_range_first_occupancy_rotation_v1_skips.json"), occupancyRotationV1Result.SkipRows); err != nil {
+			return err
+		}
+		if err := writeFuturesRangeFirstOccupancyRotationV1SkipsCSV(filepath.Join(*outDir, "futures_range_first_occupancy_rotation_v1_skips.csv"), occupancyRotationV1Result.SkipRows); err != nil {
+			return err
+		}
+		fmt.Printf("futures_range_first_occupancy_rotation_v1 source_rows=%d coverage_rows=%d grid_rows=%d baseline_trades=%d selected_config=%s selected_trades=%d summary_rows=%d ranking_rows=%d stop_state=%s\n",
+			len(occupancyRotationV1Result.SourceRows),
+			len(occupancyRotationV1Result.CoverageRows),
+			len(occupancyRotationV1Result.GridRows),
+			len(occupancyRotationV1Result.Trades),
+			occupancyRotationV1Result.SelectedConfigID,
+			len(occupancyRotationV1Result.TradeRows)-len(occupancyRotationV1Result.Trades),
+			len(occupancyRotationV1Result.SummaryRows),
+			len(occupancyRotationV1Result.RankingRows),
+			occupancyRotationV1Result.StopState,
 		)
 	}
 	if *futuresHigherTFNestedRangeRotationAudit {
@@ -2800,6 +2893,46 @@ func writeFuturesRangeUniverseStructuredCompressionWalkForwardSummaryCSV(path st
 }
 
 func writeFuturesRangeUniverseStructuredCompressionWalkForwardRankingsCSV(path string, rows []lab.FuturesRangeUniverseStructuredCompressionWalkForwardRankingRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeFirstOccupancyRotationV1SourcesCSV(path string, rows []lab.FuturesRangeFirstOccupancyRotationV1SourceRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeFirstOccupancyRotationV1CoverageCSV(path string, rows []lab.FuturesRangeFirstOccupancyRotationV1CoverageRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeFirstOccupancyRotationV1GridCSV(path string, rows []lab.FuturesRangeFirstOccupancyRotationV1GridRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeFirstOccupancyRotationV1BaselineCSV(path string, rows []lab.FuturesRangeFirstOccupancyRotationV1BaselineRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeFirstOccupancyRotationV1SignalsCSV(path string, rows []lab.FuturesRangeFirstOccupancyRotationV1SignalRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeFirstOccupancyRotationV1TradesCSV(path string, rows []lab.FuturesRangeFirstOccupancyRotationV1TradeRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeFirstOccupancyRotationV1SummaryCSV(path string, rows []lab.FuturesRangeFirstOccupancyRotationV1SummaryRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeFirstOccupancyRotationV1RankingsCSV(path string, rows []lab.FuturesRangeFirstOccupancyRotationV1RankingRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeFirstOccupancyRotationV1SelectionCSV(path string, rows []lab.FuturesRangeFirstOccupancyRotationV1SelectionRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesRangeFirstOccupancyRotationV1SkipsCSV(path string, rows []lab.FuturesRangeFirstOccupancyRotationV1SkipRow) error {
 	return writeJSONTaggedCSV(path, rows)
 }
 

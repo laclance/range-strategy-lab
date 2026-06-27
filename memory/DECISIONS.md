@@ -237,6 +237,14 @@
   hold-inside/midline, impulse absorption, nested range-rotation, source
   expansion, symbol expansion, live-adjacent work, or old `binance-bot`
   strategy/scoring/live code.
+- The futures range-first occupancy rotation V1 optimizer has been reviewed
+  and failed. Source/resample validation passed and the full `1,152` declared
+  grid was evaluated, but the fixed baseline lost after costs and `0` grid
+  configs passed the optimizer gates. Do not create a fixed replay spec,
+  walk-forward, package review, retune, gate relaxation, symbol expansion, or
+  live-adjacent path from `range_occupancy_rotation_v1`. Further strategy work
+  requires a materially different user-approved offline range-first premise
+  and fresh spec.
 - The futures impulse absorption audit has been reviewed. Abnormal OHLCV
   impulse candles on Binance USDT-M futures data are continuation-dominant
   rather than midpoint-reclaim-dominant across every period split and tested

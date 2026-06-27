@@ -812,6 +812,99 @@ func TestRunWithArgsFuturesHigherTFNestedRangeRotationAuditFlagWritesArtifactsAn
 	}
 }
 
+func TestRunWithArgsFuturesRangeFirstOccupancyRotationV1OptimizationFlagWritesArtifactsAndRejectsSpotComparison(t *testing.T) {
+	dir := t.TempDir()
+	futuresPath := writeCLITestCSVN(t, dir, "btcusdt_futures_um_5m_occupancy_rotation.csv", 60)
+	oldOccupancyConfig := futuresRangeFirstOccupancyRotationV1OptimizationConfigForRun
+	futuresRangeFirstOccupancyRotationV1OptimizationConfigForRun = func() lab.FuturesRangeFirstOccupancyRotationV1OptimizationConfig {
+		cfg := lab.DefaultFuturesRangeFirstOccupancyRotationV1OptimizationConfig()
+		cfg.SkipSourceFactCheck = true
+		cfg.SkipCoverageCountCheck = true
+		cfg.Timeframes = []string{lab.RangeDiscoveryTimeframe1h}
+		cfg.LookbackHours = []int{1, 48}
+		cfg.MaxWidthPcts = []float64{0.50}
+		cfg.OccupancyWindows = []int{2, 12}
+		cfg.OccupancyZoneLevels = []float64{0.25}
+		cfg.OccupancyMinFractions = []float64{0.50}
+		cfg.RecaptureLevels = []float64{0.33}
+		cfg.TargetLevels = []float64{0.66}
+		cfg.MaxHoldBars = []int{2}
+		cfg.StopBufferWidths = []float64{0.05}
+		cfg.SideModes = []string{lab.RangeDiscoverySideAll}
+		cfg.MinTrainTrades = 1
+		cfg.MinOOSTrades = 1
+		cfg.MinRecentTrades = 1
+		cfg.MinFullTrades = 1
+		return cfg
+	}
+	defer func() { futuresRangeFirstOccupancyRotationV1OptimizationConfigForRun = oldOccupancyConfig }()
+
+	defaultOutDir := filepath.Join(dir, "default")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-out-dir", defaultOutDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(defaultOutDir, "futures_range_first_occupancy_rotation_v1_grid.csv")); !os.IsNotExist(err) {
+		t.Fatalf("default run should not write occupancy rotation artifacts, stat err=%v", err)
+	}
+
+	outDir := filepath.Join(dir, "occupancy")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-range-first-occupancy-rotation-v1-optimization",
+		"-out-dir", outDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{
+		"source_manifest.json",
+		"summary.csv",
+		"summary.json",
+		"trades.json",
+		"futures_range_first_occupancy_rotation_v1_sources.csv",
+		"futures_range_first_occupancy_rotation_v1_coverage.csv",
+		"futures_range_first_occupancy_rotation_v1_grid.csv",
+		"futures_range_first_occupancy_rotation_v1_baseline.csv",
+		"futures_range_first_occupancy_rotation_v1_signals.csv",
+		"futures_range_first_occupancy_rotation_v1_trades.csv",
+		"futures_range_first_occupancy_rotation_v1_summary.csv",
+		"futures_range_first_occupancy_rotation_v1_rankings.csv",
+		"futures_range_first_occupancy_rotation_v1_selection.csv",
+		"futures_range_first_occupancy_rotation_v1_skips.csv",
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, name)); err != nil {
+			t.Fatalf("expected occupancy rotation artifact %s: %v", name, err)
+		}
+	}
+
+	spotPath := writeCLITestCSV(t, dir, "btcusdt_spot_5m_occupancy.csv")
+	err := runWithArgs([]string{
+		"-csv", spotPath,
+		"-source-product", lab.SourceProductBinanceSpot,
+		"-allow-spot-comparison",
+		"-futures-range-first-occupancy-rotation-v1-optimization",
+		"-out-dir", filepath.Join(dir, "spot-occupancy"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "requires Binance USDT-M futures source") {
+		t.Fatalf("expected occupancy rotation futures-source error, got %v", err)
+	}
+
+	err = runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-range-first-occupancy-rotation-v1-optimization",
+		"-futures-range-universe-structured-compression-optimization",
+		"-out-dir", filepath.Join(dir, "combined-occupancy"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "cannot be combined") {
+		t.Fatalf("expected occupancy rotation combination error, got %v", err)
+	}
+}
+
 func writeCLITestCSV(t *testing.T, dir string, name string) string {
 	return writeCLITestCSVN(t, dir, name, 2)
 }

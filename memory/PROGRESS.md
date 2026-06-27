@@ -14,10 +14,11 @@ git history.
   range-rotation audit are exclusion evidence in their reviewed forms. The
   user-approved next posture is range-first, BTCUSDT-first strategy
   construction from scratch through documented offline backtesting and
-  optimization stages. The first v1 construction spec now selects
-  `range_occupancy_rotation_v1`, a BTCUSDT rolling range-envelope occupancy
-  imbalance and interior-recapture grammar, for the next bounded offline
-  optimizer/backtester brief.
+  optimization stages. The first v1 construction implementation,
+  `range_occupancy_rotation_v1`, has now run its bounded optimizer/backtester
+  and failed with no selectable grid config. No fixed replay, walk-forward,
+  strategy package, retune, symbol expansion, or live-adjacent work is
+  authorized from this V1 grammar.
 - Active market target is Binance USDT-M futures, not spot. Spot-generated
   audits/reviews are historical context only unless a futures rerun explicitly
   revalidates a specific conclusion.
@@ -70,6 +71,76 @@ git history.
   full sample, all upside, so the audit failed the no-baseline gate. No
   baseline backtest, optimizer, replay, walk-forward, source expansion, symbol
   expansion, or strategy package is approved from this premise.
+
+## 2026-06-27
+
+Futures range-first occupancy rotation V1 optimizer:
+
+- Review doc:
+  `docs/FUTURES_RANGE_FIRST_OCCUPANCY_ROTATION_V1_OPTIMIZATION_REVIEW.md`.
+- CLI flag:
+  `-futures-range-first-occupancy-rotation-v1-optimization`.
+- Result dir:
+  `results/futures-range-first-occupancy-rotation-v1-optimization/`.
+- Stop state:
+  `range_first_strategy_v1_optimizer_failed_no_replay`.
+- Source facts:
+  - path:
+    `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`;
+  - product/symbol/interval: Binance USDT-M futures `BTCUSDT` `5m`;
+  - rows: `573,984`;
+  - first/last open:
+    `2021-01-01T00:00:00Z` to `2026-06-16T23:55:00Z`;
+  - `gap_count=0`, `duplicate_count=0`, `zero_volume_count=66`,
+    `comparison_only=false`, `validation_status=accepted`.
+- Closed UTC resample facts:
+  - `1h`: `47,832` rows, first open `2021-01-01T00:00:00Z`,
+    last open `2026-06-16T23:00:00Z`, complete, accepted;
+  - `15m`: `191,328` rows, first open `2021-01-01T00:00:00Z`,
+    last open `2026-06-16T23:45:00Z`, complete, accepted.
+- Grid and selection:
+  - declared grid rows: `1,152`;
+  - passing grid rows: `0`;
+  - selected config: none;
+  - top ranked row:
+    `range_occupancy_rotation_v1_1h_l24_w020_ow8_occ070_rec25_t66_h12_sb000`;
+  - top row did not pass because it had only `2` train trades, too few
+    OOS/recent/full trades, negative OOS and full net P&L, weak PF, and side
+    weakness.
+- Fixed baseline:
+  `range_occupancy_rotation_v1_1h_l48_w035_ow12_occ060_rec33_t66_h12_sb005`.
+  Common `summary.csv/json` and `trades.json` describe this baseline only.
+- Baseline outcome:
+  - `2021_2022_stress`: `8` trades, net P&L `-22.653070`, PF `0.464536`;
+  - `2023_2024_oos`: `16` trades, net P&L `-38.248119`, PF `0.428362`;
+  - `2025_2026_recent`: `19` trades, net P&L `-33.307557`, PF `0.504958`;
+  - `full_2021_2026`: `43` trades, net P&L `-94.208745`, PF `0.466232`;
+  - baseline rank: `769` of `1,152`.
+- CSV line counts including headers:
+  - `futures_range_first_occupancy_rotation_v1_baseline.csv`: `2`;
+  - `futures_range_first_occupancy_rotation_v1_coverage.csv`: `3`;
+  - `futures_range_first_occupancy_rotation_v1_grid.csv`: `1,153`;
+  - `futures_range_first_occupancy_rotation_v1_rankings.csv`: `1,153`;
+  - `futures_range_first_occupancy_rotation_v1_selection.csv`: `3`;
+  - `futures_range_first_occupancy_rotation_v1_signals.csv`: `84`;
+  - `futures_range_first_occupancy_rotation_v1_skips.csv`: `42,543`;
+  - `futures_range_first_occupancy_rotation_v1_sources.csv`: `2`;
+  - `futures_range_first_occupancy_rotation_v1_summary.csv`: `13,825`;
+  - `futures_range_first_occupancy_rotation_v1_trades.csv`: `44`;
+  - common `summary.csv`: `13`.
+- Review outcome: source and resample validation passed, but fixed baseline
+  failed all split gates after costs and no declared grid config passed the
+  optimizer gates. No fixed replay spec is authorized.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to a review-only stop requiring a
+  materially different user-approved offline range-first premise before any
+  further implementation.
+- Verification commands run:
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -futures-range-first-occupancy-rotation-v1-optimization -out-dir results/futures-range-first-occupancy-rotation-v1-optimization`
+  - `wc -l results/futures-range-first-occupancy-rotation-v1-optimization/*.csv`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
 
 ## 2026-06-26
 

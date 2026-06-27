@@ -1,4 +1,4 @@
-# Next Codex Brief: Futures Range Occupancy Rotation V1 Optimizer
+# Next Codex Brief: Futures Range-First Strategy Construction Review Stop
 
 ```text
 We are in /home/lance/range-strategy-lab, a standalone offline Go project for
@@ -8,130 +8,108 @@ Before work:
 - Read AGENTS.md.
 - Read memory/README.md, memory/PROGRESS.md, and memory/DECISIONS.md.
 - Read README.md as the docs index.
-- Read only the docs relevant to this task:
+- Read only the docs relevant to this stop state:
+  - docs/FUTURES_RANGE_FIRST_OCCUPANCY_ROTATION_V1_OPTIMIZATION_REVIEW.md
   - docs/FUTURES_RANGE_FIRST_STRATEGY_CONSTRUCTION_V1_SPEC.md
   - docs/FUTURES_RANGE_FIRST_STRATEGY_CONSTRUCTION_PROTOCOL.md
+  - docs/FUTURES_HIGHER_TIMEFRAME_NESTED_RANGE_ROTATION_AUDIT_REVIEW.md
+  - docs/FUTURES_RANGE_UNIVERSE_BREAKOUT_RETEST_ACCEPTANCE_BASELINE_REVIEW.md
+  - docs/FUTURES_RANGE_UNIVERSE_STRUCTURED_COMPRESSION_WALK_FORWARD_REVIEW.md
+  - docs/FUTURES_HYPOTHESIS_PIVOT_INVENTORY.md
   - docs/VERIFICATION.md
 - Check git status before editing.
 
 Current state:
-- The project is offline Binance USDT-M futures range-strategy construction.
+- The project remains offline Binance USDT-M futures range-strategy research.
 - Default CLI behavior remains BTCUSDT futures 5m with lab.EmptyStrategy unless
   an explicit offline audit/backtest flag is passed.
-- The latest spec selected the first v1 grammar:
+- Research is not stopped, but automatic reuse or retuning of failed premises
+  is stopped.
+- The user-approved range-first, BTCUSDT-first construction protocol produced
+  the first V1 grammar:
   range_occupancy_rotation_v1.
-- V1 spec stop state:
-  range_first_strategy_v1_spec_ready_for_optimizer_implementation.
-- Scope remains range-first and BTCUSDT-first.
-- The first source remains the accepted Binance USDT-M futures BTCUSDT 5m file:
-  ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv.
-- Source facts:
+- That V1 optimizer/backtester has now been implemented, run, and reviewed.
+- V1 stop state:
+  range_first_strategy_v1_optimizer_failed_no_replay.
+- Source and closed UTC resample validation passed:
+  - source:
+    ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv;
   - loaded candles: 573,984;
-  - coverage: 2021-01-01T00:00:00Z through 2026-06-16T23:55:00Z;
+  - open-time coverage:
+    2021-01-01T00:00:00Z through 2026-06-16T23:55:00Z;
   - gap_count=0, duplicate_count=0, zero_volume_count=66;
-  - comparison_only=false, validation_status=accepted.
-- Expected closed UTC resamples:
-  - 15m: 191,328 rows, 2021-01-01T00:00:00Z through
-    2026-06-16T23:45:00Z;
-  - 1h: 47,832 rows, 2021-01-01T00:00:00Z through
-    2026-06-16T23:00:00Z.
-- Structured compression, breakout-retest/acceptance, clean breakout,
-  hold-inside/midline, impulse absorption, and higher-timeframe nested
-  range-rotation are exclusion evidence in their reviewed forms.
+  - 15m resample: 191,328 rows through 2026-06-16T23:45:00Z;
+  - 1h resample: 47,832 rows through 2026-06-16T23:00:00Z.
+- The fixed baseline
+  range_occupancy_rotation_v1_1h_l48_w035_ow12_occ060_rec33_t66_h12_sb005
+  lost after costs:
+  - full_2021_2026: 43 trades, net P&L -94.208745, PF 0.466232;
+  - 2021_2022_stress: 8 trades, net P&L -22.653070, PF 0.464536;
+  - 2023_2024_oos: 16 trades, net P&L -38.248119, PF 0.428362;
+  - 2025_2026_recent: 19 trades, net P&L -33.307557, PF 0.504958.
+- The declared 1,152-row grid had 0 passing configs and no selected config.
+- A fixed replay spec, walk-forward, package review, retune, gate relaxation,
+  symbol expansion, or live-adjacent path is not authorized from V1.
 
 Goal:
-- Implement the bounded offline BTCUSDT optimizer/backtester behind:
-  -futures-range-first-occupancy-rotation-v1-optimization
-- Implement exactly the range_occupancy_rotation_v1 grammar, grid, fixed
-  baseline, gates, ranking score, artifacts, and stop states from
-  docs/FUTURES_RANGE_FIRST_STRATEGY_CONSTRUCTION_V1_SPEC.md.
-- Do not invent research policy during implementation.
+- Review-only stop unless the user explicitly supplies a materially different
+  offline range-first premise.
+- Do not implement a new strategy, optimizer, replay, walk-forward, grid,
+  source expansion, or result-producing run from the existing closed families
+  without user input.
+- If the user asks what is available, inventory the current docs and present a
+  short choice set of materially different offline premises, clearly marking
+  closed families as exclusion evidence.
 
-Key implementation requirements:
-- Add lab runner/config/result/row types for range_occupancy_rotation_v1.
-- Reuse the existing futures source guard, closed UTC resampling, split labels,
-  one-position engine, next-bar-open entries, engine costs, max-hold behavior,
-  and stop-first ambiguity.
-- Derive signal bars only from closed UTC 15m and 1h BTCUSDT resamples.
-- Build range envelopes from the previous lookback bars ending at i-1.
-- Emit long/short signals only from close-location occupancy imbalance plus
-  interior recapture, exactly as specified.
-- Reject and record invalid geometry/skipped signals with the spec reasons.
-- Evaluate the fixed baseline row:
-  range_occupancy_rotation_v1_1h_l48_w035_ow12_occ060_rec33_t66_h12_sb005.
-- Declare and evaluate the exact 1,152 config grid from the spec.
-- Common source_manifest.json, summary.csv/json, and trades.json must describe
-  the fixed baseline only.
-- Grid, ranking, selected-config, comparison, skipped-signal, and selected
-  trade details belong only in V1-specific artifacts.
-
-Expected result directory:
-- results/futures-range-first-occupancy-rotation-v1-optimization/
-
-Required artifacts:
-- futures_range_first_occupancy_rotation_v1_sources.csv/json
-- futures_range_first_occupancy_rotation_v1_coverage.csv/json
-- futures_range_first_occupancy_rotation_v1_grid.csv/json
-- futures_range_first_occupancy_rotation_v1_baseline.csv/json
-- futures_range_first_occupancy_rotation_v1_signals.csv/json
-- futures_range_first_occupancy_rotation_v1_trades.csv/json
-- futures_range_first_occupancy_rotation_v1_summary.csv/json
-- futures_range_first_occupancy_rotation_v1_rankings.csv/json
-- futures_range_first_occupancy_rotation_v1_selection.csv/json
-- futures_range_first_occupancy_rotation_v1_skips.csv/json
-- common source_manifest.json, summary.csv/json, and trades.json
-
-Stop states:
-- range_first_strategy_v1_source_gap
-- range_first_strategy_v1_no_valid_signals
-- range_first_strategy_v1_baseline_failed_grid_still_reviewed
-- range_first_strategy_v1_optimizer_failed_no_replay
-- range_first_strategy_v1_passed_needs_fixed_replay_spec
-- range_first_strategy_v1_rejected_closed_family_reslice
+Closed or failed premises in their reviewed forms:
+- structured compression;
+- breakout-retest/acceptance;
+- clean breakout;
+- hold-inside/midline;
+- impulse absorption;
+- higher-timeframe nested range rotation;
+- range_occupancy_rotation_v1.
 
 Boundaries:
-- BTCUSDT only.
-- No ETH/SOL or broad symbol expansion.
-- No new data downloads.
-- No structured-compression, breakout-retest/acceptance, clean-breakout,
-  hold-inside/midline, impulse-absorption, or nested-rotation entries.
-- No old binance-bot strategy/scoring/live code.
-- No live orders, paper/testnet, exchange API keys, deploy scripts,
-  credentials, martingale, averaging down, or two-exchange logic.
-- Passing the optimizer gate authorizes only a later fixed replay spec, not a
-  strategy package, walk-forward, or live-adjacent work.
+- Do not retune range_occupancy_rotation_v1 target, stop, max hold, timeframe,
+  lookback, occupancy window, occupancy threshold, recapture level, symbol set,
+  grid, ranking score, or review gates around the failed result.
+- Do not retune structured compression.
+- Do not retune breakout_retest_acceptance target, stop, max hold, timeframe,
+  side, symbol set, selection rules, or review gates around the failed result.
+- Do not reopen the failed 1h structured-compression surface.
+- Do not rerun failed clean-breakout, hold-inside/midline, impulse absorption,
+  boundary touch rejection, single-candle wick rejection, failed breakout
+  re-entry, mature balance persistence, nested range-rotation, or occupancy
+  rotation as entries unless the user supplies a materially new data or
+  structure premise.
+- Do not import old binance-bot strategy/scoring/live code.
+- Do not add live orders, paper/testnet, exchange API keys, deploy scripts,
+  credentials, data downloads, broad symbol mining, martingale, averaging down,
+  or two-exchange logic.
 
-Tests:
-- Lab tests for source/resample acceptance, range-envelope lookback excluding
-  the signal candle, long/short occupancy recapture signals, dual-side skips,
-  invalid geometry skips, fixed baseline ID/parameters, grid size 1,152,
-  summary gate pass/fail, ranking score/tie-breaks, common-output baseline
-  selection, and stop-state selection.
-- CLI tests proving default runs do not write V1 artifacts, the new flag writes
-  all required artifacts, spot/comparison sources are rejected, and
-  combinations with other trade-producing prototype/baseline/optimization/
-  replay/walk-forward flags are rejected.
+Expected review-only shape if the user asks for next options:
+- Start from current docs only.
+- Treat structured compression walk-forward, breakout-retest baseline,
+  higher-timeframe nested range-rotation audit, and occupancy rotation V1
+  optimizer as exclusion evidence.
+- Separate reusable infrastructure from rejected strategy premises.
+- End with either:
+  - a user-approved bounded offline spec brief for a materially different
+    premise, or
+  - a no-implementation stop that says no automatic strategy work is
+    authorized.
 
-Review and memory after the run:
-- Add docs/FUTURES_RANGE_FIRST_OCCUPANCY_ROTATION_V1_OPTIMIZATION_REVIEW.md.
-- Add the review doc to README.md.
-- Update memory/PROGRESS.md with exact commands, result path, source/resample
-  facts, CSV line counts, baseline outcome, selected config/ranking outcome,
-  and stop state.
-- Update memory/DECISIONS.md only if the optimizer creates a durable
-  promotion, no-promotion, or no-strategy-change rule.
-- Replace memory/NEXT_CODEX_BRIEF.md based on the final stop state.
-
-Verification:
+Verification for any documentation-only update:
 - env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
-- env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -futures-range-first-occupancy-rotation-v1-optimization -out-dir results/futures-range-first-occupancy-rotation-v1-optimization
-- wc -l results/futures-range-first-occupancy-rotation-v1-optimization/*.csv
 - rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
 - git diff --check
 - git status --short
 
 Closeout:
-- Commit the completed implementation, generated review doc, README/memory
-  updates, refreshed next brief, and verification evidence after checks pass
-  unless explicitly told not to commit.
+- If files are changed, update memory/PROGRESS.md with exact commands and
+  factual outcomes.
+- Update memory/DECISIONS.md only for a durable user-approved rule.
+- Commit completed docs/memory updates and verification evidence after checks
+  pass unless explicitly told not to commit.
 ```
