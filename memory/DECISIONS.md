@@ -46,13 +46,29 @@
 
 ## Current Research Decision
 
+- The futures range router rotation premise spec in
+  `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md` is documentation-only
+  and stopped at
+  `range_router_rotation_premise_spec_ready_for_non_trading_audit`.
+- It authorizes only a later zero-trade non-trading audit behind
+  `-futures-range-router-rotation-premise-audit`, starting from
+  `range_context_router_v1|15m|h24|tradable_rotation` as closed-candle context.
+- The router remains context only, not an entry signal, and the
+  `1,299` `tradable_rotation` router rows must not be converted directly into
+  trades.
+- A passing premise audit may only advance to another non-trading trigger audit
+  via
+  `range_router_rotation_premise_audit_passed_needs_non_trading_trigger_audit`;
+  it still would not authorize entries, exits, P&L backtests, optimizer grids,
+  fixed replay, walk-forward, packaging, source expansion, symbol expansion,
+  live-adjacent work, or closed-family retuning.
 - The futures range context router audit in
   `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md` passed as a non-trading
   route-selection milestone and stopped at
   `range_context_router_passed_needs_rotation_premise_spec`.
 - The router found `2` passing no-trade cohorts and `1` passing
   `tradable_rotation` cohort, with `0` passing `trend_continuation` cohorts.
-  This authorizes only a materially new rotation premise spec.
+  This authorized only the materially new rotation premise spec recorded above.
 - The router audit does not authorize entries, exits, P&L backtests, optimizer
   grids, fixed replay, walk-forward, packaging, source expansion, symbol
   expansion, live-adjacent work, or closed-family retuning.

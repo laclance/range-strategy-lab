@@ -24,18 +24,23 @@ git history.
   acceptance, clean breakout continuation, hold-inside/midline, impulse
   absorption, higher-timeframe nested range rotation, `range_occupancy_rotation_v1`,
   and range quality/session/failure-mode triage cohorts in their reviewed forms.
-- The latest completed audit is
+- The latest completed research doc is
+  `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md`. It is documentation
+  only and stopped at
+  `range_router_rotation_premise_spec_ready_for_non_trading_audit`.
+- The prior completed audit is
   `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`. It passed source and
   resample validation and stopped at
   `range_context_router_passed_needs_rotation_premise_spec`.
 - The router produced `58` rules from passing state-audit rankings, assigned
   `13,546` `no_trade`, `1,299` `tradable_rotation`, `0`
   `trend_continuation`, and `14,939` `diagnostic_only` rows, and found `3`
-  passing router cohorts: `2` no-trade and `1` rotation. This authorizes only a
-  materially new rotation premise spec; it does not authorize a strategy, entry,
-  exit, optimizer, replay, walk-forward, symbol expansion, source expansion,
-  live/paper/testnet path, exchange API, deploy file, martingale, averaging
-  down, or two-exchange logic.
+  passing router cohorts: `2` no-trade and `1` rotation. The rotation premise
+  spec has now been authored and authorizes only a later non-trading audit
+  behind `-futures-range-router-rotation-premise-audit`; it does not authorize a
+  strategy, entry, exit, optimizer, replay, walk-forward, symbol expansion,
+  source expansion, live/paper/testnet path, exchange API, deploy file,
+  martingale, averaging down, or two-exchange logic.
 - Parked future directions are documented but not implementation-ready:
   volatility-aware exits, BTC regime plus ETH/SOL context, spread-range/pair-range
   work, and derivatives context source expansion.
@@ -148,9 +153,47 @@ Futures range context router audit implementation:
   check totaled `30,024`; `rg` found canonical `memory/NEXT_CODEX_BRIEF.md`
   references and checklist mentions only; `git diff --check` passed;
   pre-commit status showed only intended code, docs, and memory changes.
-- Current next step: author only a materially new rotation premise spec from the
-  router review; do not build entries, exits, backtests, optimizers, replay, or
-  walk-forward from the router result.
+- That next step was completed by the router rotation premise spec below; the
+  router result still does not authorize entries, exits, backtests, optimizers,
+  replay, or walk-forward.
+
+Futures range router rotation premise spec:
+
+- Added docs-only spec:
+  `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md`.
+- The spec starts from the passed router cohort
+  `range_context_router_v1|15m|h24|tradable_rotation` and names the non-trading
+  event premise `router_gated_boundary_reclaim_rotation_v1`.
+- The router remains closed-candle context only, not an entry signal. The
+  `1,299` `tradable_rotation` rows must not be converted directly into trades.
+- The next permitted implementation is only a zero-trade non-trading audit
+  behind `-futures-range-router-rotation-premise-audit`, with default output
+  directory `results/futures-range-router-rotation-premise-audit/`.
+- The spec requires context segments from `15m` `h24` `tradable_rotation`
+  matched rules, frozen range bounds at the segment start, a subsequent closed
+  in-range boundary-reclaim event, and labels beginning strictly after the event
+  candle.
+- Required next-audit stop states include
+  `range_router_rotation_premise_audit_source_router_gap`,
+  `range_router_rotation_premise_audit_rejected_closed_family_reslice`,
+  `range_router_rotation_premise_audit_no_eligible_events`,
+  `range_router_rotation_premise_audit_failed_no_premise`,
+  `range_router_rotation_premise_audit_passed_needs_non_trading_trigger_audit`,
+  and
+  `range_router_rotation_premise_audit_rejected_as_strategy_backtest_request`.
+- Stop state:
+  `range_router_rotation_premise_spec_ready_for_non_trading_audit`.
+- Commands run:
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+- Verification outcomes: brief-reference scan found canonical
+  `memory/NEXT_CODEX_BRIEF.md` references and checklist mentions only;
+  `git diff --check` passed; pre-commit status showed only intended docs and
+  memory changes.
+- Current next step: implement only the non-trading audit from the premise spec;
+  do not add entries, exits, P&L backtests, optimizers, replay, walk-forward,
+  paper/testnet/live paths, source expansion, or symbol expansion.
 
 Recent failed premise evidence to preserve:
 
@@ -174,15 +217,16 @@ Recent failed premise evidence to preserve:
 Use `README.md` as the full docs index. The most relevant current docs are:
 
 1. `docs/FUTURES_RANGE_STRATEGY_FUTURE_DIRECTIONS_RESEARCH_MAP.md`.
-2. `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
-3. `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_REVIEW.md`.
-4. `docs/FUTURES_RANGE_CONTEXT_ROUTER_SPEC.md`.
-5. `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_SPEC.md`.
-6. `docs/FUTURES_RANGE_CONTEXT_TRIAGE_AUDIT_REVIEW.md`.
-7. `docs/FUTURES_RANGE_FIRST_OCCUPANCY_ROTATION_V1_OPTIMIZATION_REVIEW.md`.
-8. `docs/FUTURES_RANGE_UNIVERSE_STRUCTURED_COMPRESSION_WALK_FORWARD_REVIEW.md`.
-9. `docs/FUTURES_RANGE_UNIVERSE_BREAKOUT_RETEST_ACCEPTANCE_BASELINE_REVIEW.md`.
-10. `memory/NEXT_CODEX_BRIEF.md`.
+2. `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md`.
+3. `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
+4. `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_REVIEW.md`.
+5. `docs/FUTURES_RANGE_CONTEXT_ROUTER_SPEC.md`.
+6. `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_SPEC.md`.
+7. `docs/FUTURES_RANGE_CONTEXT_TRIAGE_AUDIT_REVIEW.md`.
+8. `docs/FUTURES_RANGE_FIRST_OCCUPANCY_ROTATION_V1_OPTIMIZATION_REVIEW.md`.
+9. `docs/FUTURES_RANGE_UNIVERSE_STRUCTURED_COMPRESSION_WALK_FORWARD_REVIEW.md`.
+10. `docs/FUTURES_RANGE_UNIVERSE_BREAKOUT_RETEST_ACCEPTANCE_BASELINE_REVIEW.md`.
+11. `memory/NEXT_CODEX_BRIEF.md`.
 
 Historical details remain in the focused docs and git history rather than this
 always-read memory file.
