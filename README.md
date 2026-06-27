@@ -7,11 +7,13 @@ range-first, BTCUSDT-first construction protocol produced and tested the first
 V1 grammar, BTCUSDT range occupancy rotation, and that optimizer review failed
 with no selected config for fixed replay. The follow-up non-trading
 range-context triage audit also failed to find a gated strategy premise from
-range quality, UTC session, or failure-mode cohorts. The next documented path is
-a broader range-state construction loop: combine range geometry with volatility,
-trend, impulse, and liquidity/participation state before any new entry is
-specified. Older spot-data outputs are historical context unless a futures rerun
-explicitly revalidates a specific conclusion.
+range quality, UTC session, or failure-mode cohorts. The later range-state
+construction loop and range context router audits passed only as non-trading
+route-selection milestones. The current next documented path is a materially new
+rotation premise spec; no entry, exit, P&L backtest, optimizer, replay, or
+walk-forward run is authorized by the router result. Older spot-data outputs are
+historical context unless a futures rerun explicitly revalidates a specific
+conclusion.
 
 ## Purpose
 
@@ -79,11 +81,13 @@ review, read the docs in this order:
 43. [docs/FUTURES_RANGE_STRATEGY_FUTURE_DIRECTIONS_RESEARCH_MAP.md](docs/FUTURES_RANGE_STRATEGY_FUTURE_DIRECTIONS_RESEARCH_MAP.md)
 44. [docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_SPEC.md](docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_SPEC.md)
 45. [docs/FUTURES_RANGE_CONTEXT_ROUTER_SPEC.md](docs/FUTURES_RANGE_CONTEXT_ROUTER_SPEC.md)
-46. [docs/FUTURES_VOLATILITY_AWARE_EXIT_MODEL_SPEC.md](docs/FUTURES_VOLATILITY_AWARE_EXIT_MODEL_SPEC.md)
-47. [docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md](docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md)
-48. [docs/FUTURES_SPREAD_RANGE_STRATEGY_SPEC.md](docs/FUTURES_SPREAD_RANGE_STRATEGY_SPEC.md)
-49. [docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md](docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md)
-50. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+46. [docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_REVIEW.md](docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_REVIEW.md)
+47. [docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md](docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md)
+48. [docs/FUTURES_VOLATILITY_AWARE_EXIT_MODEL_SPEC.md](docs/FUTURES_VOLATILITY_AWARE_EXIT_MODEL_SPEC.md)
+49. [docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md](docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md)
+50. [docs/FUTURES_SPREAD_RANGE_STRATEGY_SPEC.md](docs/FUTURES_SPREAD_RANGE_STRATEGY_SPEC.md)
+51. [docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md](docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md)
+52. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 

@@ -1102,6 +1102,110 @@ func TestRunWithArgsFuturesRangeStateConstructionLoopAuditFlagWritesArtifactsAnd
 	}
 }
 
+func TestRunWithArgsFuturesRangeContextRouterAuditFlagWritesArtifactsAndRejectsConflicts(t *testing.T) {
+	dir := t.TempDir()
+	futuresPath := writeCLITestCSVN(t, dir, "btcusdt_futures_um_5m_context_router.csv", 96)
+	oldRouterConfig := futuresRangeContextRouterAuditConfigForRun
+	futuresRangeContextRouterAuditConfigForRun = func() lab.FuturesRangeContextRouterAuditConfig {
+		cfg := lab.DefaultFuturesRangeContextRouterAuditConfig()
+		cfg.StateAuditConfig.ApprovedSourcePath = futuresPath
+		cfg.StateAuditConfig.SkipSourceFactCheck = true
+		cfg.StateAuditConfig.SkipCoverageCountCheck = true
+		cfg.StateAuditConfig.Timeframes = []string{lab.RangeDiscoveryTimeframe15m}
+		cfg.StateAuditConfig.DetectorLookbackBarsOverride = 1
+		cfg.StateAuditConfig.DetectorMinConsecutiveBars = 1
+		cfg.StateAuditConfig.ShortWindowBars = 2
+		cfg.StateAuditConfig.MediumWindowBars = 4
+		cfg.StateAuditConfig.FeatureLookbackBars = 4
+		cfg.StateAuditConfig.LongLookbackDays = 1
+		cfg.StateAuditConfig.Horizons15M = []int{2}
+		cfg.StateAuditConfig.MinFullCohortCount = 1
+		cfg.StateAuditConfig.MinSplitCohortCount = 1
+		cfg.StateAuditConfig.MinNoTradeFullCohortCount = 1
+		cfg.StateAuditConfig.MinNoTradeSplitCohortCount = 1
+		cfg.MinFullRouterRows = 1
+		cfg.MinSplitRouterRows = 1
+		cfg.MinNoTradeFullRouterRows = 1
+		cfg.MinNoTradeSplitRouterRows = 1
+		return cfg
+	}
+	defer func() { futuresRangeContextRouterAuditConfigForRun = oldRouterConfig }()
+
+	defaultOutDir := filepath.Join(dir, "default")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-out-dir", defaultOutDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(defaultOutDir, "futures_range_context_router_summary.csv")); !os.IsNotExist(err) {
+		t.Fatalf("default run should not write range context router artifacts, stat err=%v", err)
+	}
+
+	outDir := filepath.Join(dir, "router")
+	if err := runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-range-context-router-audit",
+		"-out-dir", outDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{
+		"source_manifest.json",
+		"summary.csv",
+		"summary.json",
+		"trades.json",
+		"futures_range_context_router_sources.csv",
+		"futures_range_context_router_coverage.csv",
+		"futures_range_context_router_rules.csv",
+		"futures_range_context_router_rows.csv",
+		"futures_range_context_router_cohorts.csv",
+		"futures_range_context_router_rankings.csv",
+		"futures_range_context_router_summary.csv",
+		"futures_range_context_router_skips.csv",
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, name)); err != nil {
+			t.Fatalf("expected range context router artifact %s: %v", name, err)
+		}
+	}
+	data, err := os.ReadFile(filepath.Join(outDir, "trades.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var trades []lab.Trade
+	if err := json.Unmarshal(data, &trades); err != nil {
+		t.Fatal(err)
+	}
+	if len(trades) != 0 {
+		t.Fatalf("range context router audit must remain zero-trade, got %d", len(trades))
+	}
+
+	spotPath := writeCLITestCSV(t, dir, "btcusdt_spot_5m_context_router.csv")
+	err = runWithArgs([]string{
+		"-csv", spotPath,
+		"-source-product", lab.SourceProductBinanceSpot,
+		"-allow-spot-comparison",
+		"-futures-range-context-router-audit",
+		"-out-dir", filepath.Join(dir, "spot-router"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "requires Binance USDT-M futures source") {
+		t.Fatalf("expected range context router futures-source error, got %v", err)
+	}
+
+	err = runWithArgs([]string{
+		"-csv", futuresPath,
+		"-source-product", lab.SourceProductBinanceUSDMFutures,
+		"-futures-range-context-router-audit",
+		"-futures-range-state-construction-loop-audit",
+		"-out-dir", filepath.Join(dir, "combined-router"),
+	})
+	if err == nil || !strings.Contains(err.Error(), "cannot be combined") {
+		t.Fatalf("expected range context router combination error, got %v", err)
+	}
+}
+
 func writeCLITestCSV(t *testing.T, dir string, name string) string {
 	return writeCLITestCSVN(t, dir, name, 2)
 }

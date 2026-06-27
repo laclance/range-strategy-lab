@@ -46,29 +46,25 @@
 
 ## Current Research Decision
 
-- The futures range-state construction loop audit in
-  `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_REVIEW.md` passed as a
-  non-trading state/router discovery milestone and stopped at
-  `range_state_construction_loop_audit_passed_needs_router_spec`.
-- The audit found mixed passing route evidence: `52` `no_trade_toxic` cohorts
-  and `6` `tradable_rotation_candidate` cohorts. This authorizes only a later
-  non-trading range context router spec/audit path.
-- The range-state audit does not authorize entries, exits, P&L backtests,
-  optimizer grids, fixed replay, walk-forward, packaging, source expansion,
-  symbol expansion, live-adjacent work, or closed-family retuning.
-- The next allowed implementation direction is the router path described in
-  `docs/FUTURES_RANGE_CONTEXT_ROUTER_SPEC.md`, bounded by the review result.
-  The router must remain zero-trade compatible and must assign closed-candle
-  route labels only; it is not an entry strategy.
+- The futures range context router audit in
+  `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md` passed as a non-trading
+  route-selection milestone and stopped at
+  `range_context_router_passed_needs_rotation_premise_spec`.
+- The router found `2` passing no-trade cohorts and `1` passing
+  `tradable_rotation` cohort, with `0` passing `trend_continuation` cohorts.
+  This authorizes only a materially new rotation premise spec.
+- The router audit does not authorize entries, exits, P&L backtests, optimizer
+  grids, fixed replay, walk-forward, packaging, source expansion, symbol
+  expansion, live-adjacent work, or closed-family retuning.
+- Any rotation premise spec must explain why it is materially different from
+  `range_occupancy_rotation_v1`, hold-inside/midline, breakout-retest/
+  acceptance, clean breakout continuation, structured compression, impulse
+  absorption, and higher-timeframe nested range rotation.
 
 ## Parked Future Direction Decisions
 
 The following specs are parked and not implementation-ready from current state:
 
-- `docs/FUTURES_RANGE_CONTEXT_ROUTER_SPEC.md`: is now the only next allowed
-  path because the range-state audit stopped with
-  `range_state_construction_loop_audit_passed_needs_router_spec`; implementation
-  must remain non-trading and zero-trade compatible.
 - `docs/FUTURES_VOLATILITY_AWARE_EXIT_MODEL_SPEC.md`: may start only after a
   materially new entry template first shows gross edge before costs.
 - `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md`: may start only with user
@@ -114,6 +110,10 @@ patterns, and detector/range episode helpers as feature extraction only.
   and rotation candidates, so do not create an entry, backtest, optimizer,
   replay, walk-forward, package, source expansion, symbol expansion, or
   live-adjacent path directly from it.
+- The futures range context router audit passed as a rotation-premise-spec
+  milestone, not a strategy premise. Do not create an entry, backtest,
+  optimizer, replay, walk-forward, package, source expansion, symbol expansion,
+  or live-adjacent path directly from it.
 - The futures range-first occupancy rotation V1 optimizer evaluated the declared
   `1,152` row grid, the fixed baseline lost after costs, and `0` grid rows
   passed. Do not create a fixed replay or retune the grammar.
