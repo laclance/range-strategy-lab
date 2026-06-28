@@ -51,16 +51,23 @@
   `range_post_rotation_premise_failure_pivot_stopped_no_next_btcusdt_price_only_audit`.
   No automatic next BTCUSDT-only, candle-price-only range-premise audit is
   selected from the current state/router/premise evidence.
-- Any further research now needs an explicit user scope choice before a
-  materially different parked direction can begin. Controlled BTC/ETH/SOL
-  context, derivatives market-data context, and spread-range source/engine work
-  remain parked; they do not authorize implementation from current state.
-- The user selected BTC regime plus ETH/SOL context as the next documentation-
-  only approval review lane. This is a review/handoff decision only: it does not
-  authorize Go code, source downloads, a zero-trade audit implementation,
-  entries, exits, P&L backtests, optimizer grids, replay, walk-forward,
-  paper/testnet/live paths, exchange API, credentials, deploy files, broad
-  mining, martingale, averaging down, or two-exchange logic.
+- The BTC regime plus ETH/SOL context scope review in
+  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SCOPE_REVIEW.md` approved
+  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md` only for a separate
+  zero-trade audit brief-writing task. The approval does not authorize Go code,
+  source downloads, a zero-trade audit implementation, entries, exits, P&L
+  backtests, optimizer grids, replay, walk-forward, paper/testnet/live paths,
+  exchange API, credentials, deploy files, broad mining, martingale, averaging
+  down, or two-exchange logic.
+- The only allowed source scope for that future brief is the already local
+  Binance USDT-M futures `5m` BTCUSDT, ETHUSDT, and SOLUSDT files. BTCUSDT may
+  be market-regime context and diagnostic-only authority. ETHUSDT/SOLUSDT may
+  be possible authority rows only in a later zero-trade context audit, not
+  strategy promotion.
+- Any audit implementation for BTC regime plus ETH/SOL context still requires
+  explicit approval after the separate zero-trade audit brief is written.
+  Derivatives market-data context and spread-range source/engine work remain
+  parked; they do not authorize implementation from current state.
 - For near-term prioritization, derivatives market-data context remains the
   second candidate pending source/alignment approval, spread-range/pair-range
   remains third pending source/engine scope approval, and volatility-aware exits
@@ -107,9 +114,10 @@ The following specs are parked and not implementation-ready from current state:
 
 - `docs/FUTURES_VOLATILITY_AWARE_EXIT_MODEL_SPEC.md`: may start only after a
   materially new entry template first shows gross edge before costs.
-- `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md`: may start only with user
-  scope approval or a later range-state review recommendation; it is a
-  non-trading context audit first, not ETH/SOL strategy promotion.
+- `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md`: scope-approved only for a
+  separate zero-trade audit brief-writing task; audit implementation still
+  needs explicit approval, and the path remains context first, not ETH/SOL
+  strategy promotion.
 - `docs/FUTURES_SPREAD_RANGE_STRATEGY_SPEC.md`: may start only with explicit
   engine/source approval; spread trading requires a separate multi-leg engine
   spec before any P&L strategy work.

@@ -25,9 +25,10 @@ git history.
   absorption, higher-timeframe nested range rotation, `range_occupancy_rotation_v1`,
   and range quality/session/failure-mode triage cohorts in their reviewed forms.
 - The latest completed research doc is
-  `docs/FUTURES_RANGE_POST_ROTATION_PREMISE_FAILURE_PIVOT_REVIEW.md`. It keeps
-  the failed router rotation premise audit verdict intact and stops automatic
-  BTCUSDT-only, candle-price-only range-premise audits.
+  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SCOPE_REVIEW.md`. It approves
+  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md` only for a separate
+  zero-trade audit brief-writing step and still stops before audit code,
+  entries, exits, P&L backtests, replay, walk-forward, or strategy promotion.
 - The prior dependency docs are
   `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md` and
   `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
@@ -44,12 +45,13 @@ git history.
 - The post-rotation premise failure pivot review stopped with
   `range_post_rotation_premise_failure_pivot_stopped_no_next_btcusdt_price_only_audit`.
   No automatic BTCUSDT-only price-only audit is selected.
-- User scope choice now selects BTC regime plus ETH/SOL context as the most
-  promising next documentation-only approval review. This does not authorize Go
-  code, source downloads, audit implementation, entries, exits, P&L backtests,
-  optimizer grids, replay, walk-forward, paper/testnet/live paths, exchange API,
-  credentials, deploy files, broad mining, martingale, averaging down, or
-  two-exchange logic.
+- User scope choice approved BTC regime plus ETH/SOL context as the next
+  brief-writing lane only. BTCUSDT is market-regime context and diagnostic-only
+  authority; ETHUSDT/SOLUSDT are possible authority rows only in a later
+  zero-trade context audit. This does not authorize Go code, source downloads,
+  audit implementation, entries, exits, P&L backtests, optimizer grids, replay,
+  walk-forward, paper/testnet/live paths, exchange API, credentials, deploy
+  files, broad mining, martingale, averaging down, or two-exchange logic.
 - Parked future directions remain documented but not implementation-ready:
   derivatives context is the higher-friction second candidate, spread-range/
   pair-range is parked behind source/engine complexity, and volatility-aware
@@ -58,6 +60,45 @@ git history.
 - `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt.
 
 ## 2026-06-28
+
+BTC regime plus ETH/SOL context scope review:
+
+- Added docs-only review:
+  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SCOPE_REVIEW.md`.
+- Approved `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md` as materially
+  different enough and tightly scoped enough for a separate zero-trade audit
+  brief-writing task, not audit implementation.
+- Stop state:
+  `btc_regime_eth_sol_context_scope_review_approved_needs_zero_trade_audit_brief`.
+- Allowed source scope for the later brief is only the already local Binance
+  USDT-M futures `5m` files:
+  `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`,
+  `../binance-bot/data/ethusdt_futures_um_5m_2021_2026.csv`, and
+  `../binance-bot/data/solusdt_futures_um_5m_2021_2026.csv`.
+- Source facts preserved from prior validation: each file has `573,984` loaded
+  candles from `2021-01-01T00:00:00Z` through
+  `2026-06-16T23:55:00Z`; all sorted streams had `gap_count=0` and
+  `duplicate_count=0`; zero-volume counts were BTC `66`, ETH `47`, SOL `47`;
+  SOL had one physical non-monotonic row and was accepted only after sorting.
+- BTCUSDT role is market-regime context and diagnostic-only authority row.
+  ETHUSDT/SOLUSDT role is possible authority rows only in a later zero-trade
+  context audit, not strategy promotion.
+- Minimum next audit question: whether BTC regime buckets improve separation of
+  ETH/SOL usable, toxic, rotation, continuation, or no-trade range states.
+- Rejection criteria preserved: closed-family reslice, broad mining, source
+  gap, hidden future-label input, or any move toward entries/backtests.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to a separate zero-trade audit brief
+  task that stops before code at
+  `btc_regime_eth_sol_context_zero_trade_audit_brief_ready_for_user_approval`.
+- Commands run:
+  - `wc -l ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv ../binance-bot/data/ethusdt_futures_um_5m_2021_2026.csv ../binance-bot/data/solusdt_futures_um_5m_2021_2026.csv`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+- Verification outcomes: source files existed with `573,985` CSV lines each
+  including headers; reference scan found canonical `memory/NEXT_CODEX_BRIEF.md`
+  references and checklist mentions only; `git diff --check` passed;
+  pre-commit `git status --short` showed only intended docs and memory changes.
 
 BTC/ETH/SOL context review handoff selection:
 
@@ -351,19 +392,21 @@ Futures range post-rotation premise failure pivot review:
 
 Use `README.md` as the full docs index. The most relevant current docs are:
 
-1. `docs/FUTURES_RANGE_POST_ROTATION_PREMISE_FAILURE_PIVOT_REVIEW.md`.
-2. `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_AUDIT_REVIEW.md`.
-3. `docs/FUTURES_RANGE_STRATEGY_FUTURE_DIRECTIONS_RESEARCH_MAP.md`.
-4. `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md`.
-5. `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
-6. `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_REVIEW.md`.
-7. `docs/FUTURES_RANGE_CONTEXT_ROUTER_SPEC.md`.
-8. `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_SPEC.md`.
-9. `docs/FUTURES_RANGE_CONTEXT_TRIAGE_AUDIT_REVIEW.md`.
-10. `docs/FUTURES_RANGE_FIRST_OCCUPANCY_ROTATION_V1_OPTIMIZATION_REVIEW.md`.
-11. `docs/FUTURES_RANGE_UNIVERSE_STRUCTURED_COMPRESSION_WALK_FORWARD_REVIEW.md`.
-12. `docs/FUTURES_RANGE_UNIVERSE_BREAKOUT_RETEST_ACCEPTANCE_BASELINE_REVIEW.md`.
-13. `memory/NEXT_CODEX_BRIEF.md`.
+1. `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SCOPE_REVIEW.md`.
+2. `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md`.
+3. `docs/FUTURES_RANGE_POST_ROTATION_PREMISE_FAILURE_PIVOT_REVIEW.md`.
+4. `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_AUDIT_REVIEW.md`.
+5. `docs/FUTURES_RANGE_STRATEGY_FUTURE_DIRECTIONS_RESEARCH_MAP.md`.
+6. `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md`.
+7. `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
+8. `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_REVIEW.md`.
+9. `docs/FUTURES_RANGE_CONTEXT_ROUTER_SPEC.md`.
+10. `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_SPEC.md`.
+11. `docs/FUTURES_RANGE_CONTEXT_TRIAGE_AUDIT_REVIEW.md`.
+12. `docs/FUTURES_RANGE_FIRST_OCCUPANCY_ROTATION_V1_OPTIMIZATION_REVIEW.md`.
+13. `docs/FUTURES_RANGE_UNIVERSE_STRUCTURED_COMPRESSION_WALK_FORWARD_REVIEW.md`.
+14. `docs/FUTURES_RANGE_UNIVERSE_BREAKOUT_RETEST_ACCEPTANCE_BASELINE_REVIEW.md`.
+15. `memory/NEXT_CODEX_BRIEF.md`.
 
 Historical details remain in the focused docs and git history rather than this
 always-read memory file.
