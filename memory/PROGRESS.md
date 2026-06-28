@@ -25,10 +25,11 @@ git history.
   absorption, higher-timeframe nested range rotation, `range_occupancy_rotation_v1`,
   and range quality/session/failure-mode triage cohorts in their reviewed forms.
 - The latest completed research doc is
-  `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_SCOPE_REVIEW.md`. It approved only
-  a later docs-only zero-trade derivatives source-audit brief and stopped
-  before implementation at
-  `derivatives_context_source_scope_review_approved_needs_zero_trade_source_audit_brief`.
+  `docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_SOURCE_AUDIT_BRIEF.md`. It
+  selected mark/index/premium basis as the only first derivatives source family
+  for a possible later zero-trade source audit and stopped before
+  implementation at
+  `derivatives_context_zero_trade_source_audit_brief_ready_for_user_approval`.
 - The prior dependency docs are
   `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md` and
   `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
@@ -64,6 +65,50 @@ git history.
 - `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt.
 
 ## 2026-06-28
+
+Derivatives context zero-trade source audit brief:
+
+- Added docs-only brief:
+  `docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_SOURCE_AUDIT_BRIEF.md`.
+- Stop state:
+  `derivatives_context_zero_trade_source_audit_brief_ready_for_user_approval`.
+- The brief selects Binance USDT-M futures mark-price, index-price, or
+  premium-index klines as the only first derivatives source family for a later
+  source audit. Funding remains second; aggregate trades remain high-volume
+  secondary and parked.
+- The brief is source/alignment only. It does not approve implementation,
+  source downloads, source materialization, source parsing, context-gain
+  features, labels, cohorts, rankings, entries, exits, P&L backtests,
+  optimizer grids, replay, walk-forward, paper/testnet/live paths, exchange
+  APIs, credentials, deploy files, broad mining, martingale, averaging down, or
+  two-exchange logic.
+- No derivatives market-data source rows are approved as direct lab inputs
+  today. A later implementation, only after explicit user approval, must prove
+  durable local/offline mark/index/premium files under `../binance-bot/data/`
+  or a documented subdirectory, or stop at source gap.
+- Existing BTC/ETH/SOL Binance USDT-M futures `5m` candle files remain
+  alignment anchors only:
+  `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`,
+  `../binance-bot/data/ethusdt_futures_um_5m_2021_2026.csv`, and
+  `../binance-bot/data/solusdt_futures_um_5m_2021_2026.csv`.
+- Candle anchor facts preserved: each has `573,984` loaded candles from
+  `2021-01-01T00:00:00Z` through `2026-06-16T23:55:00Z`; sorted streams had
+  `gap_count=0` and `duplicate_count=0`; zero-volume counts were BTC `66`, ETH
+  `47`, SOL `47`; SOL had one physical non-monotonic row and was accepted only
+  after sorting.
+- Required future source-audit rules include explicit timestamp semantics,
+  publication/finality lag, checksum or provenance identifier, bounded
+  missingness/staleness, and anti-lookahead joins where
+  `source_close_time + publication_lag <= decision_candle_close_time`.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to the source audit approval gate.
+- Commands run:
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+- Verification outcomes: reference scan found canonical
+  `memory/NEXT_CODEX_BRIEF.md` references and checklist mentions only;
+  `git diff --check` passed; pre-commit `git status --short` showed only
+  intended docs and memory changes.
 
 Derivatives market-data context source scope review:
 
@@ -542,16 +587,16 @@ Futures range post-rotation premise failure pivot review:
 
 Use `README.md` as the full docs index. The most relevant current docs are:
 
-1. `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SCOPE_REVIEW.md`.
-2. `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md`.
-3. `docs/FUTURES_RANGE_POST_ROTATION_PREMISE_FAILURE_PIVOT_REVIEW.md`.
-4. `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_AUDIT_REVIEW.md`.
-5. `docs/FUTURES_RANGE_STRATEGY_FUTURE_DIRECTIONS_RESEARCH_MAP.md`.
-6. `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md`.
-7. `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
-8. `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_REVIEW.md`.
-9. `docs/FUTURES_RANGE_CONTEXT_ROUTER_SPEC.md`.
-10. `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_SPEC.md`.
+1. `docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_SOURCE_AUDIT_BRIEF.md`.
+2. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_SCOPE_REVIEW.md`.
+3. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md`.
+4. `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_REVIEW.md`.
+5. `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SCOPE_REVIEW.md`.
+6. `docs/FUTURES_RANGE_POST_ROTATION_PREMISE_FAILURE_PIVOT_REVIEW.md`.
+7. `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_AUDIT_REVIEW.md`.
+8. `docs/FUTURES_RANGE_STRATEGY_FUTURE_DIRECTIONS_RESEARCH_MAP.md`.
+9. `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
+10. `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_REVIEW.md`.
 11. `docs/FUTURES_RANGE_CONTEXT_TRIAGE_AUDIT_REVIEW.md`.
 12. `docs/FUTURES_RANGE_FIRST_OCCUPANCY_ROTATION_V1_OPTIMIZATION_REVIEW.md`.
 13. `docs/FUTURES_RANGE_UNIVERSE_STRUCTURED_COMPRESSION_WALK_FORWARD_REVIEW.md`.

@@ -84,13 +84,23 @@
   `../binance-bot/research/` source-proof artifacts only as source/process
   evidence and may use existing BTC/ETH/SOL Binance USDT-M futures `5m` candle
   files only as alignment anchors.
-- Derivatives context implementation is not authorized. The next permitted
-  derivatives step is docs-only source-audit brief writing. It must choose at
-  most one first source family, with mark/index/premium basis preferred,
-  funding second, and aggregate trades parked as high-volume secondary source
-  proof. Open interest, long/short ratios, liquidation/force-order history, and
-  order-book/depth remain rejected or blocked from current evidence until a
-  separate source proof changes that boundary.
+- The derivatives context zero-trade source-audit brief in
+  `docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_SOURCE_AUDIT_BRIEF.md` stopped
+  at
+  `derivatives_context_zero_trade_source_audit_brief_ready_for_user_approval`.
+  It selects Binance USDT-M futures mark/index/premium basis klines as the only
+  first source family for a possible later source audit. Funding remains second,
+  and aggregate trades remain parked as high-volume secondary source proof.
+- Derivatives context implementation is not authorized by the brief alone. The
+  next permitted derivatives step is only an explicit user approval gate for a
+  zero-trade source audit. A later implementation must prove durable
+  local/offline mark/index/premium files under `../binance-bot/data/` or a
+  documented subdirectory, or stop at source gap. Open interest, long/short
+  ratios, liquidation/force-order history, order-book/depth, funding, aggregate
+  trades, taker flow, source downloads, live probes, private endpoints, API
+  keys, credentials, context-gain features, labels, cohorts, rankings, entries,
+  exits, P&L backtests, replay, walk-forward, and promotion remain forbidden
+  from that first source-audit scope.
 - Spread-range source/engine work remains parked; it does not authorize
   implementation from current state. Volatility-aware exits remain unavailable
   until a future independent entry premise first shows gross edge before costs.
@@ -145,11 +155,13 @@ The following specs are parked and not implementation-ready from current state:
   engine/source approval; spread trading requires a separate multi-leg engine
   spec before any P&L strategy work.
 - `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md`: may start only
-  through the docs-only source scope boundary in
-  `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_SCOPE_REVIEW.md`; the next allowed
-  step is a zero-trade source-audit brief, not implementation. It is
-  market-data context only and does not permit API keys, private endpoints,
-  live/paper/testnet, or exchange order paths.
+  through the docs-only source scope and source-audit brief boundary in
+  `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_SCOPE_REVIEW.md` and
+  `docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_SOURCE_AUDIT_BRIEF.md`; the
+  next allowed step requires explicit user approval for a zero-trade source
+  audit implementation. It is market-data context only and does not permit API
+  keys, private endpoints, live/paper/testnet, exchange order paths, context
+  features, labels, cohorts, rankings, or strategy work.
 
 ## Exclusion Decisions
 
