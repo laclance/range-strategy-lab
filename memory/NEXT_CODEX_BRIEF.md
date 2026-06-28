@@ -1,4 +1,4 @@
-# Next Codex Brief: Futures Range Scope Choice After BTCUSDT Price-Only Stop
+# Next Codex Brief: BTC Regime Plus ETH/SOL Context Scope Review
 
 ```text
 We are in /home/lance/range-strategy-lab, a standalone offline Go project for
@@ -9,15 +9,11 @@ Before work:
 - Read memory/README.md, memory/PROGRESS.md, and memory/DECISIONS.md.
 - Read README.md as the docs index.
 - Read docs/FUTURES_RANGE_POST_ROTATION_PREMISE_FAILURE_PIVOT_REVIEW.md.
-- Read docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_AUDIT_REVIEW.md only for the
-  failed premise evidence.
-- Read docs/FUTURES_RANGE_STRATEGY_FUTURE_DIRECTIONS_RESEARCH_MAP.md only if
-  the user asks which parked direction exists.
-- Read parked direction specs only for a user-selected lane:
-  - docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md;
-  - docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md;
-  - docs/FUTURES_SPREAD_RANGE_STRATEGY_SPEC.md;
-  - docs/FUTURES_VOLATILITY_AWARE_EXIT_MODEL_SPEC.md.
+- Read docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md.
+- Read docs/FUTURES_RANGE_STRATEGY_FUTURE_DIRECTIONS_RESEARCH_MAP.md only for
+  parked-direction ordering context.
+- Read docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_AUDIT_REVIEW.md only if exact
+  failed-premise evidence is needed.
 - Check git status before editing.
 
 Current state:
@@ -46,48 +42,71 @@ Current state:
 - No materially different BTCUSDT-only, candle-price-only range-premise audit is
   selected from current evidence.
 
-Goal:
-Do not implement anything automatically. First get an explicit user scope
-choice, then act only within that selected scope.
+User-approved lane:
+- Review BTC regime plus ETH/SOL context first.
+- Treat derivatives market-data context as the parked second candidate.
+- Treat spread-range/pair-range as the parked third candidate.
+- Treat volatility-aware exits as unavailable unless a future independent entry
+  premise first shows gross edge before costs.
 
-If the user has not already chosen a lane, respond with a concise scope-choice
-question and do not edit files. The valid choices are:
-- stop with no further range audit for now;
-- documentation-only approval review for BTC/ETH/SOL context scope;
-- documentation-only approval review for derivatives market-data context scope;
-- documentation-only approval review for spread-range source/engine scope;
-- documentation-only exit-model revisit, only if the user also supplies a new
-  independent entry premise with gross-edge evidence.
+Goal:
+Create a documentation-only approval review for BTC regime plus ETH/SOL context.
+Do not implement an audit. The review should decide whether
+docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md is materially different enough
+and tightly scoped enough to become the next zero-trade audit brief.
+
+Expected doc:
+- Create docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SCOPE_REVIEW.md.
+- Add it to README.md's docs index if created.
+- Keep the review concise and decision-oriented.
+
+The review must cover:
+- why BTC-as-regime-context plus ETH/SOL local range context is materially
+  different from another BTCUSDT-only price-range slice;
+- why it is not a structured-compression rescue, ETH/SOL replay, BTC promotion,
+  broad symbol-mining path, or portfolio construction path;
+- the exact allowed source scope: already local Binance USDT-M futures 5m files
+  for BTCUSDT, ETHUSDT, and SOLUSDT only;
+- BTCUSDT role: market-regime context and diagnostic-only authority row;
+- ETHUSDT/SOLUSDT role: possible authority rows only in a later zero-trade
+  context audit, not strategy promotion;
+- the minimum next audit question: whether BTC regime buckets improve separation
+  of ETH/SOL usable, toxic, rotation, continuation, or no-trade range states;
+- rejection criteria for the review: closed-family reslice, broad mining, source
+  gap, hidden future-label input, or any move toward entries/backtests.
 
 Boundaries:
-- Do not add Go code, strategy code, entries, exits, P&L strategy backtests,
-  optimizer grids, replay, walk-forward logic, strategy packages,
-  paper/testnet/live paths, exchange API, credentials, deploy files, source
-  expansion, symbol expansion, broad mining, martingale, averaging down, or
-  two-exchange logic without a new explicit user-approved scope brief.
+- Do not add Go code, CLI flags, generated result directories, source downloads,
+  strategy code, entries, exits, P&L strategy backtests, optimizer grids, replay,
+  walk-forward logic, strategy packages, paper/testnet/live paths, exchange API,
+  credentials, deploy files, broad mining, martingale, averaging down, or
+  two-exchange logic.
 - Do not retune, rename, relax gates for, or directly repackage the failed
   router-gated boundary-reclaim rotation premise.
+- Do not rescue the structured-compression branch or reuse its ETH/SOL authority
+  result as promotion evidence.
 - Do not import old binance-bot strategy/scoring/live code.
 - Do not use future labels as premise inputs.
 
-If the user chooses a documentation-only scope approval review:
-- Keep it docs/memory only.
-- Preserve the failed BTCUSDT price-only verdict.
-- Explain why the chosen direction is materially different from closed families:
-  range_occupancy_rotation_v1, hold-inside/midline, breakout-retest/acceptance,
-  clean breakout continuation, structured compression, impulse absorption,
-  higher-timeframe nested range rotation, range quality/session/failure-mode
-  triage by themselves, and router_gated_boundary_reclaim_rotation_v1.
-- End with either no next audit or a zero-trade audit brief that still requires
-  explicit user approval before implementation.
+Allowed outcomes:
+- If approved, stop at:
+  btc_regime_eth_sol_context_scope_review_approved_needs_zero_trade_audit_brief
+  and refresh memory/NEXT_CODEX_BRIEF.md to a separate brief-writing task for a
+  zero-trade audit spec or implementation plan that still requires explicit
+  approval before code.
+- If rejected, stop at:
+  btc_regime_eth_sol_context_scope_review_rejected_closed_family_reslice
+  or:
+  btc_regime_eth_sol_context_scope_review_rejected_scope_gap
+  and refresh memory/NEXT_CODEX_BRIEF.md to either no next audit or another user
+  scope-choice prompt.
 
-Verification for a documentation-only closeout:
+Verification for this documentation-only closeout:
 - rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
 - git diff --check
 - git status --short
 
 Closeout:
-- Update README.md docs index if a new doc is added.
 - Update memory/PROGRESS.md with exact commands and factual outcomes.
 - Update memory/DECISIONS.md only if the review creates a durable boundary,
   no-go rule, or permission rule.

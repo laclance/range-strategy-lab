@@ -43,13 +43,49 @@ git history.
   file, martingale, averaging down, or two-exchange logic.
 - The post-rotation premise failure pivot review stopped with
   `range_post_rotation_premise_failure_pivot_stopped_no_next_btcusdt_price_only_audit`.
-  No automatic next audit is selected. Any further work needs an explicit user
-  scope choice for a materially different parked direction such as BTC/ETH/SOL
-  context, derivatives context, or spread-range source/engine work.
-- Parked future directions are documented but not implementation-ready:
-  volatility-aware exits, BTC regime plus ETH/SOL context, spread-range/pair-range
-  work, and derivatives context source expansion.
+  No automatic BTCUSDT-only price-only audit is selected.
+- User scope choice now selects BTC regime plus ETH/SOL context as the most
+  promising next documentation-only approval review. This does not authorize Go
+  code, source downloads, audit implementation, entries, exits, P&L backtests,
+  optimizer grids, replay, walk-forward, paper/testnet/live paths, exchange API,
+  credentials, deploy files, broad mining, martingale, averaging down, or
+  two-exchange logic.
+- Parked future directions remain documented but not implementation-ready:
+  derivatives context is the higher-friction second candidate, spread-range/
+  pair-range is parked behind source/engine complexity, and volatility-aware
+  exits remain rejected until a new independent entry premise first shows gross
+  edge before costs.
 - `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt.
+
+## 2026-06-28
+
+BTC/ETH/SOL context review handoff selection:
+
+- Reviewed `memory/NEXT_CODEX_BRIEF.md` valid choices and selected BTC regime
+  plus ETH/SOL context as the next bounded lane to review.
+- The next task is a documentation-only scope approval review, not audit
+  implementation.
+- Recommended ranking preserved in memory:
+  1. BTC regime plus ETH/SOL context first;
+  2. derivatives market-data context second, pending source/alignment approval;
+  3. spread-range source/engine work third, pending engine/source scope;
+  4. volatility-aware exits only after a future independent entry premise shows
+     gross edge before costs.
+- The next brief should create or update a docs-only review that decides whether
+  the existing parked BTC/ETH/SOL context spec can become a zero-trade audit
+  brief. It must preserve the failed BTCUSDT price-only verdict and avoid
+  structured-compression rescue.
+- Stop state:
+  `btc_regime_eth_sol_context_scope_review_selected_for_next_brief`.
+- Commands run:
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+- Verification outcomes: reference scan found canonical
+  `memory/NEXT_CODEX_BRIEF.md` references and checklist mentions only;
+  `git diff --check` passed; `git status --short` showed only intended changes
+  to `memory/DECISIONS.md`, `memory/NEXT_CODEX_BRIEF.md`, and
+  `memory/PROGRESS.md`.
 
 ## 2026-06-27
 

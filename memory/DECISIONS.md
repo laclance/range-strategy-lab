@@ -55,6 +55,17 @@
   materially different parked direction can begin. Controlled BTC/ETH/SOL
   context, derivatives market-data context, and spread-range source/engine work
   remain parked; they do not authorize implementation from current state.
+- The user selected BTC regime plus ETH/SOL context as the next documentation-
+  only approval review lane. This is a review/handoff decision only: it does not
+  authorize Go code, source downloads, a zero-trade audit implementation,
+  entries, exits, P&L backtests, optimizer grids, replay, walk-forward,
+  paper/testnet/live paths, exchange API, credentials, deploy files, broad
+  mining, martingale, averaging down, or two-exchange logic.
+- For near-term prioritization, derivatives market-data context remains the
+  second candidate pending source/alignment approval, spread-range/pair-range
+  remains third pending source/engine scope approval, and volatility-aware exits
+  remain unavailable until a future independent entry premise first shows gross
+  edge before costs.
 - The futures range router rotation premise audit in
   `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_AUDIT_REVIEW.md` implemented the
   zero-trade audit behind
