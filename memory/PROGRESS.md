@@ -25,10 +25,10 @@ git history.
   absorption, higher-timeframe nested range rotation, `range_occupancy_rotation_v1`,
   and range quality/session/failure-mode triage cohorts in their reviewed forms.
 - The latest completed research doc is
-  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SCOPE_REVIEW.md`. It approves
-  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md` only for a separate
-  zero-trade audit brief-writing step and still stops before audit code,
-  entries, exits, P&L backtests, replay, walk-forward, or strategy promotion.
+  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_BRIEF.md`. It
+  turns the approved BTC regime plus ETH/SOL context scope into a
+  decision-complete zero-trade audit plan and stops before implementation at
+  `btc_regime_eth_sol_context_zero_trade_audit_brief_ready_for_user_approval`.
 - The prior dependency docs are
   `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md` and
   `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
@@ -45,13 +45,14 @@ git history.
 - The post-rotation premise failure pivot review stopped with
   `range_post_rotation_premise_failure_pivot_stopped_no_next_btcusdt_price_only_audit`.
   No automatic BTCUSDT-only price-only audit is selected.
-- User scope choice approved BTC regime plus ETH/SOL context as the next
-  brief-writing lane only. BTCUSDT is market-regime context and diagnostic-only
-  authority; ETHUSDT/SOLUSDT are possible authority rows only in a later
-  zero-trade context audit. This does not authorize Go code, source downloads,
-  audit implementation, entries, exits, P&L backtests, optimizer grids, replay,
-  walk-forward, paper/testnet/live paths, exchange API, credentials, deploy
-  files, broad mining, martingale, averaging down, or two-exchange logic.
+- User scope choice approved BTC regime plus ETH/SOL context only through the
+  separate zero-trade audit brief now written. BTCUSDT is market-regime context
+  and diagnostic-only authority; ETHUSDT/SOLUSDT are possible authority rows
+  only in a later zero-trade context audit. Any implementation still needs
+  explicit user approval and does not authorize entries, exits, P&L backtests,
+  optimizer grids, replay, walk-forward, paper/testnet/live paths, exchange API,
+  credentials, deploy files, broad mining, martingale, averaging down, or
+  two-exchange logic.
 - Parked future directions remain documented but not implementation-ready:
   derivatives context is the higher-friction second candidate, spread-range/
   pair-range is parked behind source/engine complexity, and volatility-aware
@@ -60,6 +61,48 @@ git history.
 - `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt.
 
 ## 2026-06-28
+
+BTC regime plus ETH/SOL zero-trade audit brief:
+
+- Added docs-only brief:
+  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_BRIEF.md`.
+- Stop state:
+  `btc_regime_eth_sol_context_zero_trade_audit_brief_ready_for_user_approval`.
+- The brief defines the later audit question: whether BTCUSDT regime buckets
+  known at closed decision-candle time improve separation of ETHUSDT/SOLUSDT
+  usable, toxic, rotation, continuation, or no-trade local range states.
+- BTCUSDT role remains market-regime context and diagnostic-only authority row;
+  ETHUSDT/SOLUSDT may become possible authority rows only inside a zero-trade
+  context audit, not strategy promotion.
+- Allowed source scope remains only the already local Binance USDT-M futures
+  `5m` files:
+  `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`,
+  `../binance-bot/data/ethusdt_futures_um_5m_2021_2026.csv`, and
+  `../binance-bot/data/solusdt_futures_um_5m_2021_2026.csv`.
+- Source facts preserved from prior validation: each file has `573,984` loaded
+  candles from `2021-01-01T00:00:00Z` through
+  `2026-06-16T23:55:00Z`; all sorted streams had `gap_count=0` and
+  `duplicate_count=0`; zero-volume counts were BTC `66`, ETH `47`, SOL `47`;
+  SOL had one physical non-monotonic row and was accepted only after sorting.
+- Required anti-leakage rule: forward labels may appear only in label, cohort,
+  ranking, and summary artifacts, never premise, state-ID, router, gating, or
+  feature-bucket inputs.
+- Required common-output rule: `summary.json`, `summary.csv`, and `trades.json`
+  must remain zero-trade compatible for the later audit.
+- Rejection criteria include closed-family reslice, broad mining, source gap,
+  hidden future-label input, structured-compression rescue, ETH/SOL replay,
+  BTC promotion, entries, exits, P&L backtests, optimizer grids, replay, or
+  walk-forward.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to wait for explicit user approval
+  before any implementation.
+- Commands run:
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+- Verification outcomes: reference scan found canonical
+  `memory/NEXT_CODEX_BRIEF.md` references and checklist mentions only;
+  `git diff --check` passed; pre-commit `git status --short` showed only
+  intended docs and memory changes.
 
 BTC regime plus ETH/SOL context scope review:
 

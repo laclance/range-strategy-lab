@@ -12,10 +12,11 @@ construction loop and range context router audits passed only as non-trading
 route-selection milestones. The router rotation premise audit has now failed
 with no usable premise, and the post-failure pivot review stops automatic
 BTCUSDT-only price-range audit work. The BTC regime plus ETH/SOL context scope
-review approved only a separate zero-trade audit brief-writing step, not audit
-implementation. No entry, exit, P&L backtest, optimizer, replay, or walk-forward
-run is authorized by the router, premise spec, premise audit, pivot review, or
-BTC/ETH/SOL scope review. Older
+review approved a separate zero-trade audit brief, and that brief now waits for
+explicit user approval before implementation. No entry, exit, P&L backtest,
+optimizer, replay, or walk-forward run is authorized by the router, premise
+spec, premise audit, pivot review, BTC/ETH/SOL scope review, or BTC/ETH/SOL
+zero-trade audit brief. Older
 spot-data outputs are historical context unless a futures rerun explicitly
 revalidates a specific conclusion.
 
@@ -93,9 +94,10 @@ review, read the docs in this order:
 51. [docs/FUTURES_VOLATILITY_AWARE_EXIT_MODEL_SPEC.md](docs/FUTURES_VOLATILITY_AWARE_EXIT_MODEL_SPEC.md)
 52. [docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md](docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md)
 53. [docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SCOPE_REVIEW.md](docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SCOPE_REVIEW.md)
-54. [docs/FUTURES_SPREAD_RANGE_STRATEGY_SPEC.md](docs/FUTURES_SPREAD_RANGE_STRATEGY_SPEC.md)
-55. [docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md](docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md)
-56. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+54. [docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_BRIEF.md](docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_BRIEF.md)
+55. [docs/FUTURES_SPREAD_RANGE_STRATEGY_SPEC.md](docs/FUTURES_SPREAD_RANGE_STRATEGY_SPEC.md)
+56. [docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md](docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md)
+57. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 

@@ -1,4 +1,4 @@
-# Next Codex Brief: BTC Regime Plus ETH/SOL Zero-Trade Audit Brief
+# Next Codex Brief: BTC Regime Plus ETH/SOL Context Audit Approval Gate
 
 ```text
 We are in /home/lance/range-strategy-lab, a standalone offline Go project for
@@ -8,8 +8,10 @@ Before work:
 - Read AGENTS.md.
 - Read memory/README.md, memory/PROGRESS.md, and memory/DECISIONS.md.
 - Read README.md as the docs index.
-- Read docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SCOPE_REVIEW.md.
-- Read docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md.
+- Read docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_BRIEF.md.
+- Read docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SCOPE_REVIEW.md only for the
+  approval boundary.
+- Read docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md only for parked context.
 - Read docs/FUTURES_RANGE_POST_ROTATION_PREMISE_FAILURE_PIVOT_REVIEW.md only
   for the BTCUSDT price-only stop boundary.
 - Read docs/FUTURES_RANGE_UNIVERSE_DISCOVERY_REVIEW.md only for BTC/ETH/SOL
@@ -26,12 +28,23 @@ Current state:
   reviewed form.
 - Do not convert the 278 premise context segments, 97 boundary-reclaim events,
   or 1,299 tradable_rotation router rows into trades.
-- The BTC regime plus ETH/SOL scope review stopped at:
-  btc_regime_eth_sol_context_scope_review_approved_needs_zero_trade_audit_brief.
-- That review approved only a separate zero-trade audit brief-writing task, not
-  audit implementation.
+- The BTC regime plus ETH/SOL zero-trade audit brief stopped at:
+  btc_regime_eth_sol_context_zero_trade_audit_brief_ready_for_user_approval.
+- That brief is ready for user approval, but it does not authorize audit
+  implementation by itself.
 
-Allowed source scope for the future brief:
+Approval gate:
+- If the current user request does not explicitly approve implementing the
+  BTC regime plus ETH/SOL zero-trade context audit, do not add code, CLI flags,
+  generated result directories, or audit outputs.
+- In that no-approval case, report that the approved brief is ready at
+  docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_BRIEF.md and stop at:
+  btc_regime_eth_sol_context_zero_trade_audit_waiting_for_user_approval.
+- If the current user request explicitly approves implementation of that
+  zero-trade audit, implement only the audit described in
+  docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_BRIEF.md.
+
+Allowed source scope if implementation is explicitly approved:
 - Use only the already local Binance USDT-M futures 5m files:
   - ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv
   - ../binance-bot/data/ethusdt_futures_um_5m_2021_2026.csv
@@ -45,17 +58,7 @@ Allowed source scope for the future brief:
 - Do not add symbols, source downloads, spot comparisons, derivatives context
   sources, exchange APIs, private endpoints, or broad mining.
 
-Goal:
-Create a documentation-only zero-trade audit brief or implementation plan for
-BTC regime plus ETH/SOL context. Do not implement the audit. The brief must be
-specific enough for a later session to implement only after explicit approval.
-
-Expected doc:
-- Create docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_BRIEF.md.
-- Add it to README.md's docs index if created.
-- Keep the brief decision-complete but stop before code.
-
-The brief must define:
+Implementation scope only after explicit approval:
 - BTCUSDT role: market-regime context and diagnostic-only authority row.
 - ETHUSDT/SOLUSDT role: possible authority rows only for a zero-trade context
   audit, not strategy promotion.
@@ -65,7 +68,8 @@ The brief must define:
 - Allowed features at a high level:
   closed-candle BTC regime buckets plus closed-candle ETH/SOL local range state.
 - Required anti-leakage rule:
-  forward labels may appear only in label/cohort artifacts, never premise inputs.
+  forward labels may appear only in label/cohort/ranking/summary artifacts,
+  never premise, state-ID, router, gating, or feature-bucket inputs.
 - Required common-output rule:
   common summary/trades outputs must remain zero-trade compatible.
 - Rejection criteria:
@@ -74,33 +78,39 @@ The brief must define:
   toward entries/backtests.
 
 Boundaries:
-- Do not add Go code, CLI flags, generated result directories, source downloads,
-  strategy code, entries, exits, P&L strategy backtests, optimizer grids, replay,
-  walk-forward logic, strategy packages, paper/testnet/live paths, exchange API,
-  credentials, deploy files, broad mining, martingale, averaging down, or
-  two-exchange logic.
+- Do not add strategy code, entries, exits, P&L strategy backtests, optimizer
+  grids, replay, walk-forward logic, strategy packages, paper/testnet/live
+  paths, exchange API, credentials, deploy files, broad mining, martingale,
+  averaging down, or two-exchange logic.
 - Do not retune, rename, relax gates for, or directly repackage the failed
   router-gated boundary-reclaim rotation premise.
-- Do not rescue the structured-compression branch or reuse its ETH/SOL authority
-  result as promotion evidence.
+- Do not rescue the structured-compression branch or reuse its ETH/SOL
+  authority result as promotion evidence.
 - Do not import old binance-bot strategy/scoring/live code.
 - Do not use future labels as premise inputs.
 
-Allowed outcome:
-- Stop at:
-  btc_regime_eth_sol_context_zero_trade_audit_brief_ready_for_user_approval.
-- Refresh memory/NEXT_CODEX_BRIEF.md to wait for explicit user approval before
-  any implementation.
+Allowed implementation stop states, only after explicit approval:
+- btc_regime_eth_sol_context_zero_trade_audit_source_gap
+- btc_regime_eth_sol_context_zero_trade_audit_rejected_closed_family_reslice
+- btc_regime_eth_sol_context_zero_trade_audit_rejected_future_label_leak
+- btc_regime_eth_sol_context_zero_trade_audit_failed_no_usable_context
+- btc_regime_eth_sol_context_zero_trade_audit_passed_needs_strategy_premise_spec
 
-Verification for this documentation-only closeout:
+Verification if implementation is explicitly approved:
+- env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+- env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -futures-btc-regime-eth-sol-context-audit -out-dir results/futures-btc-regime-eth-sol-context-audit
+- wc -l results/futures-btc-regime-eth-sol-context-audit/*.csv
 - rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
 - git diff --check
 - git status --short
 
-Closeout:
+Closeout after any approved implementation:
+- Update or create a focused review doc with source facts, artifact paths,
+  command outcomes, common zero-trade output status, and stop state.
 - Update memory/PROGRESS.md with exact commands and factual outcomes.
-- Update memory/DECISIONS.md only if the brief creates a durable boundary,
-  no-go rule, or permission rule.
-- Commit completed docs/memory updates after checks pass unless explicitly told
-  not to commit.
+- Update memory/DECISIONS.md only if the implementation creates a durable
+  boundary, no-go rule, or permission rule.
+- Refresh memory/NEXT_CODEX_BRIEF.md to the next approval-gated task.
+- Commit completed docs/memory/code updates after checks pass unless explicitly
+  told not to commit.
 ```

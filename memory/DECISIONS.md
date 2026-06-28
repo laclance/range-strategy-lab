@@ -54,18 +54,22 @@
 - The BTC regime plus ETH/SOL context scope review in
   `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SCOPE_REVIEW.md` approved
   `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md` only for a separate
-  zero-trade audit brief-writing task. The approval does not authorize Go code,
-  source downloads, a zero-trade audit implementation, entries, exits, P&L
-  backtests, optimizer grids, replay, walk-forward, paper/testnet/live paths,
-  exchange API, credentials, deploy files, broad mining, martingale, averaging
-  down, or two-exchange logic.
+  zero-trade audit brief-writing task. That task produced
+  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_BRIEF.md` and
+  stopped at
+  `btc_regime_eth_sol_context_zero_trade_audit_brief_ready_for_user_approval`.
+- The zero-trade audit brief does not authorize Go code, source downloads, a
+  zero-trade audit implementation, entries, exits, P&L backtests, optimizer
+  grids, replay, walk-forward, paper/testnet/live paths, exchange API,
+  credentials, deploy files, broad mining, martingale, averaging down, or
+  two-exchange logic.
 - The only allowed source scope for that future brief is the already local
   Binance USDT-M futures `5m` BTCUSDT, ETHUSDT, and SOLUSDT files. BTCUSDT may
   be market-regime context and diagnostic-only authority. ETHUSDT/SOLUSDT may
   be possible authority rows only in a later zero-trade context audit, not
   strategy promotion.
 - Any audit implementation for BTC regime plus ETH/SOL context still requires
-  explicit approval after the separate zero-trade audit brief is written.
+  explicit approval after user review of the zero-trade audit brief.
   Derivatives market-data context and spread-range source/engine work remain
   parked; they do not authorize implementation from current state.
 - For near-term prioritization, derivatives market-data context remains the
@@ -114,10 +118,11 @@ The following specs are parked and not implementation-ready from current state:
 
 - `docs/FUTURES_VOLATILITY_AWARE_EXIT_MODEL_SPEC.md`: may start only after a
   materially new entry template first shows gross edge before costs.
-- `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md`: scope-approved only for a
-  separate zero-trade audit brief-writing task; audit implementation still
-  needs explicit approval, and the path remains context first, not ETH/SOL
-  strategy promotion.
+- `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md`: scope-approved and
+  converted into
+  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_BRIEF.md`; audit
+  implementation still needs explicit approval, and the path remains context
+  first, not ETH/SOL strategy promotion.
 - `docs/FUTURES_SPREAD_RANGE_STRATEGY_SPEC.md`: may start only with explicit
   engine/source approval; spread trading requires a separate multi-leg engine
   spec before any P&L strategy work.
