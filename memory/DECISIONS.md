@@ -75,13 +75,25 @@
   remains market-regime context and diagnostic-only authority. ETHUSDT/SOLUSDT
   remain failed zero-trade context authority candidates only, not strategy
   promotion.
-- Derivatives market-data context and spread-range source/engine work remain
-  parked; they do not authorize implementation from current state.
-- For near-term prioritization, derivatives market-data context remains the
-  second candidate pending source/alignment approval, spread-range/pair-range
-  remains third pending source/engine scope approval, and volatility-aware exits
-  remain unavailable until a future independent entry premise first shows gross
-  edge before costs.
+- The derivatives market-data context source scope review in
+  `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_SCOPE_REVIEW.md` approved only a
+  separate zero-trade source-audit brief-writing task and stopped at
+  `derivatives_context_source_scope_review_approved_needs_zero_trade_source_audit_brief`.
+  It found no approved durable derivatives market-data source rows in the lab's
+  current local data scope. A later brief may reference adjacent
+  `../binance-bot/research/` source-proof artifacts only as source/process
+  evidence and may use existing BTC/ETH/SOL Binance USDT-M futures `5m` candle
+  files only as alignment anchors.
+- Derivatives context implementation is not authorized. The next permitted
+  derivatives step is docs-only source-audit brief writing. It must choose at
+  most one first source family, with mark/index/premium basis preferred,
+  funding second, and aggregate trades parked as high-volume secondary source
+  proof. Open interest, long/short ratios, liquidation/force-order history, and
+  order-book/depth remain rejected or blocked from current evidence until a
+  separate source proof changes that boundary.
+- Spread-range source/engine work remains parked; it does not authorize
+  implementation from current state. Volatility-aware exits remain unavailable
+  until a future independent entry premise first shows gross edge before costs.
 - The futures range router rotation premise audit in
   `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_AUDIT_REVIEW.md` implemented the
   zero-trade audit behind
@@ -133,9 +145,11 @@ The following specs are parked and not implementation-ready from current state:
   engine/source approval; spread trading requires a separate multi-leg engine
   spec before any P&L strategy work.
 - `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md`: may start only
-  with explicit user source approval; it is market-data context only and does
-  not permit API keys, private endpoints, live/paper/testnet, or exchange order
-  paths.
+  through the docs-only source scope boundary in
+  `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_SCOPE_REVIEW.md`; the next allowed
+  step is a zero-trade source-audit brief, not implementation. It is
+  market-data context only and does not permit API keys, private endpoints,
+  live/paper/testnet, or exchange order paths.
 
 ## Exclusion Decisions
 

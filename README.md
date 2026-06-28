@@ -13,11 +13,12 @@ route-selection milestones. The router rotation premise audit has now failed
 with no usable premise, and the post-failure pivot review stops automatic
 BTCUSDT-only price-range audit work. The BTC regime plus ETH/SOL context
 zero-trade audit also failed with no usable context and is closed in reviewed
-zero-trade form. No entry, exit, P&L backtest, optimizer, replay, or
+zero-trade form. The derivatives market-data context source scope review now
+approves only a later docs-only zero-trade source-audit brief, not
+implementation. No entry, exit, P&L backtest, optimizer, replay, or
 walk-forward run is authorized by the router, premise spec, premise audit,
-pivot review, BTC/ETH/SOL scope review, BTC/ETH/SOL zero-trade audit brief, or
-BTC/ETH/SOL zero-trade audit review. Older spot-data outputs are historical
-context unless a futures rerun explicitly
+pivot review, BTC/ETH/SOL reviews, or derivatives source scope review. Older
+spot-data outputs are historical context unless a futures rerun explicitly
 revalidates a specific conclusion.
 
 ## Purpose
@@ -98,7 +99,8 @@ review, read the docs in this order:
 55. [docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_REVIEW.md](docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_REVIEW.md)
 56. [docs/FUTURES_SPREAD_RANGE_STRATEGY_SPEC.md](docs/FUTURES_SPREAD_RANGE_STRATEGY_SPEC.md)
 57. [docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md](docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md)
-58. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+58. [docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_SCOPE_REVIEW.md](docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_SCOPE_REVIEW.md)
+59. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 

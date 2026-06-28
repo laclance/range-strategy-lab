@@ -25,10 +25,10 @@ git history.
   absorption, higher-timeframe nested range rotation, `range_occupancy_rotation_v1`,
   and range quality/session/failure-mode triage cohorts in their reviewed forms.
 - The latest completed research doc is
-  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_REVIEW.md`. It
-  implemented the explicitly approved BTC regime plus ETH/SOL zero-trade
-  context audit and stopped at
-  `btc_regime_eth_sol_context_zero_trade_audit_failed_no_usable_context`.
+  `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_SCOPE_REVIEW.md`. It approved only
+  a later docs-only zero-trade derivatives source-audit brief and stopped
+  before implementation at
+  `derivatives_context_source_scope_review_approved_needs_zero_trade_source_audit_brief`.
 - The prior dependency docs are
   `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md` and
   `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
@@ -57,13 +57,63 @@ git history.
   paper/testnet/live paths, exchange API, credentials, deploy files, broad
   mining, martingale, averaging down, or two-exchange logic.
 - Parked future directions remain documented but not implementation-ready:
-  derivatives context is the higher-friction second candidate, spread-range/
-  pair-range is parked behind source/engine complexity, and volatility-aware
-  exits remain rejected until a new independent entry premise first shows gross
-  edge before costs.
+  derivatives context is approved only for a later source/alignment
+  brief-writing task, spread-range/pair-range is parked behind source/engine
+  complexity, and volatility-aware exits remain rejected until a new independent
+  entry premise first shows gross edge before costs.
 - `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt.
 
 ## 2026-06-28
+
+Derivatives market-data context source scope review:
+
+- Added docs-only scope review:
+  `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_SCOPE_REVIEW.md`.
+- Stop state:
+  `derivatives_context_source_scope_review_approved_needs_zero_trade_source_audit_brief`.
+- Decision: a later zero-trade derivatives source-audit brief is justified only
+  for source and alignment approval, not context-gain implementation.
+- The review found no approved durable derivatives market-data rows in the
+  lab's current local data scope. `../binance-bot/data/` contained durable
+  candle CSVs only, and `../binance-bot/data/raw/` had no files in the reviewed
+  search depth.
+- Approved local/offline inputs for the later brief are only alignment anchors:
+  `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`,
+  `../binance-bot/data/ethusdt_futures_um_5m_2021_2026.csv`, and
+  `../binance-bot/data/solusdt_futures_um_5m_2021_2026.csv`.
+- Adjacent `../binance-bot/research/` source-proof artifacts may be referenced
+  only as process/source evidence, not as lab input data or strategy evidence.
+  Candidate source families for the later brief are mark/index/premium basis
+  first, funding second, and aggregate trades only as a high-volume secondary
+  source-proof candidate.
+- Rejected or blocked from current scope: `/tmp` caches as durable inputs,
+  source downloads, live probes, private endpoints, exchange API keys, open
+  interest from the current evidence set, long/short ratios without full-era
+  archive proof, liquidation/force-order history from current evidence,
+  order-book/depth without separate historical archive proof, entries, exits,
+  P&L backtests, replay, walk-forward, optimizer grids, and promotion.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to a separate zero-trade source-audit
+  brief-writing task that stops before code at
+  `derivatives_context_zero_trade_source_audit_brief_ready_for_user_approval`.
+- Commands run:
+  - `rg --files ../binance-bot/data | rg -i "(funding|fund|open.?interest|basis|premium|mark|index|taker|long.?short|book|depth|liquid|oi|agg.?trade|trade)"`
+  - `rg --files ../binance-bot/data | rg -i "(btcusdt|ethusdt|solusdt).*futures.*(5m|1h|15m|4h|um)|futures_um"`
+  - `rg --files . | rg -i "(funding|fund|open.?interest|basis|premium|mark|index|taker|long.?short|book|depth|liquid|oi|agg.?trade)"`
+  - `rg -n "funding|open interest|basis|premium|taker|long/short|order-book|order book|derivatives" docs memory README.md AGENTS.md`
+  - `rg --files ../binance-bot | rg -i "(funding|open[_-]?interest|\\boi\\b|oi_|basis|premium[_-]?index|premiumIndex|mark[_-]?price|index[_-]?price|taker|long[_-]?short|longshort|depth|order[_-]?book|book[_-]?ticker|liquidat|agg[_-]?trade)"`
+  - `rg --files ../binance-bot/data`
+  - `ls -lah ../binance-bot/data`
+  - `find ../binance-bot/data/raw -maxdepth 3 -type f`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+- Verification outcomes: inventory checks found durable local candle CSVs but
+  no approved durable derivatives market-data source rows under
+  `../binance-bot/data/`; adjacent source-proof artifacts exist only as
+  references; final brief-reference scan found canonical
+  `memory/NEXT_CODEX_BRIEF.md` references and checklist mentions only;
+  `git diff --check` passed; pre-commit status showed only intended docs and
+  memory changes.
 
 BTC regime plus ETH/SOL zero-trade audit implementation:
 
