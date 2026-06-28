@@ -25,11 +25,13 @@ git history.
   absorption, higher-timeframe nested range rotation, `range_occupancy_rotation_v1`,
   and range quality/session/failure-mode triage cohorts in their reviewed forms.
 - The latest completed research doc is
-  `docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_SOURCE_AUDIT_BRIEF.md`. It
-  selected mark/index/premium basis as the only first derivatives source family
-  for a possible later zero-trade source audit and stopped before
-  implementation at
-  `derivatives_context_zero_trade_source_audit_brief_ready_for_user_approval`.
+  `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_PLAN.md`. It records
+  the user-approved offline materialization plan for Binance public Data Vision
+  USDT-M futures mark/index and optional premium-index `5m` klines under
+  `../binance-bot/data/derivatives/`, but stops before downloads, parsing,
+  durable file writes, source-audit implementation, context features, labels,
+  cohorts, rankings, entries, exits, P&L, replay, walk-forward, or promotion at
+  `derivatives_context_source_materialization_plan_ready_for_execution_approval`.
 - The prior dependency docs are
   `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md` and
   `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
@@ -58,13 +60,71 @@ git history.
   paper/testnet/live paths, exchange API, credentials, deploy files, broad
   mining, martingale, averaging down, or two-exchange logic.
 - Parked future directions remain documented but not implementation-ready:
-  derivatives context is approved only for a later source/alignment
-  brief-writing task, spread-range/pair-range is parked behind source/engine
+  derivatives context now has a docs-only materialization plan and still needs
+  explicit execution approval before any public-archive downloads or writes
+  outside this repo; spread-range/pair-range is parked behind source/engine
   complexity, and volatility-aware exits remain rejected until a new independent
   entry premise first shows gross edge before costs.
 - `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt.
 
 ## 2026-06-28
+
+Derivatives context source materialization plan:
+
+- Added docs-only materialization plan:
+  `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_PLAN.md`.
+- Stop state:
+  `derivatives_context_source_materialization_plan_ready_for_execution_approval`.
+- User explicitly approved an offline materialization plan for Binance public
+  Data Vision mark-price, index-price, and optional premium-index `5m` klines
+  for `BTCUSDT`, `ETHUSDT`, and `SOLUSDT` under
+  `../binance-bot/data/derivatives/`.
+- The plan does not execute downloads, source parsing, normalization, durable
+  data writes, source-audit implementation, context features, labels, cohorts,
+  rankings, entries, exits, P&L backtests, replay, walk-forward, live probes,
+  private endpoints, API keys, credentials, deploy files, or strategy
+  promotion.
+- Required future materialization families are Binance USDT-M futures
+  `markPriceKlines` and `indexPriceKlines`. Optional cross-check family is
+  `premiumIndexKlines`; missing optional premium-index rows may be recorded as
+  an optional-family gap, but missing required mark/index objects must reject
+  materialization.
+- Approved object shape is `5m`, `BTCUSDT`/`ETHUSDT`/`SOLUSDT`, monthly
+  objects from `2021-01` through `2026-05`, plus daily tail objects from
+  `2026-06-01` through `2026-06-16`, matching the existing candle-anchor era.
+- Adjacent local source inventory facts from
+  `../binance-bot/research/2026-06-18_futures_perp_basis_reversion/event_study/source_inventory.csv`:
+  required mark/index scope has `486` archive objects and `90,067,194`
+  compressed bytes; `markPriceKlines` has `243` objects and `42,833,309`
+  bytes; `indexPriceKlines` has `243` objects and `47,233,885` bytes.
+  Optional `premiumIndexKlines` is estimated, not proven in this lab, at another
+  same-shaped `243` objects and about `45` MB compressed.
+- Target durable raw, normalized CSV, and manifest layouts are defined under
+  `../binance-bot/data/derivatives/`. Future execution must record object URLs,
+  byte counts, SHA-256 hashes, ETag/Last-Modified/Content-Length when returned,
+  row counts, gaps, duplicates, parse errors, timestamp semantics, finality, and
+  validation status.
+- Future execution stop states include source gap, checksum/schema gap,
+  unapproved source path, unapproved live/private path, and passed materialized
+  states ready only for separate source-audit approval. Passing materialization
+  will not authorize the source audit or any context/strategy work by itself.
+- Local inventory check found no existing durable files under
+  `../binance-bot/data/derivatives/`.
+- Commands run:
+  - `awk -F, 'NR>1 {count[$1]++; bytes[$1]+=$10; rows[$1]+=$17; total_count++; total_bytes+=$10; total_rows+=$17} END {for (f in count) printf "%s count=%d bytes=%d rows_total=%d\n", f, count[f], bytes[f], rows[f]; printf "total count=%d bytes=%d rows_total=%d\n", total_count, total_bytes, total_rows}' ../binance-bot/research/2026-06-18_futures_perp_basis_reversion/event_study/source_inventory.csv`
+  - `awk -F, 'NR>1 {key=$1 "/" $3 "/" $4; count[key]++; bytes[key]+=$10; rows[key]+=$17} END {for (k in count) printf "%s count=%d bytes=%d rows_total=%d\n", k, count[k], bytes[k], rows[k]}' ../binance-bot/research/2026-06-18_futures_perp_basis_reversion/event_study/source_inventory.csv | sort`
+  - `find ../binance-bot/data -maxdepth 4 -type f | sort | sed -n '1,160p'`
+  - `find ../binance-bot/data/derivatives -maxdepth 5 -type f 2>/dev/null | sort | sed -n '1,120p'`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+- Verification outcomes: adjacent inventory aggregation reproduced the required
+  mark/index `486` object and `90,067,194` byte total; local durable data
+  inventory showed candle CSVs only and no existing derivatives files under
+  `../binance-bot/data/derivatives/`; reference scan found canonical
+  `memory/NEXT_CODEX_BRIEF.md` references and checklist mentions only;
+  `git diff --check` passed; pre-commit status showed only intended docs and
+  memory changes.
 
 Derivatives context zero-trade source audit brief:
 

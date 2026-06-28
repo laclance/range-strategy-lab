@@ -91,16 +91,24 @@
   It selects Binance USDT-M futures mark/index/premium basis klines as the only
   first source family for a possible later source audit. Funding remains second,
   and aggregate trades remain parked as high-volume secondary source proof.
-- Derivatives context implementation is not authorized by the brief alone. The
-  next permitted derivatives step is only an explicit user approval gate for a
-  zero-trade source audit. A later implementation must prove durable
-  local/offline mark/index/premium files under `../binance-bot/data/` or a
-  documented subdirectory, or stop at source gap. Open interest, long/short
-  ratios, liquidation/force-order history, order-book/depth, funding, aggregate
-  trades, taker flow, source downloads, live probes, private endpoints, API
-  keys, credentials, context-gain features, labels, cohorts, rankings, entries,
-  exits, P&L backtests, replay, walk-forward, and promotion remain forbidden
-  from that first source-audit scope.
+- The derivatives context source materialization plan in
+  `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_PLAN.md` stopped at
+  `derivatives_context_source_materialization_plan_ready_for_execution_approval`.
+  User approved a docs-only offline materialization plan for Binance public Data
+  Vision USDT-M futures `markPriceKlines`, `indexPriceKlines`, and optional
+  `premiumIndexKlines` `5m` archive objects for `BTCUSDT`, `ETHUSDT`, and
+  `SOLUSDT` under `../binance-bot/data/derivatives/`.
+- Derivatives context implementation is not authorized by the brief or
+  materialization plan alone. The next permitted derivatives step is only an
+  explicit execution approval gate for source materialization. Passing
+  materialization would create durable local/offline source files, but would
+  still require separate explicit approval before the zero-trade source audit.
+  Open interest, long/short ratios, liquidation/force-order history,
+  order-book/depth, funding, aggregate trades, taker flow, unapproved source
+  downloads, live probes, private endpoints, API keys, credentials,
+  context-gain features, labels, cohorts, rankings, entries, exits, P&L
+  backtests, replay, walk-forward, and promotion remain forbidden from the
+  materialization and first source-audit scope.
 - Spread-range source/engine work remains parked; it does not authorize
   implementation from current state. Volatility-aware exits remain unavailable
   until a future independent entry premise first shows gross edge before costs.
