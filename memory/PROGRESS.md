@@ -25,10 +25,10 @@ git history.
   absorption, higher-timeframe nested range rotation, `range_occupancy_rotation_v1`,
   and range quality/session/failure-mode triage cohorts in their reviewed forms.
 - The latest completed research doc is
-  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_BRIEF.md`. It
-  turns the approved BTC regime plus ETH/SOL context scope into a
-  decision-complete zero-trade audit plan and stops before implementation at
-  `btc_regime_eth_sol_context_zero_trade_audit_brief_ready_for_user_approval`.
+  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_REVIEW.md`. It
+  implemented the explicitly approved BTC regime plus ETH/SOL zero-trade
+  context audit and stopped at
+  `btc_regime_eth_sol_context_zero_trade_audit_failed_no_usable_context`.
 - The prior dependency docs are
   `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md` and
   `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
@@ -45,14 +45,17 @@ git history.
 - The post-rotation premise failure pivot review stopped with
   `range_post_rotation_premise_failure_pivot_stopped_no_next_btcusdt_price_only_audit`.
   No automatic BTCUSDT-only price-only audit is selected.
-- User scope choice approved BTC regime plus ETH/SOL context only through the
-  separate zero-trade audit brief now written. BTCUSDT is market-regime context
-  and diagnostic-only authority; ETHUSDT/SOLUSDT are possible authority rows
-  only in a later zero-trade context audit. Any implementation still needs
-  explicit user approval and does not authorize entries, exits, P&L backtests,
-  optimizer grids, replay, walk-forward, paper/testnet/live paths, exchange API,
-  credentials, deploy files, broad mining, martingale, averaging down, or
-  two-exchange logic.
+- User explicitly approved the BTC regime plus ETH/SOL zero-trade context audit
+  described in
+  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_BRIEF.md`.
+  Implementation used only the approved local Binance USDT-M futures `5m`
+  BTCUSDT, ETHUSDT, and SOLUSDT files, produced `0` passing context cohorts,
+  and closed the path in reviewed zero-trade form. BTCUSDT remains
+  market-regime context and diagnostic-only authority; ETHUSDT/SOLUSDT remain
+  failed context authority candidates only. This does not authorize entries,
+  exits, P&L backtests, optimizer grids, replay, walk-forward,
+  paper/testnet/live paths, exchange API, credentials, deploy files, broad
+  mining, martingale, averaging down, or two-exchange logic.
 - Parked future directions remain documented but not implementation-ready:
   derivatives context is the higher-friction second candidate, spread-range/
   pair-range is parked behind source/engine complexity, and volatility-aware
@@ -61,6 +64,60 @@ git history.
 - `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt.
 
 ## 2026-06-28
+
+BTC regime plus ETH/SOL zero-trade audit implementation:
+
+- Added zero-trade audit implementation behind
+  `-futures-btc-regime-eth-sol-context-audit`.
+- Review doc:
+  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_REVIEW.md`.
+- Result directory:
+  `results/futures-btc-regime-eth-sol-context-audit/`.
+- Stop state:
+  `btc_regime_eth_sol_context_zero_trade_audit_failed_no_usable_context`.
+- The audit used only the approved local Binance USDT-M futures `5m` files:
+  `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`,
+  `../binance-bot/data/ethusdt_futures_um_5m_2021_2026.csv`, and
+  `../binance-bot/data/solusdt_futures_um_5m_2021_2026.csv`.
+- Source facts reproduced: each file had `573,984` loaded candles from
+  `2021-01-01T00:00:00Z` through `2026-06-16T23:55:00Z`; all accepted sorted
+  streams had `gap_count=0` and `duplicate_count=0`; zero-volume counts were
+  BTC `66`, ETH `47`, SOL `47`; SOL had one physical non-monotonic row and was
+  accepted only after sorting.
+- Resampled coverage passed for BTC/ETH/SOL `15m`, `1h`, and `4h`: rows were
+  `191,328`, `47,832`, and `11,958` respectively for each symbol, with
+  `gap_count=0`, `duplicate_count=0`, `missing_child_open_count=0`, and
+  `complete=true`.
+- Generated artifact counts: BTC state rows `29,784`, ETH/SOL local state rows
+  `30,717`, relative-strength rows `30,717`, label rows `92,151`, cohort rows
+  `359,055`, ranking rows `160,983`, and passing cohorts `0`.
+- Main ranking failure inventory: `142,615` rows failed
+  `btc_context_improvement_gate_failed`, `16,095` failed
+  `single_split_contribution_above_gate`, `1,627` failed
+  `route_rate_gate_failed`, `419` failed `missing_period_split`, and `227`
+  failed `inadequate_cohort_count`.
+- Anti-leakage and boundary outcomes: BTCUSDT stayed diagnostic market-regime
+  context only; ETHUSDT/SOLUSDT stayed zero-trade context authority candidates
+  only; forward labels were not used as state/context/gating inputs; common
+  outputs remained zero-trade compatible; no entries, exits, P&L backtests,
+  replay, walk-forward, source downloads, or strategy promotion were added.
+- Commands run:
+  - `gofmt -w internal/lab/futures_btc_regime_eth_sol_context_audit.go internal/lab/futures_btc_regime_eth_sol_context_audit_test.go cmd/rangelab/main.go cmd/rangelab/main_test.go`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -futures-btc-regime-eth-sol-context-audit -out-dir results/futures-btc-regime-eth-sol-context-audit`
+  - `wc -l results/futures-btc-regime-eth-sol-context-audit/*.csv`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+- Verification outcomes: tests passed; audit rerun reproduced `source_rows=3`,
+  `coverage_rows=9`, `btc_state_rows=29784`, `local_state_rows=30717`,
+  `relative_strength_rows=30717`, `label_rows=92151`,
+  `cohort_rows=359055`, `ranking_rows=160983`, `passing_cohorts=0`, and stop
+  state `btc_regime_eth_sol_context_zero_trade_audit_failed_no_usable_context`;
+  `wc -l` over CSV artifacts plus common `summary.csv` totaled `703,514`
+  lines; reference scan found canonical `memory/NEXT_CODEX_BRIEF.md`
+  references and checklist mentions only; `git diff --check` passed; pre-commit
+  status showed only intended code, docs, and memory changes.
 
 BTC regime plus ETH/SOL zero-trade audit brief:
 

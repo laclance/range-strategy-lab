@@ -30,6 +30,7 @@ var futuresRangeContextTriageAuditConfigForRun = lab.DefaultFuturesRangeContextT
 var futuresRangeStateConstructionLoopAuditConfigForRun = lab.DefaultFuturesRangeStateConstructionLoopAuditConfig
 var futuresRangeContextRouterAuditConfigForRun = lab.DefaultFuturesRangeContextRouterAuditConfig
 var futuresRangeRouterRotationPremiseAuditConfigForRun = lab.DefaultFuturesRangeRouterRotationPremiseAuditConfig
+var futuresBTCRegimeETHSOLContextAuditConfigForRun = lab.DefaultFuturesBTCRegimeETHSOLContextAuditConfig
 
 func main() {
 	if err := run(); err != nil {
@@ -79,6 +80,7 @@ func runWithArgs(args []string) error {
 	futuresRangeStateConstructionLoopAudit := fs.Bool("futures-range-state-construction-loop-audit", false, "write non-trading futures range-state construction loop diagnostics")
 	futuresRangeContextRouterAudit := fs.Bool("futures-range-context-router-audit", false, "write non-trading futures range context router diagnostics")
 	futuresRangeRouterRotationPremiseAudit := fs.Bool("futures-range-router-rotation-premise-audit", false, "write non-trading futures range router rotation premise diagnostics")
+	futuresBTCRegimeETHSOLContextAudit := fs.Bool("futures-btc-regime-eth-sol-context-audit", false, "write zero-trade futures BTC regime plus ETH/SOL context diagnostics")
 	srAudit := fs.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
 	srBoundaryAudit := fs.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
 	srBoundaryInspect := fs.Bool("sr-boundary-inspect", false, "write compact non-trading SR boundary candidate comparison diagnostics")
@@ -114,6 +116,9 @@ func runWithArgs(args []string) error {
 	}
 	if *futuresRangeRouterRotationPremiseAudit && !outDirWasSet {
 		*outDir = "results/futures-range-router-rotation-premise-audit"
+	}
+	if *futuresBTCRegimeETHSOLContextAudit && !outDirWasSet {
+		*outDir = "results/futures-btc-regime-eth-sol-context-audit"
 	}
 
 	product := *sourceProduct
@@ -192,6 +197,17 @@ func runWithArgs(args []string) error {
 		}
 		if *detector || *detectorSweep || *detectorDurabilitySweep || *detectorContextRefinementAudit || *holdInsideDirectionalEdgeAudit || *holdInsideMidlineTransitionAudit || *holdInsideMidlineReactionAudit || *futuresImpulseAbsorptionAudit || *futuresRangeCandidateDiscoveryAudit || *futuresRangeUniverseDiscoveryAudit || *futuresHigherTFNestedRangeRotationAudit || *futuresRangeContextTriageAudit || *futuresRangeStateConstructionLoopAudit || *futuresRangeContextRouterAudit || *srAudit || *srBoundaryAudit || *srBoundaryInspect || *srRejectionTimingAudit || *srConfirmationTimingAudit || *srFalseBreakReclaimTimingAudit || *compressionBreakoutAudit || *rangeRegimeDurabilityAudit {
 			return fmt.Errorf("-futures-range-router-rotation-premise-audit cannot be combined with other audit, detector, source-expansion, or diagnostic flags")
+		}
+	}
+	if *futuresBTCRegimeETHSOLContextAudit {
+		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
+			return fmt.Errorf("-futures-btc-regime-eth-sol-context-audit requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
+		}
+		if tradeProducingFlagSelected {
+			return fmt.Errorf("-futures-btc-regime-eth-sol-context-audit cannot be combined with trade-producing prototype/backtest/optimization/replay/walk-forward flags")
+		}
+		if *detector || *detectorSweep || *detectorDurabilitySweep || *detectorContextRefinementAudit || *holdInsideDirectionalEdgeAudit || *holdInsideMidlineTransitionAudit || *holdInsideMidlineReactionAudit || *futuresImpulseAbsorptionAudit || *futuresRangeCandidateDiscoveryAudit || *futuresRangeUniverseDiscoveryAudit || *futuresHigherTFNestedRangeRotationAudit || *futuresRangeContextTriageAudit || *futuresRangeStateConstructionLoopAudit || *futuresRangeContextRouterAudit || *futuresRangeRouterRotationPremiseAudit || *srAudit || *srBoundaryAudit || *srBoundaryInspect || *srRejectionTimingAudit || *srConfirmationTimingAudit || *srFalseBreakReclaimTimingAudit || *compressionBreakoutAudit || *rangeRegimeDurabilityAudit {
+			return fmt.Errorf("-futures-btc-regime-eth-sol-context-audit cannot be combined with other audit, detector, source-expansion, or diagnostic flags")
 		}
 	}
 
@@ -302,6 +318,7 @@ func runWithArgs(args []string) error {
 	var rangeStateConstructionLoopResult lab.FuturesRangeStateConstructionLoopAuditResult
 	var rangeContextRouterResult lab.FuturesRangeContextRouterAuditResult
 	var rangeRouterRotationPremiseResult lab.FuturesRangeRouterRotationPremiseAuditResult
+	var btcRegimeETHSOLContextResult lab.FuturesBTCRegimeETHSOLContextAuditResult
 	var result lab.BacktestResult
 	if *futuresCleanBreakoutBaselineBacktest {
 		var err error
@@ -1224,6 +1241,80 @@ func runWithArgs(args []string) error {
 			len(rangeRouterRotationPremiseResult.RankingRows),
 			rangeRouterRotationPremiseResult.PassingCohorts,
 			rangeRouterRotationPremiseResult.StopState,
+		)
+	}
+	if *futuresBTCRegimeETHSOLContextAudit {
+		contextCfg := futuresBTCRegimeETHSOLContextAuditConfigForRun()
+		var err error
+		btcRegimeETHSOLContextResult, err = lab.RunFuturesBTCRegimeETHSOLContextAudit(contextCfg, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_btc_regime_eth_sol_context_sources.json"), btcRegimeETHSOLContextResult.SourceRows); err != nil {
+			return err
+		}
+		if err := writeFuturesBTCRegimeETHSOLContextSourcesCSV(filepath.Join(*outDir, "futures_btc_regime_eth_sol_context_sources.csv"), btcRegimeETHSOLContextResult.SourceRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_btc_regime_eth_sol_context_coverage.json"), btcRegimeETHSOLContextResult.CoverageRows); err != nil {
+			return err
+		}
+		if err := writeFuturesBTCRegimeETHSOLContextCoverageCSV(filepath.Join(*outDir, "futures_btc_regime_eth_sol_context_coverage.csv"), btcRegimeETHSOLContextResult.CoverageRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_btc_regime_eth_sol_context_btc_states.json"), btcRegimeETHSOLContextResult.BTCStateRows); err != nil {
+			return err
+		}
+		if err := writeFuturesBTCRegimeETHSOLContextBTCStatesCSV(filepath.Join(*outDir, "futures_btc_regime_eth_sol_context_btc_states.csv"), btcRegimeETHSOLContextResult.BTCStateRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_btc_regime_eth_sol_context_local_states.json"), btcRegimeETHSOLContextResult.LocalStateRows); err != nil {
+			return err
+		}
+		if err := writeFuturesBTCRegimeETHSOLContextLocalStatesCSV(filepath.Join(*outDir, "futures_btc_regime_eth_sol_context_local_states.csv"), btcRegimeETHSOLContextResult.LocalStateRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_btc_regime_eth_sol_context_relative_strength.json"), btcRegimeETHSOLContextResult.RelativeStrengthRows); err != nil {
+			return err
+		}
+		if err := writeFuturesBTCRegimeETHSOLContextRelativeStrengthCSV(filepath.Join(*outDir, "futures_btc_regime_eth_sol_context_relative_strength.csv"), btcRegimeETHSOLContextResult.RelativeStrengthRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_btc_regime_eth_sol_context_labels.json"), btcRegimeETHSOLContextResult.LabelRows); err != nil {
+			return err
+		}
+		if err := writeFuturesBTCRegimeETHSOLContextLabelsCSV(filepath.Join(*outDir, "futures_btc_regime_eth_sol_context_labels.csv"), btcRegimeETHSOLContextResult.LabelRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_btc_regime_eth_sol_context_cohorts.json"), btcRegimeETHSOLContextResult.CohortRows); err != nil {
+			return err
+		}
+		if err := writeFuturesBTCRegimeETHSOLContextCohortsCSV(filepath.Join(*outDir, "futures_btc_regime_eth_sol_context_cohorts.csv"), btcRegimeETHSOLContextResult.CohortRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_btc_regime_eth_sol_context_rankings.json"), btcRegimeETHSOLContextResult.RankingRows); err != nil {
+			return err
+		}
+		if err := writeFuturesBTCRegimeETHSOLContextRankingsCSV(filepath.Join(*outDir, "futures_btc_regime_eth_sol_context_rankings.csv"), btcRegimeETHSOLContextResult.RankingRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "futures_btc_regime_eth_sol_context_summary.json"), btcRegimeETHSOLContextResult.SummaryRows); err != nil {
+			return err
+		}
+		if err := writeFuturesBTCRegimeETHSOLContextSummaryCSV(filepath.Join(*outDir, "futures_btc_regime_eth_sol_context_summary.csv"), btcRegimeETHSOLContextResult.SummaryRows); err != nil {
+			return err
+		}
+		fmt.Printf("futures_btc_regime_eth_sol_context_audit source_rows=%d coverage_rows=%d btc_state_rows=%d local_state_rows=%d relative_strength_rows=%d label_rows=%d cohort_rows=%d ranking_rows=%d passing_cohorts=%d stop_state=%s\n",
+			len(btcRegimeETHSOLContextResult.SourceRows),
+			len(btcRegimeETHSOLContextResult.CoverageRows),
+			len(btcRegimeETHSOLContextResult.BTCStateRows),
+			len(btcRegimeETHSOLContextResult.LocalStateRows),
+			len(btcRegimeETHSOLContextResult.RelativeStrengthRows),
+			len(btcRegimeETHSOLContextResult.LabelRows),
+			len(btcRegimeETHSOLContextResult.CohortRows),
+			len(btcRegimeETHSOLContextResult.RankingRows),
+			btcRegimeETHSOLContextResult.PassingCohorts,
+			btcRegimeETHSOLContextResult.StopState,
 		)
 	}
 	var srRows []lab.SRAuditRow
@@ -3460,6 +3551,42 @@ func writeFuturesRangeRouterRotationPremiseSummaryCSV(path string, rows []lab.Fu
 }
 
 func writeFuturesRangeRouterRotationPremiseSkipsCSV(path string, rows []lab.FuturesRangeRouterRotationPremiseSkipRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTCRegimeETHSOLContextSourcesCSV(path string, rows []lab.FuturesBTCRegimeETHSOLContextSourceRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTCRegimeETHSOLContextCoverageCSV(path string, rows []lab.FuturesBTCRegimeETHSOLContextCoverageRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTCRegimeETHSOLContextBTCStatesCSV(path string, rows []lab.FuturesBTCRegimeETHSOLContextBTCStateRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTCRegimeETHSOLContextLocalStatesCSV(path string, rows []lab.FuturesBTCRegimeETHSOLContextLocalStateRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTCRegimeETHSOLContextRelativeStrengthCSV(path string, rows []lab.FuturesBTCRegimeETHSOLContextRelativeStrengthRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTCRegimeETHSOLContextLabelsCSV(path string, rows []lab.FuturesBTCRegimeETHSOLContextLabelRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTCRegimeETHSOLContextCohortsCSV(path string, rows []lab.FuturesBTCRegimeETHSOLContextCohortRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTCRegimeETHSOLContextRankingsCSV(path string, rows []lab.FuturesBTCRegimeETHSOLContextRankingRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTCRegimeETHSOLContextSummaryCSV(path string, rows []lab.FuturesBTCRegimeETHSOLContextSummaryRow) error {
 	return writeJSONTaggedCSV(path, rows)
 }
 

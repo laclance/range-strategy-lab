@@ -54,23 +54,28 @@
 - The BTC regime plus ETH/SOL context scope review in
   `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SCOPE_REVIEW.md` approved
   `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md` only for a separate
-  zero-trade audit brief-writing task. That task produced
-  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_BRIEF.md` and
-  stopped at
-  `btc_regime_eth_sol_context_zero_trade_audit_brief_ready_for_user_approval`.
-- The zero-trade audit brief does not authorize Go code, source downloads, a
-  zero-trade audit implementation, entries, exits, P&L backtests, optimizer
-  grids, replay, walk-forward, paper/testnet/live paths, exchange API,
-  credentials, deploy files, broad mining, martingale, averaging down, or
-  two-exchange logic.
-- The only allowed source scope for that future brief is the already local
-  Binance USDT-M futures `5m` BTCUSDT, ETHUSDT, and SOLUSDT files. BTCUSDT may
-  be market-regime context and diagnostic-only authority. ETHUSDT/SOLUSDT may
-  be possible authority rows only in a later zero-trade context audit, not
-  strategy promotion.
-- Any audit implementation for BTC regime plus ETH/SOL context still requires
-  explicit approval after user review of the zero-trade audit brief.
-  Derivatives market-data context and spread-range source/engine work remain
+  zero-trade audit brief-writing task. User then explicitly approved the audit
+  implementation described in
+  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_BRIEF.md`.
+- The implemented audit in
+  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_REVIEW.md` stopped
+  at
+  `btc_regime_eth_sol_context_zero_trade_audit_failed_no_usable_context`.
+  Source validation, resampled coverage, zero-trade common outputs, and
+  anti-leakage checks passed, but `0` BTC-regime-plus-ETH/SOL context cohorts
+  passed the declared gates.
+- The BTC regime plus ETH/SOL context path is closed in reviewed zero-trade
+  form. Do not retune, reslice, rename, gate-relax, replay, walk-forward,
+  promote BTC regime rows, treat ETH/SOL context rows as strategy authority, or
+  convert this result into entries, exits, P&L backtests, optimizer grids,
+  source downloads, paper/testnet/live paths, exchange API, credentials, deploy
+  files, martingale, averaging down, or two-exchange logic.
+- The only source scope used and approved for that audit was the already local
+  Binance USDT-M futures `5m` BTCUSDT, ETHUSDT, and SOLUSDT files. BTCUSDT
+  remains market-regime context and diagnostic-only authority. ETHUSDT/SOLUSDT
+  remain failed zero-trade context authority candidates only, not strategy
+  promotion.
+- Derivatives market-data context and spread-range source/engine work remain
   parked; they do not authorize implementation from current state.
 - For near-term prioritization, derivatives market-data context remains the
   second candidate pending source/alignment approval, spread-range/pair-range
@@ -118,11 +123,12 @@ The following specs are parked and not implementation-ready from current state:
 
 - `docs/FUTURES_VOLATILITY_AWARE_EXIT_MODEL_SPEC.md`: may start only after a
   materially new entry template first shows gross edge before costs.
-- `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md`: scope-approved and
-  converted into
-  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_BRIEF.md`; audit
-  implementation still needs explicit approval, and the path remains context
-  first, not ETH/SOL strategy promotion.
+- `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md`: scope-approved, converted
+  into
+  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_BRIEF.md`, then
+  implemented in
+  `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_REVIEW.md`; the
+  audit failed with no usable context and is closed in reviewed zero-trade form.
 - `docs/FUTURES_SPREAD_RANGE_STRATEGY_SPEC.md`: may start only with explicit
   engine/source approval; spread trading requires a separate multi-leg engine
   spec before any P&L strategy work.

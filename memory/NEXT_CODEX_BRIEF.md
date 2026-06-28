@@ -1,4 +1,4 @@
-# Next Codex Brief: BTC Regime Plus ETH/SOL Context Audit Approval Gate
+# Next Codex Brief: Post BTC Regime ETH/SOL Context Audit Pivot Gate
 
 ```text
 We are in /home/lance/range-strategy-lab, a standalone offline Go project for
@@ -8,14 +8,13 @@ Before work:
 - Read AGENTS.md.
 - Read memory/README.md, memory/PROGRESS.md, and memory/DECISIONS.md.
 - Read README.md as the docs index.
-- Read docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_BRIEF.md.
-- Read docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SCOPE_REVIEW.md only for the
-  approval boundary.
-- Read docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SPEC.md only for parked context.
+- Read docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_REVIEW.md.
+- Read docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_BRIEF.md only
+  for the approved audit boundary that has now been executed.
 - Read docs/FUTURES_RANGE_POST_ROTATION_PREMISE_FAILURE_PIVOT_REVIEW.md only
   for the BTCUSDT price-only stop boundary.
-- Read docs/FUTURES_RANGE_UNIVERSE_DISCOVERY_REVIEW.md only for BTC/ETH/SOL
-  source-validation facts if needed.
+- Read docs/FUTURES_RANGE_STRATEGY_FUTURE_DIRECTIONS_RESEARCH_MAP.md only if
+  the user asks for a next-lane recommendation.
 - Check git status before editing.
 
 Current state:
@@ -28,89 +27,74 @@ Current state:
   reviewed form.
 - Do not convert the 278 premise context segments, 97 boundary-reclaim events,
   or 1,299 tradable_rotation router rows into trades.
-- The BTC regime plus ETH/SOL zero-trade audit brief stopped at:
-  btc_regime_eth_sol_context_zero_trade_audit_brief_ready_for_user_approval.
-- That brief is ready for user approval, but it does not authorize audit
-  implementation by itself.
+- The BTC regime plus ETH/SOL zero-trade context audit was explicitly approved,
+  implemented, and reviewed at:
+  docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_REVIEW.md.
+- That audit stopped at:
+  btc_regime_eth_sol_context_zero_trade_audit_failed_no_usable_context.
+- It produced 0 passing context cohorts. Source validation, coverage,
+  anti-leakage checks, and common zero-trade outputs passed, but BTC regime
+  context did not add durable separation beyond ETH/SOL local-only baselines.
 
-Approval gate:
-- If the current user request does not explicitly approve implementing the
-  BTC regime plus ETH/SOL zero-trade context audit, do not add code, CLI flags,
-  generated result directories, or audit outputs.
-- In that no-approval case, report that the approved brief is ready at
-  docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_BRIEF.md and stop at:
-  btc_regime_eth_sol_context_zero_trade_audit_waiting_for_user_approval.
-- If the current user request explicitly approves implementation of that
-  zero-trade audit, implement only the audit described in
-  docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_BRIEF.md.
-
-Allowed source scope if implementation is explicitly approved:
-- Use only the already local Binance USDT-M futures 5m files:
-  - ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv
-  - ../binance-bot/data/ethusdt_futures_um_5m_2021_2026.csv
-  - ../binance-bot/data/solusdt_futures_um_5m_2021_2026.csv
-- Source facts from prior validation:
-  - each symbol has 573,984 loaded candles;
-  - coverage is 2021-01-01T00:00:00Z through 2026-06-16T23:55:00Z;
-  - sorted streams have gap_count=0 and duplicate_count=0;
-  - zero_volume_count is BTC=66, ETH=47, SOL=47;
-  - SOL had one physical non-monotonic row and was accepted only after sorting.
-- Do not add symbols, source downloads, spot comparisons, derivatives context
-  sources, exchange APIs, private endpoints, or broad mining.
-
-Implementation scope only after explicit approval:
-- BTCUSDT role: market-regime context and diagnostic-only authority row.
-- ETHUSDT/SOLUSDT role: possible authority rows only for a zero-trade context
-  audit, not strategy promotion.
-- Minimum audit question:
-  Do BTC regime buckets known at closed decision-candle time improve separation
-  of ETH/SOL usable, toxic, rotation, continuation, or no-trade range states?
-- Allowed features at a high level:
-  closed-candle BTC regime buckets plus closed-candle ETH/SOL local range state.
-- Required anti-leakage rule:
-  forward labels may appear only in label/cohort/ranking/summary artifacts,
-  never premise, state-ID, router, gating, or feature-bucket inputs.
-- Required common-output rule:
-  common summary/trades outputs must remain zero-trade compatible.
-- Rejection criteria:
-  closed-family reslice, broad mining, source gap, hidden future-label input,
-  structured-compression rescue, ETH/SOL replay, BTC promotion, or any move
-  toward entries/backtests.
-
-Boundaries:
-- Do not add strategy code, entries, exits, P&L strategy backtests, optimizer
-  grids, replay, walk-forward logic, strategy packages, paper/testnet/live
-  paths, exchange API, credentials, deploy files, broad mining, martingale,
+Hard boundary:
+- Do not retune, reslice, rename, gate-relax, replay, walk-forward, or promote
+  the BTC regime plus ETH/SOL context audit.
+- Do not treat ETHUSDT/SOLUSDT context rows as strategy authority.
+- Do not promote BTCUSDT regime rows.
+- Do not add entries, exits, P&L strategy backtests, optimizer grids, replay,
+  walk-forward logic, strategy packages, paper/testnet/live paths, exchange API,
+  credentials, deploy files, source downloads, broad mining, martingale,
   averaging down, or two-exchange logic.
-- Do not retune, rename, relax gates for, or directly repackage the failed
-  router-gated boundary-reclaim rotation premise.
 - Do not rescue the structured-compression branch or reuse its ETH/SOL
   authority result as promotion evidence.
 - Do not import old binance-bot strategy/scoring/live code.
-- Do not use future labels as premise inputs.
 
-Allowed implementation stop states, only after explicit approval:
-- btc_regime_eth_sol_context_zero_trade_audit_source_gap
-- btc_regime_eth_sol_context_zero_trade_audit_rejected_closed_family_reslice
-- btc_regime_eth_sol_context_zero_trade_audit_rejected_future_label_leak
-- btc_regime_eth_sol_context_zero_trade_audit_failed_no_usable_context
-- btc_regime_eth_sol_context_zero_trade_audit_passed_needs_strategy_premise_spec
+Next-task gate:
+- If the user only asks "what next" or asks for a recommendation, answer
+  read-only from the current review/memory: the BTC regime plus ETH/SOL audit
+  failed and the next step is choosing a materially different scope.
+- If the user asks for a docs-only scope review, create or update only a focused
+  scope-review doc and memory. Do not add Go code or generated result
+  directories.
+- If the user explicitly approves a materially different implementation, verify
+  the new scope against memory/DECISIONS.md first. Implementation is allowed
+  only if the request is not a retune or direct extension of a closed failed
+  family.
 
-Verification if implementation is explicitly approved:
-- env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
-- env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -futures-btc-regime-eth-sol-context-audit -out-dir results/futures-btc-regime-eth-sol-context-audit
-- wc -l results/futures-btc-regime-eth-sol-context-audit/*.csv
+Recommended next scope choices, still requiring explicit user approval:
+1. Derivatives market-data context source review: docs-only first, because it
+   needs explicit source/alignment approval and must remain market-data context
+   only.
+2. Spread-range/pair-range source and engine review: docs-only first, because
+   it needs separate multi-leg source and engine scope before any P&L work.
+3. A new independent entry premise only if it is materially different from
+   range_occupancy_rotation_v1, router-gated boundary reclaim, BTC regime plus
+   ETH/SOL context, structured compression, breakout-retest/acceptance, clean
+   breakout continuation, hold-inside/midline, impulse absorption, and
+   higher-timeframe nested range rotation.
+
+Still blocked:
+- Volatility-aware exits remain unavailable until a future independent entry
+  premise first shows gross edge before costs.
+- BTCUSDT-only price-range audits remain stopped by the post-rotation premise
+  failure pivot unless the user approves a materially different non-price-only
+  premise.
+- BTC regime plus ETH/SOL context retunes remain stopped by the zero-trade audit
+  review.
+
+Expected stop state for a read-only or docs-only next-scope closeout:
+btc_regime_eth_sol_context_zero_trade_audit_failed_waiting_for_new_scope_choice.
+
+Verification for a docs-only closeout:
 - rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
 - git diff --check
 - git status --short
 
-Closeout after any approved implementation:
-- Update or create a focused review doc with source facts, artifact paths,
-  command outcomes, common zero-trade output status, and stop state.
+Closeout:
 - Update memory/PROGRESS.md with exact commands and factual outcomes.
-- Update memory/DECISIONS.md only if the implementation creates a durable
-  boundary, no-go rule, or permission rule.
-- Refresh memory/NEXT_CODEX_BRIEF.md to the next approval-gated task.
+- Update memory/DECISIONS.md only if a durable boundary or permission rule
+  changes.
+- Refresh memory/NEXT_CODEX_BRIEF.md if the next approved scope changes.
 - Commit completed docs/memory/code updates after checks pass unless explicitly
   told not to commit.
 ```
