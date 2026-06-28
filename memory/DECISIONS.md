@@ -109,6 +109,31 @@
   context-gain features, labels, cohorts, rankings, entries, exits, P&L
   backtests, replay, walk-forward, and promotion remain forbidden from the
   materialization and first source-audit scope.
+- The derivatives context source materialization in
+  `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_REVIEW.md` was
+  explicitly approved and executed. It passed at
+  `derivatives_context_source_materialization_passed_ready_for_source_audit_approval`.
+  Durable Binance public Data Vision USDT-M futures `markPriceKlines`,
+  `indexPriceKlines`, and optional `premiumIndexKlines` `5m` source files for
+  `BTCUSDT`/`ETHUSDT`/`SOLUSDT` now exist under
+  `../binance-bot/data/derivatives/` (`729` checksum-verified raw zips, `9`
+  normalized CSVs, `5` manifests). These files are outside this repo and are not
+  tracked by Git; the generator was a one-shot offline scratchpad tool, not
+  tracked lab code.
+- Gap-handling rule established for these derivatives source files: the required
+  mark/index `5m` public archives contain real, whole-day-aligned
+  publication-outage gaps (required missing `9,820` of `3,443,904`, `0.285%`;
+  trade-candle anchors had `gap_count=0` over the same era). The user decided to
+  record gaps in the manifests (`gap_count`, `missing_interval_count`,
+  no-imputation policy) and pass, deferring bounded-missingness gating to the
+  later zero-trade source audit, rather than fail closed on gaps. Integrity
+  faults (duplicate-conflicting rows, schema ambiguity, checksum mismatch, or any
+  missing required object) remain fail-closed and would reject materialization.
+- These materialized rows are durable candidate source inputs only. They are not
+  approved context inputs and do not authorize the source-audit implementation,
+  context features, labels, cohorts, rankings, entries, exits, P&L backtests,
+  replay, walk-forward, or promotion. The zero-trade source audit over them needs
+  separate explicit user approval.
 - Spread-range source/engine work remains parked; it does not authorize
   implementation from current state. Volatility-aware exits remain unavailable
   until a future independent entry premise first shows gross edge before costs.

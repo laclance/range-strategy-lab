@@ -25,13 +25,16 @@ git history.
   absorption, higher-timeframe nested range rotation, `range_occupancy_rotation_v1`,
   and range quality/session/failure-mode triage cohorts in their reviewed forms.
 - The latest completed research doc is
-  `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_PLAN.md`. It records
-  the user-approved offline materialization plan for Binance public Data Vision
-  USDT-M futures mark/index and optional premium-index `5m` klines under
-  `../binance-bot/data/derivatives/`, but stops before downloads, parsing,
-  durable file writes, source-audit implementation, context features, labels,
-  cohorts, rankings, entries, exits, P&L, replay, walk-forward, or promotion at
-  `derivatives_context_source_materialization_plan_ready_for_execution_approval`.
+  `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_REVIEW.md`. The user
+  explicitly approved executing the materialization plan, and execution passed at
+  `derivatives_context_source_materialization_passed_ready_for_source_audit_approval`.
+  Durable Binance public Data Vision USDT-M futures mark/index/(optional)
+  premium-index `5m` source files for `BTCUSDT`/`ETHUSDT`/`SOLUSDT` now exist
+  under `../binance-bot/data/derivatives/` (`729` checksum-verified raw zips, `9`
+  normalized CSVs, `5` manifests). The next derivatives step is a separate,
+  approval-gated zero-trade source-audit implementation; materialization does not
+  authorize source-audit implementation, context features, labels, cohorts,
+  rankings, entries, exits, P&L, replay, walk-forward, or promotion.
 - The prior dependency docs are
   `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md` and
   `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
@@ -60,14 +63,76 @@ git history.
   paper/testnet/live paths, exchange API, credentials, deploy files, broad
   mining, martingale, averaging down, or two-exchange logic.
 - Parked future directions remain documented but not implementation-ready:
-  derivatives context now has a docs-only materialization plan and still needs
-  explicit execution approval before any public-archive downloads or writes
-  outside this repo; spread-range/pair-range is parked behind source/engine
-  complexity, and volatility-aware exits remain rejected until a new independent
-  entry premise first shows gross edge before costs.
+  derivatives context source materialization has now executed and passed, so
+  durable mark/index/premium `5m` source files exist, but the zero-trade source
+  audit over them still needs separate explicit approval; spread-range/pair-range
+  is parked behind source/engine complexity, and volatility-aware exits remain
+  rejected until a new independent entry premise first shows gross edge before
+  costs.
 - `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt.
 
 ## 2026-06-28
+
+Derivatives context source materialization execution:
+
+- Review doc:
+  `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_REVIEW.md`.
+- Stop state:
+  `derivatives_context_source_materialization_passed_ready_for_source_audit_approval`.
+- User explicitly approved executing the materialization plan. Execution used a
+  one-shot offline Go generator (run from session scratchpad, not tracked in this
+  repo) that downloaded deterministic public Data Vision object URLs, verified
+  each `.zip` against its published `.CHECKSUM` SHA-256, wrote raw zips,
+  normalized CSVs, and manifests only under `../binance-bot/data/derivatives/`.
+- Scope executed exactly as approved: owner `Binance Data Vision`, product
+  Binance USDT-M futures, families `markPriceKlines`/`indexPriceKlines`
+  (required) and `premiumIndexKlines` (optional cross-check), symbols
+  `BTCUSDT`/`ETHUSDT`/`SOLUSDT`, interval `5m`, era
+  `2021-01-01T00:00:00Z`..`2026-06-16T23:55:00Z`, object set monthly
+  `2021-01`..`2026-05` plus daily `2026-06-01`..`2026-06-16` = `81` objects per
+  family/symbol, `729` total.
+- Object outcomes: `objects_ok=729`, `objects_missing=0`, `objects_error=0`; all
+  `729` checksum-verified (`validation_status=accepted`). Total compressed bytes
+  `125,508,895`. Family bytes: `markPriceKlines` `42,833,309`,
+  `indexPriceKlines` `47,233,885`, `premiumIndexKlines` `35,441,701`. Required
+  mark+index `486` objects / `90,067,194` bytes reproduced the planning
+  inventory exactly.
+- Normalized streams (`9`) all span the full era with `0` duplicate-conflict,
+  `0` parse-error, `0` out-of-range, `0` non-monotonic rows. Required mark/index
+  missing intervals total `9,820` of `3,443,904` (`0.285%`); rows/gaps:
+  mark BTC `571,675`/`6`, ETH `573,402`/`4`, SOL `571,963`/`5`;
+  index BTC `570,812`/`8`, ETH `573,116`/`4`, SOL `573,116`/`4`;
+  premium BTC `571,959`/`7`, ETH `571,960`/`6`, SOL `572,248`/`5`.
+- Gap decision: required mark/index `5m` public archives have real, whole-day
+  aligned publication-outage gaps (e.g. `2021-06-30→07-02`, `2021-07-23→07-28`,
+  `2022-10-01→10-03`, `2023-02-23→02-25`, `2023-11-10 ~04:00Z`), recurring across
+  symbols/families; trade-candle anchors had `gap_count=0` over the same era.
+  User chose to record gaps and pass (no imputation; bounded-missingness gating
+  deferred to the later source audit) rather than fail closed. Integrity faults
+  (duplicate-conflict, schema, checksum, missing required object) remained
+  fail-closed; none occurred.
+- Durable layout: `743` files total under `../binance-bot/data/derivatives/`
+  (`729` raw zips, `9` normalized CSVs, `5` manifests). Normalized schema:
+  `open_time,open,high,low,close,close_time,source_object_id`.
+- Commands run:
+  - `curl -sS -I ...markPriceKlines/BTCUSDT/5m/BTCUSDT-5m-2021-01.zip` and
+    `.CHECKSUM` (connectivity + header/schema probe).
+  - offline Go generator (download + checksum-verify + normalize + manifests).
+  - `find ../binance-bot/data/derivatives -type f | sort`
+  - `find ../binance-bot/data/derivatives/raw -name '*.zip' | wc -l`
+  - `wc -l ../binance-bot/data/derivatives/*.csv`
+  - `wc -l ../binance-bot/data/derivatives/manifests/*.csv`
+  - `sha256sum ../binance-bot/data/derivatives/*.csv`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+- Verification outcomes: `743` files present; `729` raw zips; normalized CSV
+  lines totaled `5,150,260` (rows plus `9` headers); `objects.csv` `730` lines,
+  `files.csv` `10` lines; `9` normalized SHA-256 hashes recorded in the review
+  doc; reference scan found only canonical `memory/NEXT_CODEX_BRIEF.md`
+  references; `git diff --check` passed; pre-commit `git status --short` showed
+  only intended `docs/` and `memory/` changes (generated derivatives data is
+  outside this repo and not committed).
 
 Derivatives context source materialization plan:
 
@@ -647,9 +712,11 @@ Futures range post-rotation premise failure pivot review:
 
 Use `README.md` as the full docs index. The most relevant current docs are:
 
-1. `docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_SOURCE_AUDIT_BRIEF.md`.
-2. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_SCOPE_REVIEW.md`.
-3. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md`.
+1. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_REVIEW.md`.
+2. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_PLAN.md`.
+3. `docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_SOURCE_AUDIT_BRIEF.md`.
+4. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_SCOPE_REVIEW.md`.
+5. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md`.
 4. `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_REVIEW.md`.
 5. `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SCOPE_REVIEW.md`.
 6. `docs/FUTURES_RANGE_POST_ROTATION_PREMISE_FAILURE_PIVOT_REVIEW.md`.
