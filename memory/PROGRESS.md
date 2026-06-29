@@ -25,6 +25,14 @@ git history.
   absorption, higher-timeframe nested range rotation, `range_occupancy_rotation_v1`,
   and range quality/session/failure-mode triage cohorts in their reviewed forms.
 - The latest completed research doc is
+  `docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_INTEGRATION_SPEC.md`.
+  The user explicitly approved the docs-only derivatives no-trade filter
+  integration spec, and it stopped at
+  `derivatives_context_no_trade_filter_integration_spec_deferred_until_entry_premise`.
+  The canonical veto `btc_15m_basis_discount_no_trade_veto_v1` is preserved as a
+  future veto candidate only, but no implementation gate is selected because
+  there is no independently approved entry premise for it to filter.
+- The prior completed research doc is
   `docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_PREMISE_AUDIT_REVIEW.md`.
   The user explicitly approved implementing the zero-trade derivatives no-trade
   filter premise audit, and it passed at
@@ -70,11 +78,13 @@ git history.
   `derivatives_context_source_materialization_passed_ready_for_source_audit_approval`;
   `729` checksum-verified raw zips, `9` normalized CSVs, and `5` manifests live
   under `../binance-bot/data/derivatives/`.
-- The next derivatives step is now a docs-only filter integration spec approval
-  gate. Neither the passing source audit, context-audit brief, context-audit
-  review, strategy-premise spec, nor no-trade filter premise audit authorizes
+- The next derivatives step is not an implementation. Neither the passing
+  source audit, context-audit brief, context-audit review, strategy-premise spec,
+  no-trade filter premise audit, nor no-trade filter integration spec authorizes
   entries, exits, P&L, replay, walk-forward, packaging, paper/testnet/live paths,
-  exchange API work, credentials, deploy files, or promotion.
+  exchange API work, credentials, deploy files, or promotion. A later veto
+  interaction audit requires a separate independent entry premise and explicit
+  approval.
 - The prior dependency docs are
   `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md` and
   `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
@@ -111,6 +121,41 @@ git history.
 - `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt.
 
 ## 2026-06-29
+
+Derivatives context no-trade filter integration spec:
+
+- Added docs-only spec:
+  `docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_INTEGRATION_SPEC.md`.
+- Stop state:
+  `derivatives_context_no_trade_filter_integration_spec_deferred_until_entry_premise`.
+- User explicitly approved the docs-only derivatives context no-trade filter
+  integration spec.
+- Decision: preserve `btc_15m_basis_discount_no_trade_veto_v1` as a future veto
+  candidate only, but defer integration because no independently approved entry
+  premise exists. The passing no-trade filter premise audit stays useful as
+  veto evidence, not as an entry signal, basis-tradability claim, or P&L result.
+- No implementation gate is selected. A future interaction audit, if ever
+  approved, must first name an independent entry premise and may only annotate
+  candidate rows as skipped or retained; it may not create entries, alter entry
+  logic, simulate fills, score P&L, optimize, replay, walk forward, promote a
+  strategy, or reopen closed families.
+- The spec authorizes no Go code, CLI flag, generated result directory, audit
+  run, source download, network request, source materialization, data write
+  under `../binance-bot/data/derivatives/`, entry, exit, P&L backtest, optimizer
+  grid, replay, walk-forward, portfolio construction, paper/testnet/live path,
+  exchange API, credential, deploy file, martingale, averaging down,
+  two-exchange logic, closed-family rescue, or strategy promotion.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to record that no derivatives filter
+  integration implementation is selected until an independent entry premise is
+  supplied and explicitly approved.
+- Commands run:
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+- Verification outcomes: reference scan found canonical
+  `memory/NEXT_CODEX_BRIEF.md` references and checklist mentions only;
+  `git diff --check` passed; pre-commit `git status --short` showed only
+  intended docs and memory changes.
 
 Derivatives context no-trade filter premise audit implementation:
 

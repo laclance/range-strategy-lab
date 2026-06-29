@@ -247,6 +247,20 @@
   result, rotation-entry rescue, source/symbol expansion, or strategy promotion.
   The diagnostic rotation row remains diagnostic only, and no closed family is
   reopened.
+- The derivatives no-trade filter integration spec in
+  `docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_INTEGRATION_SPEC.md` was
+  explicitly approved as a docs-only task and stopped at
+  `derivatives_context_no_trade_filter_integration_spec_deferred_until_entry_premise`.
+  The canonical veto `btc_15m_basis_discount_no_trade_veto_v1` is preserved as a
+  future veto candidate only, but no implementation gate is selected because no
+  independent entry premise currently exists for it to filter.
+- Durable boundary from the integration spec: a future interaction audit may be
+  considered only after a separate independent entry premise exists and is
+  explicitly approved for interaction testing. The veto may only annotate an
+  already-approved candidate stream as skipped or retained; it may not create
+  entries, change entry logic, choose side, act as an exit, rank trades, score
+  P&L, replay, walk forward, optimize, promote a strategy, expand sources or
+  symbols, or reopen closed families.
 - Spread-range source/engine work remains parked; it does not authorize
   implementation from current state. Volatility-aware exits remain unavailable
   until a future independent entry premise first shows gross edge before costs.

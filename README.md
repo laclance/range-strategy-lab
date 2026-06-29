@@ -28,13 +28,15 @@ no-trade/toxic and `1` rotation candidate), with no ETH/SOL passing cohorts and
 no-trade filter premise, and the approved zero-trade no-trade filter premise
 audit then passed at
 `derivatives_context_no_trade_filter_premise_audit_passed_needs_filter_integration_spec`.
-That pass authorizes only a later docs-only filter integration spec. No entry,
-exit, P&L backtest, optimizer, replay, or walk-forward run is authorized by the
-router, premise spec, premise audit, no-trade filter premise audit, pivot review,
-BTC/ETH/SOL reviews, derivatives source scope review, derivatives context
-review, or derivatives strategy-premise spec. Older spot-data outputs are
-historical context unless a futures rerun explicitly revalidates a specific
-conclusion.
+The docs-only integration spec then preserved the canonical veto candidate but
+deferred implementation at
+`derivatives_context_no_trade_filter_integration_spec_deferred_until_entry_premise`.
+No entry, exit, P&L backtest, optimizer, replay, or walk-forward run is
+authorized by the router, premise spec, premise audit, no-trade filter premise
+audit, no-trade filter integration spec, pivot review, BTC/ETH/SOL reviews,
+derivatives source scope review, derivatives context review, or derivatives
+strategy-premise spec. Older spot-data outputs are historical context unless a
+futures rerun explicitly revalidates a specific conclusion.
 
 ## Purpose
 
@@ -123,7 +125,8 @@ review, read the docs in this order:
 64. [docs/FUTURES_DERIVATIVES_CONTEXT_AUDIT_REVIEW.md](docs/FUTURES_DERIVATIVES_CONTEXT_AUDIT_REVIEW.md)
 65. [docs/FUTURES_DERIVATIVES_CONTEXT_STRATEGY_PREMISE_SPEC.md](docs/FUTURES_DERIVATIVES_CONTEXT_STRATEGY_PREMISE_SPEC.md)
 66. [docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_PREMISE_AUDIT_REVIEW.md](docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_PREMISE_AUDIT_REVIEW.md)
-67. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+67. [docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_INTEGRATION_SPEC.md](docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_INTEGRATION_SPEC.md)
+68. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 
