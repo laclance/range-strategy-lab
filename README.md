@@ -16,9 +16,12 @@ zero-trade audit also failed with no usable context and is closed in reviewed
 zero-trade form. The derivatives market-data context source materialization was
 explicitly approved and executed; durable mark/index/(optional) premium-index 5m
 source files for BTCUSDT/ETHUSDT/SOLUSDT now exist under
-`../binance-bot/data/derivatives/`, but the zero-trade source audit over them
-still needs separate explicit approval and does not authorize implementation. No
-entry, exit, P&L backtest, optimizer, replay, or
+`../binance-bot/data/derivatives/`. The zero-trade derivatives source audit
+(`-futures-derivatives-context-source-audit`) then passed: it validated those
+nine files, SHA-256-bound their provenance, and proved anti-lookahead alignment
+to the 5m candle anchors (all six required mark/index streams above 0.99
+coverage), so it now needs a separate zero-trade context-audit brief and
+approval. No entry, exit, P&L backtest, optimizer, replay, or
 walk-forward run is authorized by the router, premise spec, premise audit,
 pivot review, BTC/ETH/SOL reviews, or derivatives source scope review. Older
 spot-data outputs are historical context unless a futures rerun explicitly
@@ -106,7 +109,8 @@ review, read the docs in this order:
 59. [docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_SOURCE_AUDIT_BRIEF.md](docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_SOURCE_AUDIT_BRIEF.md)
 60. [docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_PLAN.md](docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_PLAN.md)
 61. [docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_REVIEW.md](docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_REVIEW.md)
-62. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+62. [docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_AUDIT_REVIEW.md](docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_AUDIT_REVIEW.md)
+63. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 

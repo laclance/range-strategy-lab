@@ -1470,6 +1470,106 @@ func TestRunWithArgsFuturesBTCRegimeETHSOLContextAuditFlagWritesArtifactsAndReje
 	}
 }
 
+func writeCLIDerivSourceCSV(t *testing.T, dir, name string, rows int) string {
+	t.Helper()
+	path := filepath.Join(dir, name)
+	data := "open_time,open,high,low,close,close_time,source_object_id\n"
+	for i := 0; i < rows; i++ {
+		open := int64(1609459200000 + i*300000)
+		closeTime := open + 299999
+		data += strconv.FormatInt(open, 10) + ",100,101,99,100," + strconv.FormatInt(closeTime, 10) + ",obj-" + strconv.Itoa(i) + "\n"
+	}
+	if err := os.WriteFile(path, []byte(data), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	return path
+}
+
+func TestRunWithArgsFuturesDerivativesContextSourceAuditFlagWritesArtifactsAndRejectsConflicts(t *testing.T) {
+	dir := t.TempDir()
+	futuresPath := writeCLITestCSVN(t, dir, "btcusdt_futures_um_5m_deriv_cli.csv", 96)
+
+	// Derivative + anchor sources must live outside /tmp (the audit rejects /tmp).
+	srcDir, err := os.MkdirTemp(".", "derivcli")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.RemoveAll(srcDir) })
+	srcAbs, err := filepath.Abs(srcDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	const n = 24
+	anchorPath := writeCLITestCSVN(t, srcAbs, "btcusdt_futures_um_5m_deriv_anchor.csv", n)
+	markPath := writeCLIDerivSourceCSV(t, srcAbs, "binance_usdm_mark_price_klines_5m_BTCUSDT_cli.csv", n)
+	indexPath := writeCLIDerivSourceCSV(t, srcAbs, "binance_usdm_index_price_klines_5m_BTCUSDT_cli.csv", n)
+	premiumPath := writeCLIDerivSourceCSV(t, srcAbs, "binance_usdm_premium_index_klines_5m_BTCUSDT_cli.csv", n)
+
+	oldCfg := futuresDerivativesContextSourceAuditConfigForRun
+	futuresDerivativesContextSourceAuditConfigForRun = func() lab.FuturesDerivativesContextSourceAuditConfig {
+		return lab.FuturesDerivativesContextSourceAuditConfig{
+			DerivativeSources: []lab.FuturesDerivativesContextSourceFileConfig{
+				{Symbol: "BTCUSDT", SourceFamily: "mark_price_klines", ArchiveFamily: "markPriceKlines", Path: markPath, Required: true},
+				{Symbol: "BTCUSDT", SourceFamily: "index_price_klines", ArchiveFamily: "indexPriceKlines", Path: indexPath, Required: true},
+				{Symbol: "BTCUSDT", SourceFamily: "premium_index_klines", ArchiveFamily: "premiumIndexKlines", Path: premiumPath, Required: false, AllowNonPositive: true},
+			},
+			Anchors: []lab.FuturesRangeUniverseSourceConfig{
+				{Symbol: "BTCUSDT", Path: anchorPath, ApprovedPath: anchorPath, SkipSplitEligibilityCheck: true},
+			},
+			MinAlignedCoverage:       0.5,
+			ConservativeLagIntervals: 1,
+			EraStartMs:               1609459200000,
+			EraEndMs:                 1609459200000 + int64(n-1)*300000,
+		}
+	}
+	defer func() { futuresDerivativesContextSourceAuditConfigForRun = oldCfg }()
+
+	defaultOutDir := filepath.Join(dir, "default")
+	if err := runWithArgs([]string{"-csv", futuresPath, "-source-product", lab.SourceProductBinanceUSDMFutures, "-out-dir", defaultOutDir}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(defaultOutDir, "futures_derivatives_context_source_audit_summary.csv")); !os.IsNotExist(err) {
+		t.Fatalf("default run should not write derivatives source audit artifacts, stat err=%v", err)
+	}
+
+	outDir := filepath.Join(dir, "deriv-audit")
+	if err := runWithArgs([]string{"-csv", futuresPath, "-source-product", lab.SourceProductBinanceUSDMFutures, "-futures-derivatives-context-source-audit", "-out-dir", outDir}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{
+		"source_manifest.json", "summary.csv", "summary.json", "trades.json",
+		"futures_derivatives_context_source_audit_sources.csv", "futures_derivatives_context_source_audit_sources.json",
+		"futures_derivatives_context_source_audit_candle_anchors.csv", "futures_derivatives_context_source_audit_candle_anchors.json",
+		"futures_derivatives_context_source_audit_external_coverage.csv", "futures_derivatives_context_source_audit_external_coverage.json",
+		"futures_derivatives_context_source_audit_timestamp_alignment.csv", "futures_derivatives_context_source_audit_timestamp_alignment.json",
+		"futures_derivatives_context_source_audit_publication_lag.csv", "futures_derivatives_context_source_audit_publication_lag.json",
+		"futures_derivatives_context_source_audit_missingness.csv", "futures_derivatives_context_source_audit_missingness.json",
+		"futures_derivatives_context_source_audit_provenance.csv", "futures_derivatives_context_source_audit_provenance.json",
+		"futures_derivatives_context_source_audit_skips.csv", "futures_derivatives_context_source_audit_skips.json",
+		"futures_derivatives_context_source_audit_summary.csv", "futures_derivatives_context_source_audit_summary.json",
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, name)); err != nil {
+			t.Fatalf("expected derivatives source audit artifact %s: %v", name, err)
+		}
+	}
+	data, err := os.ReadFile(filepath.Join(outDir, "trades.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var trades []lab.Trade
+	if err := json.Unmarshal(data, &trades); err != nil {
+		t.Fatal(err)
+	}
+	if len(trades) != 0 {
+		t.Fatalf("derivatives source audit must remain zero-trade, got %d", len(trades))
+	}
+
+	conflictErr := runWithArgs([]string{"-csv", futuresPath, "-source-product", lab.SourceProductBinanceUSDMFutures, "-futures-derivatives-context-source-audit", "-futures-btc-regime-eth-sol-context-audit", "-out-dir", filepath.Join(dir, "conflict")})
+	if conflictErr == nil {
+		t.Fatalf("expected error combining derivatives source audit with another audit flag")
+	}
+}
+
 func writeCLITestCSV(t *testing.T, dir string, name string) string {
 	return writeCLITestCSVN(t, dir, name, 2)
 }

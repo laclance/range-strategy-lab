@@ -31,6 +31,7 @@ var futuresRangeStateConstructionLoopAuditConfigForRun = lab.DefaultFuturesRange
 var futuresRangeContextRouterAuditConfigForRun = lab.DefaultFuturesRangeContextRouterAuditConfig
 var futuresRangeRouterRotationPremiseAuditConfigForRun = lab.DefaultFuturesRangeRouterRotationPremiseAuditConfig
 var futuresBTCRegimeETHSOLContextAuditConfigForRun = lab.DefaultFuturesBTCRegimeETHSOLContextAuditConfig
+var futuresDerivativesContextSourceAuditConfigForRun = lab.DefaultFuturesDerivativesContextSourceAuditConfig
 
 func main() {
 	if err := run(); err != nil {
@@ -81,6 +82,7 @@ func runWithArgs(args []string) error {
 	futuresRangeContextRouterAudit := fs.Bool("futures-range-context-router-audit", false, "write non-trading futures range context router diagnostics")
 	futuresRangeRouterRotationPremiseAudit := fs.Bool("futures-range-router-rotation-premise-audit", false, "write non-trading futures range router rotation premise diagnostics")
 	futuresBTCRegimeETHSOLContextAudit := fs.Bool("futures-btc-regime-eth-sol-context-audit", false, "write zero-trade futures BTC regime plus ETH/SOL context diagnostics")
+	futuresDerivativesContextSourceAudit := fs.Bool("futures-derivatives-context-source-audit", false, "write zero-trade derivatives context source audit diagnostics")
 	srAudit := fs.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
 	srBoundaryAudit := fs.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
 	srBoundaryInspect := fs.Bool("sr-boundary-inspect", false, "write compact non-trading SR boundary candidate comparison diagnostics")
@@ -119,6 +121,9 @@ func runWithArgs(args []string) error {
 	}
 	if *futuresBTCRegimeETHSOLContextAudit && !outDirWasSet {
 		*outDir = "results/futures-btc-regime-eth-sol-context-audit"
+	}
+	if *futuresDerivativesContextSourceAudit && !outDirWasSet {
+		*outDir = "results/futures-derivatives-context-source-audit"
 	}
 
 	product := *sourceProduct
@@ -208,6 +213,17 @@ func runWithArgs(args []string) error {
 		}
 		if *detector || *detectorSweep || *detectorDurabilitySweep || *detectorContextRefinementAudit || *holdInsideDirectionalEdgeAudit || *holdInsideMidlineTransitionAudit || *holdInsideMidlineReactionAudit || *futuresImpulseAbsorptionAudit || *futuresRangeCandidateDiscoveryAudit || *futuresRangeUniverseDiscoveryAudit || *futuresHigherTFNestedRangeRotationAudit || *futuresRangeContextTriageAudit || *futuresRangeStateConstructionLoopAudit || *futuresRangeContextRouterAudit || *futuresRangeRouterRotationPremiseAudit || *srAudit || *srBoundaryAudit || *srBoundaryInspect || *srRejectionTimingAudit || *srConfirmationTimingAudit || *srFalseBreakReclaimTimingAudit || *compressionBreakoutAudit || *rangeRegimeDurabilityAudit {
 			return fmt.Errorf("-futures-btc-regime-eth-sol-context-audit cannot be combined with other audit, detector, source-expansion, or diagnostic flags")
+		}
+	}
+	if *futuresDerivativesContextSourceAudit {
+		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
+			return fmt.Errorf("-futures-derivatives-context-source-audit requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
+		}
+		if tradeProducingFlagSelected {
+			return fmt.Errorf("-futures-derivatives-context-source-audit cannot be combined with trade-producing prototype/backtest/optimization/replay/walk-forward flags")
+		}
+		if *detector || *detectorSweep || *detectorDurabilitySweep || *detectorContextRefinementAudit || *holdInsideDirectionalEdgeAudit || *holdInsideMidlineTransitionAudit || *holdInsideMidlineReactionAudit || *futuresImpulseAbsorptionAudit || *futuresRangeCandidateDiscoveryAudit || *futuresRangeUniverseDiscoveryAudit || *futuresHigherTFNestedRangeRotationAudit || *futuresRangeContextTriageAudit || *futuresRangeStateConstructionLoopAudit || *futuresRangeContextRouterAudit || *futuresRangeRouterRotationPremiseAudit || *futuresBTCRegimeETHSOLContextAudit || *srAudit || *srBoundaryAudit || *srBoundaryInspect || *srRejectionTimingAudit || *srConfirmationTimingAudit || *srFalseBreakReclaimTimingAudit || *compressionBreakoutAudit || *rangeRegimeDurabilityAudit {
+			return fmt.Errorf("-futures-derivatives-context-source-audit cannot be combined with other audit, detector, source-expansion, or diagnostic flags")
 		}
 	}
 
@@ -316,6 +332,7 @@ func runWithArgs(args []string) error {
 	var occupancyRotationV1Result lab.FuturesRangeFirstOccupancyRotationV1OptimizationResult
 	var rangeContextTriageResult lab.FuturesRangeContextTriageAuditResult
 	var rangeStateConstructionLoopResult lab.FuturesRangeStateConstructionLoopAuditResult
+	var derivativesContextSourceAuditResult lab.FuturesDerivativesContextSourceAuditResult
 	var rangeContextRouterResult lab.FuturesRangeContextRouterAuditResult
 	var rangeRouterRotationPremiseResult lab.FuturesRangeRouterRotationPremiseAuditResult
 	var btcRegimeETHSOLContextResult lab.FuturesBTCRegimeETHSOLContextAuditResult
@@ -1315,6 +1332,73 @@ func runWithArgs(args []string) error {
 			len(btcRegimeETHSOLContextResult.RankingRows),
 			btcRegimeETHSOLContextResult.PassingCohorts,
 			btcRegimeETHSOLContextResult.StopState,
+		)
+	}
+	if *futuresDerivativesContextSourceAudit {
+		derivCfg := futuresDerivativesContextSourceAuditConfigForRun()
+		var err error
+		derivativesContextSourceAuditResult, err = lab.RunFuturesDerivativesContextSourceAudit(derivCfg, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+		artifacts := []struct {
+			name string
+			rows any
+		}{
+			{"futures_derivatives_context_source_audit_sources", derivativesContextSourceAuditResult.SourceRows},
+			{"futures_derivatives_context_source_audit_candle_anchors", derivativesContextSourceAuditResult.CandleAnchorRows},
+			{"futures_derivatives_context_source_audit_external_coverage", derivativesContextSourceAuditResult.CoverageRows},
+			{"futures_derivatives_context_source_audit_timestamp_alignment", derivativesContextSourceAuditResult.TimestampAlignmentRows},
+			{"futures_derivatives_context_source_audit_publication_lag", derivativesContextSourceAuditResult.PublicationLagRows},
+			{"futures_derivatives_context_source_audit_missingness", derivativesContextSourceAuditResult.MissingnessRows},
+			{"futures_derivatives_context_source_audit_provenance", derivativesContextSourceAuditResult.ProvenanceRows},
+			{"futures_derivatives_context_source_audit_skips", derivativesContextSourceAuditResult.SkipRows},
+			{"futures_derivatives_context_source_audit_summary", derivativesContextSourceAuditResult.SummaryRows},
+		}
+		for _, art := range artifacts {
+			if err := writeJSON(filepath.Join(*outDir, art.name+".json"), art.rows); err != nil {
+				return err
+			}
+		}
+		if err := writeFuturesDerivativesContextSourceAuditSourcesCSV(filepath.Join(*outDir, "futures_derivatives_context_source_audit_sources.csv"), derivativesContextSourceAuditResult.SourceRows); err != nil {
+			return err
+		}
+		if err := writeFuturesDerivativesContextSourceAuditCandleAnchorsCSV(filepath.Join(*outDir, "futures_derivatives_context_source_audit_candle_anchors.csv"), derivativesContextSourceAuditResult.CandleAnchorRows); err != nil {
+			return err
+		}
+		if err := writeFuturesDerivativesContextSourceAuditCoverageCSV(filepath.Join(*outDir, "futures_derivatives_context_source_audit_external_coverage.csv"), derivativesContextSourceAuditResult.CoverageRows); err != nil {
+			return err
+		}
+		if err := writeFuturesDerivativesContextSourceAuditAlignmentCSV(filepath.Join(*outDir, "futures_derivatives_context_source_audit_timestamp_alignment.csv"), derivativesContextSourceAuditResult.TimestampAlignmentRows); err != nil {
+			return err
+		}
+		if err := writeFuturesDerivativesContextSourceAuditLagCSV(filepath.Join(*outDir, "futures_derivatives_context_source_audit_publication_lag.csv"), derivativesContextSourceAuditResult.PublicationLagRows); err != nil {
+			return err
+		}
+		if err := writeFuturesDerivativesContextSourceAuditMissingnessCSV(filepath.Join(*outDir, "futures_derivatives_context_source_audit_missingness.csv"), derivativesContextSourceAuditResult.MissingnessRows); err != nil {
+			return err
+		}
+		if err := writeFuturesDerivativesContextSourceAuditProvenanceCSV(filepath.Join(*outDir, "futures_derivatives_context_source_audit_provenance.csv"), derivativesContextSourceAuditResult.ProvenanceRows); err != nil {
+			return err
+		}
+		if err := writeFuturesDerivativesContextSourceAuditSkipsCSV(filepath.Join(*outDir, "futures_derivatives_context_source_audit_skips.csv"), derivativesContextSourceAuditResult.SkipRows); err != nil {
+			return err
+		}
+		if err := writeFuturesDerivativesContextSourceAuditSummaryCSV(filepath.Join(*outDir, "futures_derivatives_context_source_audit_summary.csv"), derivativesContextSourceAuditResult.SummaryRows); err != nil {
+			return err
+		}
+		fmt.Printf("futures_derivatives_context_source_audit source_rows=%d anchor_rows=%d coverage_rows=%d alignment_rows=%d lag_rows=%d missingness_rows=%d provenance_rows=%d skip_rows=%d required_streams=%d aligned_required_streams=%d stop_state=%s\n",
+			len(derivativesContextSourceAuditResult.SourceRows),
+			len(derivativesContextSourceAuditResult.CandleAnchorRows),
+			len(derivativesContextSourceAuditResult.CoverageRows),
+			len(derivativesContextSourceAuditResult.TimestampAlignmentRows),
+			len(derivativesContextSourceAuditResult.PublicationLagRows),
+			len(derivativesContextSourceAuditResult.MissingnessRows),
+			len(derivativesContextSourceAuditResult.ProvenanceRows),
+			len(derivativesContextSourceAuditResult.SkipRows),
+			derivativesContextSourceAuditResult.RequiredStreams,
+			derivativesContextSourceAuditResult.AlignedRequiredStreams,
+			derivativesContextSourceAuditResult.StopState,
 		)
 	}
 	var srRows []lab.SRAuditRow
@@ -3587,6 +3671,42 @@ func writeFuturesBTCRegimeETHSOLContextRankingsCSV(path string, rows []lab.Futur
 }
 
 func writeFuturesBTCRegimeETHSOLContextSummaryCSV(path string, rows []lab.FuturesBTCRegimeETHSOLContextSummaryRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesDerivativesContextSourceAuditSourcesCSV(path string, rows []lab.FuturesDerivativesContextSourceRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesDerivativesContextSourceAuditCandleAnchorsCSV(path string, rows []lab.FuturesDerivativesContextCandleAnchorRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesDerivativesContextSourceAuditCoverageCSV(path string, rows []lab.FuturesDerivativesContextCoverageRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesDerivativesContextSourceAuditAlignmentCSV(path string, rows []lab.FuturesDerivativesContextTimestampAlignmentRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesDerivativesContextSourceAuditLagCSV(path string, rows []lab.FuturesDerivativesContextPublicationLagRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesDerivativesContextSourceAuditMissingnessCSV(path string, rows []lab.FuturesDerivativesContextMissingnessRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesDerivativesContextSourceAuditProvenanceCSV(path string, rows []lab.FuturesDerivativesContextProvenanceRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesDerivativesContextSourceAuditSkipsCSV(path string, rows []lab.FuturesDerivativesContextSkipRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesDerivativesContextSourceAuditSummaryCSV(path string, rows []lab.FuturesDerivativesContextSourceAuditSummaryRow) error {
 	return writeJSONTaggedCSV(path, rows)
 }
 

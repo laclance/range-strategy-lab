@@ -25,16 +25,26 @@ git history.
   absorption, higher-timeframe nested range rotation, `range_occupancy_rotation_v1`,
   and range quality/session/failure-mode triage cohorts in their reviewed forms.
 - The latest completed research doc is
-  `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_REVIEW.md`. The user
-  explicitly approved executing the materialization plan, and execution passed at
-  `derivatives_context_source_materialization_passed_ready_for_source_audit_approval`.
-  Durable Binance public Data Vision USDT-M futures mark/index/(optional)
-  premium-index `5m` source files for `BTCUSDT`/`ETHUSDT`/`SOLUSDT` now exist
-  under `../binance-bot/data/derivatives/` (`729` checksum-verified raw zips, `9`
-  normalized CSVs, `5` manifests). The next derivatives step is a separate,
-  approval-gated zero-trade source-audit implementation; materialization does not
-  authorize source-audit implementation, context features, labels, cohorts,
-  rankings, entries, exits, P&L, replay, walk-forward, or promotion.
+  `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_AUDIT_REVIEW.md`. The user explicitly
+  approved implementing the zero-trade derivatives context source audit, and it
+  passed at
+  `derivatives_context_zero_trade_source_audit_passed_needs_context_audit_brief`.
+  The audit (`-futures-derivatives-context-source-audit`) validated the `9`
+  materialized mark/index/premium `5m` source files, SHA-256-bound their
+  provenance (hashes match the materialization manifests), and proved
+  anti-lookahead alignment to the `5m` candle anchors under a conservative
+  one-interval lag: all `6` required mark/index streams cleared the `0.99`
+  coverage bar (min `0.994472`, index BTCUSDT), recorded missingness with
+  `forward_filled_rows=0`, and produced `0` trades.
+- The prior derivatives steps remain durable boundaries:
+  `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_REVIEW.md` passed at
+  `derivatives_context_source_materialization_passed_ready_for_source_audit_approval`;
+  `729` checksum-verified raw zips, `9` normalized CSVs, and `5` manifests live
+  under `../binance-bot/data/derivatives/`.
+- The next derivatives step is a separate, approval-gated zero-trade derivatives
+  context-audit brief (then implementation). The passing source audit does not
+  authorize context features, labels, cohorts, rankings, entries, exits, P&L,
+  replay, walk-forward, or promotion.
 - The prior dependency docs are
   `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md` and
   `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
@@ -70,6 +80,58 @@ git history.
   rejected until a new independent entry premise first shows gross edge before
   costs.
 - `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt.
+
+## 2026-06-29
+
+Derivatives context zero-trade source audit implementation:
+
+- Added `-futures-derivatives-context-source-audit` (default out-dir
+  `results/futures-derivatives-context-source-audit`).
+- Audit engine `internal/lab/futures_derivatives_context_source_audit.go` plus
+  tests `internal/lab/futures_derivatives_context_source_audit_test.go` and a CLI
+  flag test in `cmd/rangelab/main_test.go`.
+- Review doc: `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_AUDIT_REVIEW.md`.
+- Stop state:
+  `derivatives_context_zero_trade_source_audit_passed_needs_context_audit_brief`.
+- User explicitly approved implementing the source audit from
+  `docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_SOURCE_AUDIT_BRIEF.md`.
+- Inputs: the `9` durable materialized mark/index/premium `5m` source CSVs under
+  `../binance-bot/data/derivatives/` (read-only; recomputed file SHA-256 matched
+  the materialization manifests, e.g. mark BTCUSDT
+  `424c05ca...c2858`, index BTCUSDT `7ba5a375...390aca`) plus the three
+  `573,984`-row candle anchors used only for alignment.
+- Anti-lookahead model: publication lag unproven, so a conservative one-`5m`-
+  interval lag (`source_close_time + 5m <= decision_candle_close_time`); no
+  forward fill (`MaxExtraStalenessIntervals=0`), no interpolation, no
+  nearest-future joins; every alignment row recorded `uses_future_rows=false`
+  and `exact_closed_interval_join=true`.
+- Results: `source_rows=9`, `anchor_rows=3`, `coverage_rows=9`,
+  `alignment_rows=9`, `lag_rows=9`, `missingness_rows=9`, `provenance_rows=9`,
+  `skip_rows=18`, `required_streams=6`, `aligned_required_streams=6`. All `9`
+  streams validated with `0` duplicate-conflict, `0` close-time violations,
+  `0` non-monotonic rows. Required-stream min lag coverage `0.994472`
+  (index BTCUSDT) cleared the `0.99` bar; missingness recorded with
+  `forward_filled_rows=0`. `trades.json` had no trades.
+- Compliance: wrote exactly the brief's nine artifact families (CSV+JSON) plus
+  zero-trade common outputs; deferred mark-minus-index basis derivation to a
+  later context-audit stage (no basis/feature/cohort/label/ranking artifact).
+- Commands run:
+  - `gofmt -w internal/lab/futures_derivatives_context_source_audit.go internal/lab/futures_derivatives_context_source_audit_test.go cmd/rangelab/main.go cmd/rangelab/main_test.go`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -futures-derivatives-context-source-audit -out-dir results/futures-derivatives-context-source-audit`
+  - `wc -l results/futures-derivatives-context-source-audit/*.csv`
+  - `rg --files ../binance-bot/data | rg -i "(mark[_-]?price|index[_-]?price|premium[_-]?index|premiumIndex|basis)"`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+- Verification outcomes: tests passed; the audit reproduced the counts above and
+  the passing stop state; CSV artifacts totaled `95` lines plus the common
+  `summary.csv`; the `rg --files` basis check returned empty because the adjacent
+  `binance-bot` repo Git-ignores its `data/` tree (`find` confirms all nine
+  durable source CSVs are present and were read); `git diff --check` passed;
+  pre-commit `git status --short` showed only intended code, docs, and memory
+  changes (generated `results/` are Git-ignored; derivatives data stays outside
+  this repo).
 
 ## 2026-06-28
 
@@ -712,11 +774,12 @@ Futures range post-rotation premise failure pivot review:
 
 Use `README.md` as the full docs index. The most relevant current docs are:
 
-1. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_REVIEW.md`.
-2. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_PLAN.md`.
-3. `docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_SOURCE_AUDIT_BRIEF.md`.
-4. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_SCOPE_REVIEW.md`.
-5. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md`.
+1. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_AUDIT_REVIEW.md`.
+2. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_REVIEW.md`.
+3. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_PLAN.md`.
+4. `docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_SOURCE_AUDIT_BRIEF.md`.
+5. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_SCOPE_REVIEW.md`.
+6. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md`.
 4. `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_REVIEW.md`.
 5. `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SCOPE_REVIEW.md`.
 6. `docs/FUTURES_RANGE_POST_ROTATION_PREMISE_FAILURE_PIVOT_REVIEW.md`.

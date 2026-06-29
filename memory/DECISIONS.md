@@ -134,6 +134,31 @@
   context features, labels, cohorts, rankings, entries, exits, P&L backtests,
   replay, walk-forward, or promotion. The zero-trade source audit over them needs
   separate explicit user approval.
+- The derivatives context zero-trade source audit in
+  `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_AUDIT_REVIEW.md` was explicitly
+  approved and implemented behind `-futures-derivatives-context-source-audit`. It
+  passed at
+  `derivatives_context_zero_trade_source_audit_passed_needs_context_audit_brief`.
+  It validated the `9` materialized mark/index/premium `5m` source files,
+  SHA-256-bound their provenance (hashes match the materialization manifests),
+  and proved anti-lookahead alignment to the `5m` candle anchors. All `6`
+  required mark/index streams cleared the `0.99` coverage bar under a
+  conservative one-`5m`-interval lag (min `0.994472`, index BTCUSDT) with
+  recorded missingness and no forward fill; the run produced `0` trades.
+- Derivatives alignment finality rule established: publication lag for
+  mark/index/premium klines is unproven, so any future use must apply the
+  conservative one-native-interval lag
+  (`source_close_time + 5m <= decision_candle_close_time`); no forward fill,
+  interpolation, or nearest-future joins. The materialization gaps are
+  bounded missingness to be surfaced, never silently filled.
+- The passing source audit does not authorize context-gain implementation,
+  labels, cohorts, rankings, entries, exits, P&L backtests, optimizer grids,
+  replay, walk-forward, packaging, source downloads, paper/testnet/live paths,
+  exchange API work, credentials, deploy files, or promotion. The next
+  derivatives step is a separate, approval-gated zero-trade derivatives
+  context-audit brief. Mark-minus-index basis derivation remains deferred to
+  that later context stage and was intentionally not computed as an artifact in
+  the source audit.
 - Spread-range source/engine work remains parked; it does not authorize
   implementation from current state. Volatility-aware exits remain unavailable
   until a future independent entry premise first shows gross edge before costs.
