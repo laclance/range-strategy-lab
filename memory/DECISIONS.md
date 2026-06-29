@@ -204,11 +204,33 @@
   gates; it does not authorize entries, exits, P&L backtests, optimizers, replay,
   walk-forward, source expansion, paper/testnet/live paths, exchange API work,
   credentials, deploy files, or strategy promotion.
-- A future strategy-premise spec must decide whether to pursue a no-trade filter
-  premise, a rotation premise, both as separate tracks, or no further strategy
-  work. It must not reopen, retune, rename, gate-relax, or promote any closed
-  family and must preserve the zero-trade context audit as separation evidence
-  only.
+- The strategy-premise decision from the passed derivatives context audit is no
+  longer open: the later track is the BTCUSDT `15m` no-trade filter premise
+  only. The rotation-entry, two-track, and no-further-work alternatives were
+  considered in the docs-only spec; rotation remains diagnostic only.
+- The derivatives context strategy-premise spec in
+  `docs/FUTURES_DERIVATIVES_CONTEXT_STRATEGY_PREMISE_SPEC.md` was explicitly
+  approved as a docs-only task and stopped at
+  `derivatives_context_strategy_premise_spec_ready_for_user_approval`. It selects
+  only a BTCUSDT `15m` derivatives-context no-trade filter premise for a later
+  zero-trade audit. The `5` toxic/no-trade cohorts are candidates for exact and
+  canonical no-trade veto testing; the single rotation candidate remains
+  diagnostic only and does not authorize a rotation-entry premise or a second
+  implementation track.
+- Durable boundary from the strategy-premise spec: a later no-trade filter audit
+  may use only local BTCUSDT Binance USDT-M futures candles plus the already
+  validated BTCUSDT mark/index/premium `5m` rows needed by the selected premise,
+  with confirmed closed-candle decisions, the conservative one-`5m` source lag
+  (`source_close_time + 5m <= decision_candle_close_time`), no forward
+  fill/interpolation/nearest-future joins, recorded missingness/skips, and
+  forward labels only as evaluation metadata. It must stay zero-trade unless a
+  later explicit spec changes scope.
+- The strategy-premise spec does not authorize Go code, CLI flags, generated
+  results, audit runs, source downloads, data writes under
+  `../binance-bot/data/derivatives/`, entries, exits, P&L backtests, optimizer
+  grids, replay, walk-forward, source/symbol expansion, paper/testnet/live paths,
+  exchange API work, credentials, deploy files, strategy promotion, martingale,
+  averaging down, two-exchange logic, or closed-family rescue.
 - Spread-range source/engine work remains parked; it does not authorize
   implementation from current state. Volatility-aware exits remain unavailable
   until a future independent entry premise first shows gross edge before costs.
@@ -268,10 +290,10 @@ The following specs are parked and not implementation-ready from current state:
   `docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_SOURCE_AUDIT_BRIEF.md`; the
   source materialization, source audit, context-audit brief, and context audit
   have since executed in reviewed form. Further derivatives source expansion is
-  not an automatic next step and may start only if a later strategy-premise spec
-  creates a specific approved need. It is market-data context only and does not
-  permit API keys, private endpoints, live/paper/testnet, exchange order paths,
-  entries, exits, P&L backtests, replay, walk-forward, or promotion.
+  not an automatic next step; the current strategy-premise spec creates no
+  source-expansion need. It is market-data context only and does not permit API
+  keys, private endpoints, live/paper/testnet, exchange order paths, entries,
+  exits, P&L backtests, replay, walk-forward, or promotion.
 
 ## Exclusion Decisions
 

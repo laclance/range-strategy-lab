@@ -25,6 +25,14 @@ git history.
   absorption, higher-timeframe nested range rotation, `range_occupancy_rotation_v1`,
   and range quality/session/failure-mode triage cohorts in their reviewed forms.
 - The latest completed doc is
+  `docs/FUTURES_DERIVATIVES_CONTEXT_STRATEGY_PREMISE_SPEC.md`. The user
+  explicitly approved the docs-only strategy-premise spec, and it stopped at
+  `derivatives_context_strategy_premise_spec_ready_for_user_approval`. The spec
+  selects one later premise track: a BTCUSDT `15m` derivatives-context no-trade
+  filter audit. It rejects the rotation-entry and two-track alternatives for now:
+  the five toxic/no-trade cohorts are coherent enough for a zero-trade filter
+  audit, while the single rotation candidate remains diagnostic only.
+- The prior completed research doc is
   `docs/FUTURES_DERIVATIVES_CONTEXT_AUDIT_REVIEW.md`. The user explicitly
   approved implementing the zero-trade derivatives context audit, and it passed
   at
@@ -34,10 +42,8 @@ git history.
   conservative one-`5m` lag and no-fill/no-interp/no-nearest-future policy, and
   produced `6` passing BTCUSDT `15m` separation cohorts (`5` no-trade/toxic,
   `1` rotation candidate). ETHUSDT and SOLUSDT produced `0` passing cohorts.
-  Common outputs stayed zero-trade. The next step is a separate strategy-premise
-  spec approval gate, not entries, exits, P&L, replay, walk-forward, or
-  promotion.
-- The prior completed research doc is
+  Common outputs stayed zero-trade.
+- The earlier completed research doc is
   `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_AUDIT_REVIEW.md`. The user explicitly
   approved implementing the zero-trade derivatives context source audit, and it
   passed at
@@ -54,10 +60,10 @@ git history.
   `derivatives_context_source_materialization_passed_ready_for_source_audit_approval`;
   `729` checksum-verified raw zips, `9` normalized CSVs, and `5` manifests live
   under `../binance-bot/data/derivatives/`.
-- The next derivatives step is now an approval-gated strategy-premise spec from
-  the `6` passing BTCUSDT `15m` context cohorts. Neither the passing source
-  audit, context-audit brief, nor context-audit review authorizes entries,
-  exits, P&L, replay, walk-forward, packaging, paper/testnet/live paths,
+- The next derivatives step is now an approval-gated implementation of the
+  zero-trade no-trade filter premise audit. Neither the passing source audit,
+  context-audit brief, context-audit review, nor strategy-premise spec authorizes
+  entries, exits, P&L, replay, walk-forward, packaging, paper/testnet/live paths,
   exchange API work, credentials, deploy files, or promotion.
 - The prior dependency docs are
   `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md` and
@@ -88,12 +94,49 @@ git history.
   mining, martingale, averaging down, or two-exchange logic.
 - Parked future directions remain documented but not implementation-ready:
   spread-range/pair-range is parked behind source/engine complexity, broad
-  derivatives source expansion should stop unless a future strategy-premise spec
-  creates a specific need, and volatility-aware exits remain rejected until a new
-  independent entry premise first shows gross edge before costs.
+  derivatives source expansion remains stopped because the current
+  strategy-premise spec creates no source-expansion need, and volatility-aware
+  exits remain rejected until a new independent entry premise first shows gross
+  edge before costs.
 - `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt.
 
 ## 2026-06-29
+
+Derivatives context strategy-premise spec:
+
+- Added docs-only spec:
+  `docs/FUTURES_DERIVATIVES_CONTEXT_STRATEGY_PREMISE_SPEC.md`.
+- Stop state:
+  `derivatives_context_strategy_premise_spec_ready_for_user_approval`.
+- User explicitly approved writing the docs-only strategy-premise spec from the
+  `6` passing BTCUSDT `15m` derivatives-context cohorts.
+- Decision: select only a BTCUSDT `15m` no-trade filter premise for a later
+  zero-trade audit. The `5` toxic/no-trade cohorts are coherent enough to test as
+  exact/canonical veto candidates; the single rotation candidate is preserved as
+  diagnostic evidence only and does not justify a rotation-entry premise or a
+  second implementation track.
+- Later allowed implementation, only after separate explicit user approval, is a
+  zero-trade no-trade filter premise audit over local BTCUSDT Binance USDT-M
+  futures candles and the already validated BTCUSDT mark/index/premium rows. It
+  must keep the conservative one-`5m` lag
+  (`source_close_time + 5m <= decision_candle_close_time`), no forward
+  fill/interpolation/nearest-future joins, recorded missingness/skips, and
+  forward labels only as evaluation metadata.
+- The spec authorizes no Go code, CLI flag, generated result directory, audit
+  run, source download, data write under `../binance-bot/data/derivatives/`,
+  entry, exit, P&L backtest, optimizer, replay, walk-forward, paper/testnet/live
+  path, exchange API, credential, deploy file, martingale, averaging down,
+  two-exchange logic, or closed-family rescue.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to the no-trade filter premise audit
+  implementation approval gate.
+- Commands run:
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+- Verification outcomes: reference scan found canonical
+  `memory/NEXT_CODEX_BRIEF.md` references and checklist mentions only;
+  `git diff --check` passed; pre-commit `git status --short` showed only
+  intended docs and memory changes.
 
 Derivatives context zero-trade audit implementation:
 
