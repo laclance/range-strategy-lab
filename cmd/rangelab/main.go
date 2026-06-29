@@ -33,6 +33,7 @@ var futuresRangeRouterRotationPremiseAuditConfigForRun = lab.DefaultFuturesRange
 var futuresBTCRegimeETHSOLContextAuditConfigForRun = lab.DefaultFuturesBTCRegimeETHSOLContextAuditConfig
 var futuresDerivativesContextSourceAuditConfigForRun = lab.DefaultFuturesDerivativesContextSourceAuditConfig
 var futuresDerivativesContextAuditConfigForRun = lab.DefaultFuturesDerivativesContextAuditConfig
+var futuresDerivativesNoTradeFilterPremiseAuditConfigForRun = lab.DefaultFuturesDerivativesNoTradeFilterPremiseAuditConfig
 
 func main() {
 	if err := run(); err != nil {
@@ -85,6 +86,7 @@ func runWithArgs(args []string) error {
 	futuresBTCRegimeETHSOLContextAudit := fs.Bool("futures-btc-regime-eth-sol-context-audit", false, "write zero-trade futures BTC regime plus ETH/SOL context diagnostics")
 	futuresDerivativesContextSourceAudit := fs.Bool("futures-derivatives-context-source-audit", false, "write zero-trade derivatives context source audit diagnostics")
 	futuresDerivativesContextAudit := fs.Bool("futures-derivatives-context-audit", false, "write zero-trade derivatives context separation audit diagnostics")
+	futuresDerivativesNoTradeFilterPremiseAudit := fs.Bool("futures-derivatives-no-trade-filter-premise-audit", false, "write zero-trade derivatives no-trade filter premise diagnostics")
 	srAudit := fs.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
 	srBoundaryAudit := fs.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
 	srBoundaryInspect := fs.Bool("sr-boundary-inspect", false, "write compact non-trading SR boundary candidate comparison diagnostics")
@@ -129,6 +131,9 @@ func runWithArgs(args []string) error {
 	}
 	if *futuresDerivativesContextAudit && !outDirWasSet {
 		*outDir = "results/futures-derivatives-context-audit"
+	}
+	if *futuresDerivativesNoTradeFilterPremiseAudit && !outDirWasSet {
+		*outDir = "results/futures-derivatives-no-trade-filter-premise-audit"
 	}
 
 	product := *sourceProduct
@@ -242,6 +247,17 @@ func runWithArgs(args []string) error {
 			return fmt.Errorf("-futures-derivatives-context-audit cannot be combined with other audit, detector, source-expansion, or diagnostic flags")
 		}
 	}
+	if *futuresDerivativesNoTradeFilterPremiseAudit {
+		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
+			return fmt.Errorf("-futures-derivatives-no-trade-filter-premise-audit requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
+		}
+		if tradeProducingFlagSelected {
+			return fmt.Errorf("-futures-derivatives-no-trade-filter-premise-audit cannot be combined with trade-producing prototype/backtest/optimization/replay/walk-forward flags")
+		}
+		if *detector || *detectorSweep || *detectorDurabilitySweep || *detectorContextRefinementAudit || *holdInsideDirectionalEdgeAudit || *holdInsideMidlineTransitionAudit || *holdInsideMidlineReactionAudit || *futuresImpulseAbsorptionAudit || *futuresRangeCandidateDiscoveryAudit || *futuresRangeUniverseDiscoveryAudit || *futuresHigherTFNestedRangeRotationAudit || *futuresRangeContextTriageAudit || *futuresRangeStateConstructionLoopAudit || *futuresRangeContextRouterAudit || *futuresRangeRouterRotationPremiseAudit || *futuresBTCRegimeETHSOLContextAudit || *futuresDerivativesContextSourceAudit || *futuresDerivativesContextAudit || *srAudit || *srBoundaryAudit || *srBoundaryInspect || *srRejectionTimingAudit || *srConfirmationTimingAudit || *srFalseBreakReclaimTimingAudit || *compressionBreakoutAudit || *rangeRegimeDurabilityAudit {
+			return fmt.Errorf("-futures-derivatives-no-trade-filter-premise-audit cannot be combined with other audit, detector, source-expansion, or diagnostic flags")
+		}
+	}
 
 	var strategy lab.Strategy = lab.EmptyStrategy{}
 	strategyName := strategy.Name()
@@ -353,6 +369,7 @@ func runWithArgs(args []string) error {
 	var rangeRouterRotationPremiseResult lab.FuturesRangeRouterRotationPremiseAuditResult
 	var btcRegimeETHSOLContextResult lab.FuturesBTCRegimeETHSOLContextAuditResult
 	var derivativesContextAuditResult lab.FuturesDerivativesContextAuditResult
+	var derivativesNoTradeFilterPremiseAuditResult lab.FuturesDerivativesNoTradeFilterPremiseAuditResult
 	var result lab.BacktestResult
 	if *futuresCleanBreakoutBaselineBacktest {
 		var err error
@@ -1482,6 +1499,78 @@ func runWithArgs(args []string) error {
 			len(derivativesContextAuditResult.MissingnessRows),
 			derivativesContextAuditResult.PassingCohorts,
 			derivativesContextAuditResult.StopState,
+		)
+	}
+	if *futuresDerivativesNoTradeFilterPremiseAudit {
+		derivCfg := futuresDerivativesNoTradeFilterPremiseAuditConfigForRun()
+		var err error
+		derivativesNoTradeFilterPremiseAuditResult, err = lab.RunFuturesDerivativesNoTradeFilterPremiseAudit(derivCfg, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+		artifacts := []struct {
+			name string
+			rows any
+		}{
+			{"futures_derivatives_no_trade_filter_premise_sources", derivativesNoTradeFilterPremiseAuditResult.SourceRows},
+			{"futures_derivatives_no_trade_filter_premise_coverage", derivativesNoTradeFilterPremiseAuditResult.CoverageRows},
+			{"futures_derivatives_no_trade_filter_premise_filter_definitions", derivativesNoTradeFilterPremiseAuditResult.FilterDefinitionRows},
+			{"futures_derivatives_no_trade_filter_premise_exact_candidates", derivativesNoTradeFilterPremiseAuditResult.ExactCandidateRows},
+			{"futures_derivatives_no_trade_filter_premise_canonical_union", derivativesNoTradeFilterPremiseAuditResult.CanonicalUnionRows},
+			{"futures_derivatives_no_trade_filter_premise_overlap", derivativesNoTradeFilterPremiseAuditResult.OverlapRows},
+			{"futures_derivatives_no_trade_filter_premise_veto_candidates", derivativesNoTradeFilterPremiseAuditResult.VetoCandidateRows},
+			{"futures_derivatives_no_trade_filter_premise_collateral_damage", derivativesNoTradeFilterPremiseAuditResult.CollateralRows},
+			{"futures_derivatives_no_trade_filter_premise_missingness", derivativesNoTradeFilterPremiseAuditResult.MissingnessRows},
+			{"futures_derivatives_no_trade_filter_premise_summary", derivativesNoTradeFilterPremiseAuditResult.SummaryRows},
+		}
+		for _, art := range artifacts {
+			if err := writeJSON(filepath.Join(*outDir, art.name+".json"), art.rows); err != nil {
+				return err
+			}
+		}
+		if err := writeFuturesDerivativesNoTradeFilterPremiseSourcesCSV(filepath.Join(*outDir, "futures_derivatives_no_trade_filter_premise_sources.csv"), derivativesNoTradeFilterPremiseAuditResult.SourceRows); err != nil {
+			return err
+		}
+		if err := writeFuturesDerivativesNoTradeFilterPremiseCoverageCSV(filepath.Join(*outDir, "futures_derivatives_no_trade_filter_premise_coverage.csv"), derivativesNoTradeFilterPremiseAuditResult.CoverageRows); err != nil {
+			return err
+		}
+		if err := writeFuturesDerivativesNoTradeFilterPremiseDefinitionsCSV(filepath.Join(*outDir, "futures_derivatives_no_trade_filter_premise_filter_definitions.csv"), derivativesNoTradeFilterPremiseAuditResult.FilterDefinitionRows); err != nil {
+			return err
+		}
+		if err := writeFuturesDerivativesNoTradeFilterPremiseExactCandidatesCSV(filepath.Join(*outDir, "futures_derivatives_no_trade_filter_premise_exact_candidates.csv"), derivativesNoTradeFilterPremiseAuditResult.ExactCandidateRows); err != nil {
+			return err
+		}
+		if err := writeFuturesDerivativesNoTradeFilterPremiseCanonicalUnionCSV(filepath.Join(*outDir, "futures_derivatives_no_trade_filter_premise_canonical_union.csv"), derivativesNoTradeFilterPremiseAuditResult.CanonicalUnionRows); err != nil {
+			return err
+		}
+		if err := writeFuturesDerivativesNoTradeFilterPremiseOverlapCSV(filepath.Join(*outDir, "futures_derivatives_no_trade_filter_premise_overlap.csv"), derivativesNoTradeFilterPremiseAuditResult.OverlapRows); err != nil {
+			return err
+		}
+		if err := writeFuturesDerivativesNoTradeFilterPremiseVetoCandidatesCSV(filepath.Join(*outDir, "futures_derivatives_no_trade_filter_premise_veto_candidates.csv"), derivativesNoTradeFilterPremiseAuditResult.VetoCandidateRows); err != nil {
+			return err
+		}
+		if err := writeFuturesDerivativesNoTradeFilterPremiseCollateralCSV(filepath.Join(*outDir, "futures_derivatives_no_trade_filter_premise_collateral_damage.csv"), derivativesNoTradeFilterPremiseAuditResult.CollateralRows); err != nil {
+			return err
+		}
+		if err := writeFuturesDerivativesNoTradeFilterPremiseMissingnessCSV(filepath.Join(*outDir, "futures_derivatives_no_trade_filter_premise_missingness.csv"), derivativesNoTradeFilterPremiseAuditResult.MissingnessRows); err != nil {
+			return err
+		}
+		if err := writeFuturesDerivativesNoTradeFilterPremiseSummaryCSV(filepath.Join(*outDir, "futures_derivatives_no_trade_filter_premise_summary.csv"), derivativesNoTradeFilterPremiseAuditResult.SummaryRows); err != nil {
+			return err
+		}
+		fmt.Printf("futures_derivatives_no_trade_filter_premise_audit source_rows=%d coverage_rows=%d filter_definition_rows=%d exact_candidate_rows=%d canonical_union_rows=%d overlap_rows=%d veto_candidate_rows=%d collateral_rows=%d missingness_rows=%d exact_candidates_passed=%d canonical_union_passed=%t stop_state=%s\n",
+			len(derivativesNoTradeFilterPremiseAuditResult.SourceRows),
+			len(derivativesNoTradeFilterPremiseAuditResult.CoverageRows),
+			len(derivativesNoTradeFilterPremiseAuditResult.FilterDefinitionRows),
+			len(derivativesNoTradeFilterPremiseAuditResult.ExactCandidateRows),
+			len(derivativesNoTradeFilterPremiseAuditResult.CanonicalUnionRows),
+			len(derivativesNoTradeFilterPremiseAuditResult.OverlapRows),
+			len(derivativesNoTradeFilterPremiseAuditResult.VetoCandidateRows),
+			len(derivativesNoTradeFilterPremiseAuditResult.CollateralRows),
+			len(derivativesNoTradeFilterPremiseAuditResult.MissingnessRows),
+			derivativesNoTradeFilterPremiseAuditResult.ExactCandidatesPassed,
+			derivativesNoTradeFilterPremiseAuditResult.CanonicalUnionPassed,
+			derivativesNoTradeFilterPremiseAuditResult.StopState,
 		)
 	}
 	var srRows []lab.SRAuditRow
@@ -3826,6 +3915,46 @@ func writeFuturesDerivativesContextAuditMissingnessCSV(path string, rows []lab.F
 }
 
 func writeFuturesDerivativesContextAuditSummaryCSV(path string, rows []lab.FuturesDerivativesContextAuditSummaryRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesDerivativesNoTradeFilterPremiseSourcesCSV(path string, rows []lab.FuturesDerivativesNoTradeFilterPremiseSourceRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesDerivativesNoTradeFilterPremiseCoverageCSV(path string, rows []lab.FuturesDerivativesNoTradeFilterPremiseCoverageRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesDerivativesNoTradeFilterPremiseDefinitionsCSV(path string, rows []lab.FuturesDerivativesNoTradeFilterPremiseDefinitionRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesDerivativesNoTradeFilterPremiseExactCandidatesCSV(path string, rows []lab.FuturesDerivativesNoTradeFilterPremiseExactCandidateRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesDerivativesNoTradeFilterPremiseCanonicalUnionCSV(path string, rows []lab.FuturesDerivativesNoTradeFilterPremiseCanonicalUnionRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesDerivativesNoTradeFilterPremiseOverlapCSV(path string, rows []lab.FuturesDerivativesNoTradeFilterPremiseOverlapRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesDerivativesNoTradeFilterPremiseVetoCandidatesCSV(path string, rows []lab.FuturesDerivativesNoTradeFilterPremiseVetoCandidateRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesDerivativesNoTradeFilterPremiseCollateralCSV(path string, rows []lab.FuturesDerivativesNoTradeFilterPremiseCollateralRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesDerivativesNoTradeFilterPremiseMissingnessCSV(path string, rows []lab.FuturesDerivativesNoTradeFilterPremiseMissingnessRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesDerivativesNoTradeFilterPremiseSummaryCSV(path string, rows []lab.FuturesDerivativesNoTradeFilterPremiseSummaryRow) error {
 	return writeJSONTaggedCSV(path, rows)
 }
 

@@ -231,6 +231,22 @@
   grids, replay, walk-forward, source/symbol expansion, paper/testnet/live paths,
   exchange API work, credentials, deploy files, strategy promotion, martingale,
   averaging down, two-exchange logic, or closed-family rescue.
+- The derivatives no-trade filter premise audit in
+  `docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_PREMISE_AUDIT_REVIEW.md`
+  was explicitly approved and implemented behind
+  `-futures-derivatives-no-trade-filter-premise-audit`. It passed at
+  `derivatives_context_no_trade_filter_premise_audit_passed_needs_filter_integration_spec`.
+  It reproduced all `5` BTCUSDT `15m` `h48` exact toxic rows, built a
+  de-duplicated canonical veto union (`1,823` rows, `1,241` no-trade toxic,
+  full toxic rate `0.680746`, min split toxic rate `0.665485`), reported
+  overlaps and collateral damage, and produced `0` trades.
+- Durable boundary from the no-trade filter premise audit: the only next
+  authorized direction is a separate docs-only filter integration spec. The
+  passing veto premise may not be treated as an entry signal, "trade the
+  opposite" rule, basis-tradability claim, P&L result, replay/walk-forward
+  result, rotation-entry rescue, source/symbol expansion, or strategy promotion.
+  The diagnostic rotation row remains diagnostic only, and no closed family is
+  reopened.
 - Spread-range source/engine work remains parked; it does not authorize
   implementation from current state. Volatility-aware exits remain unavailable
   until a future independent entry premise first shows gross edge before costs.

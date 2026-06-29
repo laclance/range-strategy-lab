@@ -1713,6 +1713,63 @@ func TestRunWithArgsFuturesDerivativesContextAuditFlagWritesArtifactsAndRejectsC
 	}
 }
 
+func TestRunWithArgsFuturesDerivativesNoTradeFilterPremiseAuditFlagWritesArtifactsAndRejectsConflicts(t *testing.T) {
+	dir := t.TempDir()
+	futuresPath := writeCLITestCSVN(t, dir, "btcusdt_futures_um_5m_no_trade_filter_cli.csv", 96)
+	oldCfg := futuresDerivativesNoTradeFilterPremiseAuditConfigForRun
+	futuresDerivativesNoTradeFilterPremiseAuditConfigForRun = func() lab.FuturesDerivativesNoTradeFilterPremiseAuditConfig {
+		cfg := lab.DefaultFuturesDerivativesNoTradeFilterPremiseAuditConfig()
+		cfg.RescueClosedFamily = true
+		return cfg
+	}
+	defer func() { futuresDerivativesNoTradeFilterPremiseAuditConfigForRun = oldCfg }()
+
+	defaultOutDir := filepath.Join(dir, "default")
+	if err := runWithArgs([]string{"-csv", futuresPath, "-source-product", lab.SourceProductBinanceUSDMFutures, "-out-dir", defaultOutDir}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(defaultOutDir, "futures_derivatives_no_trade_filter_premise_summary.csv")); !os.IsNotExist(err) {
+		t.Fatalf("default run should not write derivatives no-trade filter premise artifacts, stat err=%v", err)
+	}
+
+	outDir := filepath.Join(dir, "deriv-no-trade-filter")
+	if err := runWithArgs([]string{"-csv", futuresPath, "-source-product", lab.SourceProductBinanceUSDMFutures, "-futures-derivatives-no-trade-filter-premise-audit", "-out-dir", outDir}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{
+		"source_manifest.json", "summary.csv", "summary.json", "trades.json",
+		"futures_derivatives_no_trade_filter_premise_sources.csv", "futures_derivatives_no_trade_filter_premise_sources.json",
+		"futures_derivatives_no_trade_filter_premise_coverage.csv", "futures_derivatives_no_trade_filter_premise_coverage.json",
+		"futures_derivatives_no_trade_filter_premise_filter_definitions.csv", "futures_derivatives_no_trade_filter_premise_filter_definitions.json",
+		"futures_derivatives_no_trade_filter_premise_exact_candidates.csv", "futures_derivatives_no_trade_filter_premise_exact_candidates.json",
+		"futures_derivatives_no_trade_filter_premise_canonical_union.csv", "futures_derivatives_no_trade_filter_premise_canonical_union.json",
+		"futures_derivatives_no_trade_filter_premise_overlap.csv", "futures_derivatives_no_trade_filter_premise_overlap.json",
+		"futures_derivatives_no_trade_filter_premise_veto_candidates.csv", "futures_derivatives_no_trade_filter_premise_veto_candidates.json",
+		"futures_derivatives_no_trade_filter_premise_collateral_damage.csv", "futures_derivatives_no_trade_filter_premise_collateral_damage.json",
+		"futures_derivatives_no_trade_filter_premise_missingness.csv", "futures_derivatives_no_trade_filter_premise_missingness.json",
+		"futures_derivatives_no_trade_filter_premise_summary.csv", "futures_derivatives_no_trade_filter_premise_summary.json",
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, name)); err != nil {
+			t.Fatalf("expected derivatives no-trade filter premise artifact %s: %v", name, err)
+		}
+	}
+	data, err := os.ReadFile(filepath.Join(outDir, "trades.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var trades []lab.Trade
+	if err := json.Unmarshal(data, &trades); err != nil {
+		t.Fatal(err)
+	}
+	if len(trades) != 0 {
+		t.Fatalf("derivatives no-trade filter premise audit must remain zero-trade, got %d", len(trades))
+	}
+	conflictErr := runWithArgs([]string{"-csv", futuresPath, "-source-product", lab.SourceProductBinanceUSDMFutures, "-futures-derivatives-no-trade-filter-premise-audit", "-futures-derivatives-context-audit", "-out-dir", filepath.Join(dir, "conflict")})
+	if conflictErr == nil {
+		t.Fatalf("expected error combining derivatives no-trade filter premise audit with another audit flag")
+	}
+}
+
 func writeCLITestCSV(t *testing.T, dir string, name string) string {
 	return writeCLITestCSVN(t, dir, name, 2)
 }

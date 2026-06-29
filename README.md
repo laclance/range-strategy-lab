@@ -24,14 +24,17 @@ coverage). The approved zero-trade derivatives context audit
 (`-futures-derivatives-context-audit`) then passed, but only as context
 separation: it found `6` BTCUSDT `15m` basis/premium-conditioned cohorts (`5`
 no-trade/toxic and `1` rotation candidate), with no ETH/SOL passing cohorts and
-`0` trades. The docs-only strategy-premise spec selects only a BTCUSDT `15m`
-no-trade filter premise for a later approval-gated zero-trade audit; it rejects
-the rotation-entry and two-track alternatives for now. No entry, exit, P&L
-backtest, optimizer, replay, or walk-forward run is authorized by the router,
-premise spec, premise audit, pivot review, BTC/ETH/SOL reviews, derivatives
-source scope review, derivatives context review, or derivatives strategy-premise
-spec. Older spot-data outputs are historical context unless a futures rerun
-explicitly revalidates a specific conclusion.
+`0` trades. The docs-only strategy-premise spec selected only a BTCUSDT `15m`
+no-trade filter premise, and the approved zero-trade no-trade filter premise
+audit then passed at
+`derivatives_context_no_trade_filter_premise_audit_passed_needs_filter_integration_spec`.
+That pass authorizes only a later docs-only filter integration spec. No entry,
+exit, P&L backtest, optimizer, replay, or walk-forward run is authorized by the
+router, premise spec, premise audit, no-trade filter premise audit, pivot review,
+BTC/ETH/SOL reviews, derivatives source scope review, derivatives context
+review, or derivatives strategy-premise spec. Older spot-data outputs are
+historical context unless a futures rerun explicitly revalidates a specific
+conclusion.
 
 ## Purpose
 
@@ -119,7 +122,8 @@ review, read the docs in this order:
 63. [docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_CONTEXT_AUDIT_BRIEF.md](docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_CONTEXT_AUDIT_BRIEF.md)
 64. [docs/FUTURES_DERIVATIVES_CONTEXT_AUDIT_REVIEW.md](docs/FUTURES_DERIVATIVES_CONTEXT_AUDIT_REVIEW.md)
 65. [docs/FUTURES_DERIVATIVES_CONTEXT_STRATEGY_PREMISE_SPEC.md](docs/FUTURES_DERIVATIVES_CONTEXT_STRATEGY_PREMISE_SPEC.md)
-66. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+66. [docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_PREMISE_AUDIT_REVIEW.md](docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_PREMISE_AUDIT_REVIEW.md)
+67. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 

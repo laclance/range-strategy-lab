@@ -24,14 +24,24 @@ git history.
   acceptance, clean breakout continuation, hold-inside/midline, impulse
   absorption, higher-timeframe nested range rotation, `range_occupancy_rotation_v1`,
   and range quality/session/failure-mode triage cohorts in their reviewed forms.
-- The latest completed doc is
+- The latest completed research doc is
+  `docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_PREMISE_AUDIT_REVIEW.md`.
+  The user explicitly approved implementing the zero-trade derivatives no-trade
+  filter premise audit, and it passed at
+  `derivatives_context_no_trade_filter_premise_audit_passed_needs_filter_integration_spec`.
+  The audit (`-futures-derivatives-no-trade-filter-premise-audit`) reproduced
+  all `5` selected BTCUSDT `15m` `h48` exact toxic rows, built a de-duplicated
+  canonical veto union with `1,823` rows, reported `821` overlap rows and
+  collateral damage, and produced `0` trades. This is a filter-integration
+  premise only, not a strategy or P&L result.
+- The prior completed doc is
   `docs/FUTURES_DERIVATIVES_CONTEXT_STRATEGY_PREMISE_SPEC.md`. The user
   explicitly approved the docs-only strategy-premise spec, and it stopped at
   `derivatives_context_strategy_premise_spec_ready_for_user_approval`. The spec
-  selects one later premise track: a BTCUSDT `15m` derivatives-context no-trade
-  filter audit. It rejects the rotation-entry and two-track alternatives for now:
-  the five toxic/no-trade cohorts are coherent enough for a zero-trade filter
-  audit, while the single rotation candidate remains diagnostic only.
+  selected one later premise track: a BTCUSDT `15m` derivatives-context no-trade
+  filter audit. It rejected the rotation-entry and two-track alternatives: the
+  five toxic/no-trade cohorts were coherent enough for a zero-trade filter audit,
+  while the single rotation candidate remained diagnostic only.
 - The prior completed research doc is
   `docs/FUTURES_DERIVATIVES_CONTEXT_AUDIT_REVIEW.md`. The user explicitly
   approved implementing the zero-trade derivatives context audit, and it passed
@@ -60,9 +70,9 @@ git history.
   `derivatives_context_source_materialization_passed_ready_for_source_audit_approval`;
   `729` checksum-verified raw zips, `9` normalized CSVs, and `5` manifests live
   under `../binance-bot/data/derivatives/`.
-- The next derivatives step is now an approval-gated implementation of the
-  zero-trade no-trade filter premise audit. Neither the passing source audit,
-  context-audit brief, context-audit review, nor strategy-premise spec authorizes
+- The next derivatives step is now a docs-only filter integration spec approval
+  gate. Neither the passing source audit, context-audit brief, context-audit
+  review, strategy-premise spec, nor no-trade filter premise audit authorizes
   entries, exits, P&L, replay, walk-forward, packaging, paper/testnet/live paths,
   exchange API work, credentials, deploy files, or promotion.
 - The prior dependency docs are
@@ -101,6 +111,77 @@ git history.
 - `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt.
 
 ## 2026-06-29
+
+Derivatives context no-trade filter premise audit implementation:
+
+- Added implementation review:
+  `docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_PREMISE_AUDIT_REVIEW.md`.
+- Stop state:
+  `derivatives_context_no_trade_filter_premise_audit_passed_needs_filter_integration_spec`.
+- User explicitly approved implementing the zero-trade derivatives no-trade
+  filter premise audit selected by
+  `docs/FUTURES_DERIVATIVES_CONTEXT_STRATEGY_PREMISE_SPEC.md`.
+- Added CLI flag `-futures-derivatives-no-trade-filter-premise-audit` (default
+  out-dir `results/futures-derivatives-no-trade-filter-premise-audit`) plus
+  audit engine/tests in
+  `internal/lab/futures_derivatives_no_trade_filter_premise_audit.go`,
+  `internal/lab/futures_derivatives_no_trade_filter_premise_audit_test.go`, and
+  `cmd/rangelab/main_test.go`.
+- Inputs stayed within the approved BTCUSDT source scope:
+  `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`,
+  `../binance-bot/data/derivatives/binance_usdm_mark_price_klines_5m_BTCUSDT_2021_2026.csv`,
+  `../binance-bot/data/derivatives/binance_usdm_index_price_klines_5m_BTCUSDT_2021_2026.csv`,
+  and
+  `../binance-bot/data/derivatives/binance_usdm_premium_index_klines_5m_BTCUSDT_2021_2026.csv`.
+- Source facts reproduced: BTCUSDT candle anchor `573,984` rows, `gap_count=0`,
+  `duplicate_count=0`, `zero_volume_count=66`; mark rows `571,675`, gaps `6`,
+  SHA-256
+  `424c05ca880a31270eea1286d6cdd96ac1132d848e8f5e9d6b3b7177bb7c2858`;
+  index rows `570,812`, gaps `8`, SHA-256
+  `7ba5a375311e0324dab38f18c2a7137376b619ce63cfb01a17e5684c58390aca`;
+  premium rows `571,959`, gaps `7`, SHA-256
+  `094e610617f812f032e6a68b3ae6186b20359592415cdb678845c5d287ec298c`.
+- Anti-lookahead model carried forward the conservative one-`5m` lag
+  (`source_close_time + 5m <= decision_candle_close_time`), exact closed source
+  rows, no fill/interpolation/nearest-future joins, and forward labels only as
+  evaluation metadata. Missing lagged context was skipped and counted
+  (`311` missing BTCUSDT `15m` basis-context rows out of `24,067` state rows).
+- Result counts:
+  `source_rows=4`, `coverage_rows=7`, `filter_definition_rows=5`,
+  `exact_candidate_rows=20`, `canonical_union_rows=4`, `overlap_rows=40`,
+  `veto_candidate_rows=1823`, `collateral_rows=37`, `missingness_rows=4`,
+  `exact_candidates_passed=5`, `canonical_union_passed=true`, `trades=0`.
+- Exact candidates reproduced the five selected toxic rows (`515`, `622`,
+  `356`, `613`, and `538` full-sample rows; weakest splits `110`, `142`, `62`,
+  `124`, and `115` respectively). The diagnostic rotation row was not selected
+  and not converted into an entry premise.
+- Canonical union:
+  `btc_15m_basis_discount_no_trade_veto_v1`; full rows `1,823`; overlap rows
+  `821`; nested trend-down premium overlap rows `515`; no-trade toxic rows
+  `1,241`; full toxic rate `0.680746`; min split toxic rate `0.665485`; weakest
+  split rows `387`; full toxic improvement versus local-only baseline
+  `0.046269`. Collateral was reported (`311` rotation-useful and `271`
+  continuation-useful full-sample rows blocked).
+- Common outputs stayed zero-trade compatible:
+  `summary.csv`/`summary.json` report `0` trades and `trades.json` is empty.
+  This pass authorizes only a later docs-only filter integration spec, not an
+  entry, exit, P&L backtest, optimizer, replay, walk-forward, paper/testnet/live
+  path, exchange API, credential, deploy file, strategy promotion, martingale,
+  averaging down, two-exchange logic, or closed-family rescue.
+- Commands run:
+  - `gofmt -w internal/lab/futures_derivatives_no_trade_filter_premise_audit.go internal/lab/futures_derivatives_no_trade_filter_premise_audit_test.go cmd/rangelab/main.go cmd/rangelab/main_test.go`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -futures-derivatives-no-trade-filter-premise-audit -out-dir results/futures-derivatives-no-trade-filter-premise-audit`
+  - `wc -l results/futures-derivatives-no-trade-filter-premise-audit/*.csv`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+- Verification outcomes: all package tests passed; the audit produced the
+  passing stop state above; generated CSV line count total was `1,971`
+  including headers; reference scan found canonical `memory/NEXT_CODEX_BRIEF.md`
+  references and historical/checklist mentions only; `git diff --check` passed;
+  pre-commit `git status --short` showed only intended code, docs, and memory
+  changes.
 
 Derivatives context strategy-premise spec:
 
