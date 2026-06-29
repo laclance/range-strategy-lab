@@ -159,6 +159,35 @@
   context-audit brief. Mark-minus-index basis derivation remains deferred to
   that later context stage and was intentionally not computed as an artifact in
   the source audit.
+- The derivatives context zero-trade context-audit brief in
+  `docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_CONTEXT_AUDIT_BRIEF.md` stopped at
+  `derivatives_context_zero_trade_context_audit_brief_ready_for_user_approval`.
+  It defines the only later derivatives context-audit question: whether
+  mark-minus-index basis, premium-index level, or basis-change buckets known at
+  closed decision-candle time improve separation of BTCUSDT/ETHUSDT/SOLUSDT local
+  range states (usable, toxic, rotation, continuation, no-trade) beyond the local
+  price/volume state alone. The later audit must not test basis tradability and
+  must not measure entry/exit/P&L. Approved later inputs are only the `9`
+  validated derivatives CSVs plus the `3` candle anchors; carried-forward facts
+  are SHA-256 provenance, the conservative one-`5m`-interval lag
+  (`source_close_time + 5m <= decision_candle_close_time`), exact closed-interval
+  joins, no forward fill/interpolation/nearest-future joins, and bounded recorded
+  missingness with a required basis context coverage floor of `0.994472`.
+- Durable boundary for that later audit: basis/premium is treated as an
+  orthogonal source (perp-vs-index dislocation), materially different from the
+  closed price-only and BTC-regime families. All three symbols may be local
+  range-state authority candidates there, but the audit must reject itself
+  (orthogonality gate plus
+  `derivatives_context_zero_trade_context_audit_rejected_closed_family_rescue`)
+  if basis buckets are collinear with or dominated by the local price/volume
+  state, and it must not reopen, retune, rename, gate-relax, or promote any
+  closed family. Forward labels stay in label/cohort/ranking/summary artifacts
+  only, basis/premium context is built only from lagged closed source rows,
+  missing context produces missingness/skip rows (never silent defaults), and
+  `summary.json`/`summary.csv`/`trades.json` stay zero-trade compatible. The
+  brief authorizes no implementation; the next derivatives step is explicit user
+  approval of the context-audit implementation, which would reuse the passed
+  source audit's loader and anti-lookahead alignment and stay zero-trade.
 - Spread-range source/engine work remains parked; it does not authorize
   implementation from current state. Volatility-aware exits remain unavailable
   until a future independent entry premise first shows gross edge before costs.

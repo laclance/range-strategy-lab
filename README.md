@@ -20,8 +20,12 @@ source files for BTCUSDT/ETHUSDT/SOLUSDT now exist under
 (`-futures-derivatives-context-source-audit`) then passed: it validated those
 nine files, SHA-256-bound their provenance, and proved anti-lookahead alignment
 to the 5m candle anchors (all six required mark/index streams above 0.99
-coverage), so it now needs a separate zero-trade context-audit brief and
-approval. No entry, exit, P&L backtest, optimizer, replay, or
+coverage). The follow-up zero-trade derivatives context-audit brief
+(`docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_CONTEXT_AUDIT_BRIEF.md`) is now
+written and waits for explicit user approval before any implementation; it asks
+only whether mark-minus-index basis / premium context buckets, known at closed
+decision-candle time, improve separation of BTC/ETH/SOL local range states. No
+entry, exit, P&L backtest, optimizer, replay, or
 walk-forward run is authorized by the router, premise spec, premise audit,
 pivot review, BTC/ETH/SOL reviews, or derivatives source scope review. Older
 spot-data outputs are historical context unless a futures rerun explicitly
@@ -110,7 +114,8 @@ review, read the docs in this order:
 60. [docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_PLAN.md](docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_PLAN.md)
 61. [docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_REVIEW.md](docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_REVIEW.md)
 62. [docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_AUDIT_REVIEW.md](docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_AUDIT_REVIEW.md)
-63. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+63. [docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_CONTEXT_AUDIT_BRIEF.md](docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_CONTEXT_AUDIT_BRIEF.md)
+64. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 
