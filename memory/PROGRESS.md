@@ -25,12 +25,18 @@ git history.
   absorption, higher-timeframe nested range rotation, `range_occupancy_rotation_v1`,
   and range quality/session/failure-mode triage cohorts in their reviewed forms.
 - The latest completed doc is
-  `docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_CONTEXT_AUDIT_BRIEF.md`, a
-  docs-only brief that converts the passed source audit into a decision-complete
-  plan for a later zero-trade derivatives context audit. It stopped at
-  `derivatives_context_zero_trade_context_audit_brief_ready_for_user_approval`
-  and authorizes no implementation; the next step is explicit user approval or
-  rejection of the context-audit implementation scope.
+  `docs/FUTURES_DERIVATIVES_CONTEXT_AUDIT_REVIEW.md`. The user explicitly
+  approved implementing the zero-trade derivatives context audit, and it passed
+  at
+  `derivatives_context_zero_trade_context_audit_passed_needs_strategy_premise_spec`.
+  The audit (`-futures-derivatives-context-audit`) used only the `9` validated
+  derivatives mark/index/premium `5m` CSVs plus the `3` candle anchors, kept the
+  conservative one-`5m` lag and no-fill/no-interp/no-nearest-future policy, and
+  produced `6` passing BTCUSDT `15m` separation cohorts (`5` no-trade/toxic,
+  `1` rotation candidate). ETHUSDT and SOLUSDT produced `0` passing cohorts.
+  Common outputs stayed zero-trade. The next step is a separate strategy-premise
+  spec approval gate, not entries, exits, P&L, replay, walk-forward, or
+  promotion.
 - The prior completed research doc is
   `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_AUDIT_REVIEW.md`. The user explicitly
   approved implementing the zero-trade derivatives context source audit, and it
@@ -48,12 +54,11 @@ git history.
   `derivatives_context_source_materialization_passed_ready_for_source_audit_approval`;
   `729` checksum-verified raw zips, `9` normalized CSVs, and `5` manifests live
   under `../binance-bot/data/derivatives/`.
-- The next derivatives step is now the approval-gated context-audit
-  implementation: the context-audit brief is written
-  (`docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_CONTEXT_AUDIT_BRIEF.md`) and
-  waits for explicit user approval before any code. Neither the passing source
-  audit nor this brief authorizes context features, labels, cohorts, rankings,
-  entries, exits, P&L, replay, walk-forward, or promotion.
+- The next derivatives step is now an approval-gated strategy-premise spec from
+  the `6` passing BTCUSDT `15m` context cohorts. Neither the passing source
+  audit, context-audit brief, nor context-audit review authorizes entries,
+  exits, P&L, replay, walk-forward, packaging, paper/testnet/live paths,
+  exchange API work, credentials, deploy files, or promotion.
 - The prior dependency docs are
   `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md` and
   `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
@@ -82,15 +87,71 @@ git history.
   paper/testnet/live paths, exchange API, credentials, deploy files, broad
   mining, martingale, averaging down, or two-exchange logic.
 - Parked future directions remain documented but not implementation-ready:
-  derivatives context source materialization has now executed and passed, so
-  durable mark/index/premium `5m` source files exist, but the zero-trade source
-  audit over them still needs separate explicit approval; spread-range/pair-range
-  is parked behind source/engine complexity, and volatility-aware exits remain
-  rejected until a new independent entry premise first shows gross edge before
-  costs.
+  spread-range/pair-range is parked behind source/engine complexity, broad
+  derivatives source expansion should stop unless a future strategy-premise spec
+  creates a specific need, and volatility-aware exits remain rejected until a new
+  independent entry premise first shows gross edge before costs.
 - `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt.
 
 ## 2026-06-29
+
+Derivatives context zero-trade audit implementation:
+
+- Added implementation review:
+  `docs/FUTURES_DERIVATIVES_CONTEXT_AUDIT_REVIEW.md`.
+- Stop state:
+  `derivatives_context_zero_trade_context_audit_passed_needs_strategy_premise_spec`.
+- User explicitly approved implementing the zero-trade derivatives context audit
+  from
+  `docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_CONTEXT_AUDIT_BRIEF.md`.
+- Added CLI flag `-futures-derivatives-context-audit` (default out-dir
+  `results/futures-derivatives-context-audit`) plus audit engine/tests in
+  `internal/lab/futures_derivatives_context_audit.go`,
+  `internal/lab/futures_derivatives_context_audit_test.go`, and
+  `cmd/rangelab/main_test.go`.
+- Inputs stayed exactly within scope: the `9` validated derivatives
+  mark/index/premium `5m` source CSVs under
+  `../binance-bot/data/derivatives/` plus the `3` Binance USDT-M futures
+  BTCUSDT/ETHUSDT/SOLUSDT `5m` candle anchors. No source downloads, network
+  requests, data writes under `../binance-bot/data/derivatives/`, or new source
+  families were used.
+- Anti-lookahead model carried forward the source audit's conservative
+  one-`5m` lag (`source_close_time + 5m <= decision_candle_close_time`), exact
+  closed-interval joins, no forward fill/interpolation/nearest-future joins, and
+  missing context as recorded skip rows. Forward labels remained metadata only
+  in label/cohort/ranking/summary artifacts.
+- Results: `source_rows=12`, `coverage_rows=18`,
+  `basis_feature_rows=83,004`, `local_state_rows=83,640`,
+  `label_rows=249,012`, `cohort_rows=512,190`, `ranking_rows=181,827`,
+  `missingness_rows=36`, `passing_cohorts=6`, `trades=0`.
+- Passing cohorts were narrow: all `6` are BTCUSDT `15m`; `5` are
+  no-trade/toxic separation cohorts and `1` is a rotation candidate. ETHUSDT and
+  SOLUSDT had `0` passing cohorts. Rows ranked after the passing set mostly
+  failed inadequate-count gates.
+- Coverage/missingness: required source lag coverage stayed at or above the
+  rounded `0.994472` floor; derived local-state subset coverage was recorded
+  separately (minimum `0.982930`, BTCUSDT `4h`) and missing rows were skipped,
+  never filled or encoded as default context.
+- Common outputs stayed zero-trade compatible (`summary.csv`/`summary.json`
+  report `0` trades; `trades.json` contains no trades). The audit does not
+  authorize entries, exits, P&L backtests, optimizers, replay, walk-forward,
+  source expansion, paper/testnet/live paths, exchange API work, credentials,
+  deploy files, or promotion.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to the strategy-premise spec approval
+  gate.
+- Commands run:
+  - `gofmt -w internal/lab/futures_derivatives_context_audit.go internal/lab/futures_derivatives_context_audit_test.go cmd/rangelab/main.go cmd/rangelab/main_test.go`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -futures-derivatives-context-audit -out-dir results/futures-derivatives-context-audit`
+  - `wc -l results/futures-derivatives-context-audit/*.csv`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+- Verification outcomes: tests passed; the audit reproduced the passing stop
+  state and counts above; generated CSV line counts totaled `1,109,870`
+  including headers; reference scan found canonical
+  `memory/NEXT_CODEX_BRIEF.md` references and checklist mentions only;
+  `git diff --check` passed.
 
 Derivatives context zero-trade context-audit brief:
 
@@ -824,25 +885,26 @@ Futures range post-rotation premise failure pivot review:
 
 Use `README.md` as the full docs index. The most relevant current docs are:
 
-1. `docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_CONTEXT_AUDIT_BRIEF.md`.
-2. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_AUDIT_REVIEW.md`.
-3. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_REVIEW.md`.
-4. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_PLAN.md`.
-5. `docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_SOURCE_AUDIT_BRIEF.md`.
-6. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_SCOPE_REVIEW.md`.
-7. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md`.
-8. `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_REVIEW.md`.
-9. `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SCOPE_REVIEW.md`.
-10. `docs/FUTURES_RANGE_POST_ROTATION_PREMISE_FAILURE_PIVOT_REVIEW.md`.
-11. `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_AUDIT_REVIEW.md`.
-12. `docs/FUTURES_RANGE_STRATEGY_FUTURE_DIRECTIONS_RESEARCH_MAP.md`.
-13. `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
-14. `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_REVIEW.md`.
-15. `docs/FUTURES_RANGE_CONTEXT_TRIAGE_AUDIT_REVIEW.md`.
-16. `docs/FUTURES_RANGE_FIRST_OCCUPANCY_ROTATION_V1_OPTIMIZATION_REVIEW.md`.
-17. `docs/FUTURES_RANGE_UNIVERSE_STRUCTURED_COMPRESSION_WALK_FORWARD_REVIEW.md`.
-18. `docs/FUTURES_RANGE_UNIVERSE_BREAKOUT_RETEST_ACCEPTANCE_BASELINE_REVIEW.md`.
-19. `memory/NEXT_CODEX_BRIEF.md`.
+1. `docs/FUTURES_DERIVATIVES_CONTEXT_AUDIT_REVIEW.md`.
+2. `docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_CONTEXT_AUDIT_BRIEF.md`.
+3. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_AUDIT_REVIEW.md`.
+4. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_REVIEW.md`.
+5. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_MATERIALIZATION_PLAN.md`.
+6. `docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_SOURCE_AUDIT_BRIEF.md`.
+7. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_SCOPE_REVIEW.md`.
+8. `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_EXPANSION_SPEC.md`.
+9. `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_ZERO_TRADE_AUDIT_REVIEW.md`.
+10. `docs/FUTURES_BTC_REGIME_ETH_SOL_CONTEXT_SCOPE_REVIEW.md`.
+11. `docs/FUTURES_RANGE_POST_ROTATION_PREMISE_FAILURE_PIVOT_REVIEW.md`.
+12. `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_AUDIT_REVIEW.md`.
+13. `docs/FUTURES_RANGE_STRATEGY_FUTURE_DIRECTIONS_RESEARCH_MAP.md`.
+14. `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
+15. `docs/FUTURES_RANGE_STATE_CONSTRUCTION_LOOP_REVIEW.md`.
+16. `docs/FUTURES_RANGE_CONTEXT_TRIAGE_AUDIT_REVIEW.md`.
+17. `docs/FUTURES_RANGE_FIRST_OCCUPANCY_ROTATION_V1_OPTIMIZATION_REVIEW.md`.
+18. `docs/FUTURES_RANGE_UNIVERSE_STRUCTURED_COMPRESSION_WALK_FORWARD_REVIEW.md`.
+19. `docs/FUTURES_RANGE_UNIVERSE_BREAKOUT_RETEST_ACCEPTANCE_BASELINE_REVIEW.md`.
+20. `memory/NEXT_CODEX_BRIEF.md`.
 
 Historical details remain in the focused docs and git history rather than this
 always-read memory file.

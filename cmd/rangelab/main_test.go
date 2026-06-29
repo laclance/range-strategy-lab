@@ -1570,6 +1570,149 @@ func TestRunWithArgsFuturesDerivativesContextSourceAuditFlagWritesArtifactsAndRe
 	}
 }
 
+func TestRunWithArgsFuturesDerivativesContextAuditFlagWritesArtifactsAndRejectsConflicts(t *testing.T) {
+	dir := t.TempDir()
+	futuresPath := writeCLITestCSVN(t, dir, "btcusdt_futures_um_5m_deriv_context_cli.csv", 96)
+
+	srcDir, err := os.MkdirTemp(".", "derivcontextcli")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.RemoveAll(srcDir) })
+	srcAbs, err := filepath.Abs(srcDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	const n = 96
+	symbols := []string{"BTCUSDT", "ETHUSDT", "SOLUSDT"}
+	anchors := map[string]string{}
+	for _, sym := range symbols {
+		anchors[sym] = writeCLITestCSVN(t, srcAbs, strings.ToLower(sym)+"_futures_um_5m_deriv_context_anchor.csv", n)
+	}
+	sourceFamilies := []struct {
+		filePart string
+		family   string
+		archive  string
+		required bool
+	}{
+		{"mark_price_klines", "mark_price_klines", "markPriceKlines", true},
+		{"index_price_klines", "index_price_klines", "indexPriceKlines", true},
+		{"premium_index_klines", "premium_index_klines", "premiumIndexKlines", false},
+	}
+	var derivSources []lab.FuturesDerivativesContextSourceFileConfig
+	for _, sym := range symbols {
+		for _, family := range sourceFamilies {
+			path := writeCLIDerivSourceCSV(t, srcAbs, "binance_usdm_"+family.filePart+"_5m_"+sym+"_context_cli.csv", n)
+			derivSources = append(derivSources, lab.FuturesDerivativesContextSourceFileConfig{
+				Symbol:           sym,
+				SourceFamily:     family.family,
+				ArchiveFamily:    family.archive,
+				Path:             path,
+				Required:         family.required,
+				AllowNonPositive: !family.required,
+			})
+		}
+	}
+
+	oldCfg := futuresDerivativesContextAuditConfigForRun
+	futuresDerivativesContextAuditConfigForRun = func() lab.FuturesDerivativesContextAuditConfig {
+		stateCfg := lab.DefaultFuturesRangeStateConstructionLoopAuditConfig()
+		stateCfg.SkipSourceFactCheck = true
+		stateCfg.SkipCoverageCountCheck = true
+		stateCfg.DetectorLookbackBarsOverride = 1
+		stateCfg.DetectorMinConsecutiveBars = 1
+		stateCfg.ShortWindowBars = 2
+		stateCfg.MediumWindowBars = 4
+		stateCfg.FeatureLookbackBars = 4
+		stateCfg.LongLookbackDays = 1
+		stateCfg.Timeframes = []string{lab.RangeDiscoveryTimeframe15m}
+		stateCfg.Horizons15M = []int{2}
+		return lab.FuturesDerivativesContextAuditConfig{
+			SourceAuditConfig: lab.FuturesDerivativesContextSourceAuditConfig{
+				DerivativeSources:        derivSources,
+				Anchors:                  []lab.FuturesRangeUniverseSourceConfig{{Symbol: "BTCUSDT", Path: anchors["BTCUSDT"], ApprovedPath: anchors["BTCUSDT"], SkipSplitEligibilityCheck: true}, {Symbol: "ETHUSDT", Path: anchors["ETHUSDT"], ApprovedPath: anchors["ETHUSDT"], SkipSplitEligibilityCheck: true}, {Symbol: "SOLUSDT", Path: anchors["SOLUSDT"], ApprovedPath: anchors["SOLUSDT"], SkipSplitEligibilityCheck: true}},
+				MinAlignedCoverage:       0.5,
+				ConservativeLagIntervals: 1,
+				EraStartMs:               1609459200000,
+				EraEndMs:                 1609459200000 + int64(n-1)*300000,
+			},
+			LocalSources: []lab.FuturesBTCRegimeETHSOLContextSourceConfig{
+				{Symbol: "BTCUSDT", Path: anchors["BTCUSDT"], ApprovedPath: anchors["BTCUSDT"], SkipSourceFactCheck: true, SkipSplitEligibilityCheck: true},
+				{Symbol: "ETHUSDT", Path: anchors["ETHUSDT"], ApprovedPath: anchors["ETHUSDT"], SkipSourceFactCheck: true, SkipSplitEligibilityCheck: true},
+				{Symbol: "SOLUSDT", Path: anchors["SOLUSDT"], ApprovedPath: anchors["SOLUSDT"], SkipSourceFactCheck: true, SkipSplitEligibilityCheck: true},
+			},
+			StateConfig:                        stateCfg,
+			MinBasisContextCoverage:            0.5,
+			BasisChangeLookbackIntervals:       2,
+			BasisVolatilityLookbackIntervals:   4,
+			MinFullCohortRows:                  1,
+			MinSplitCohortRows:                 1,
+			MaxSplitContributionRate:           1,
+			MinUsefulRateFull:                  0.1,
+			MinUsefulRateSplit:                 0.1,
+			MaxToxicRateFull:                   1,
+			MaxToxicRateSplit:                  1,
+			MinUsefulMinusToxicMarginFull:      -1,
+			MinUsefulMinusToxicMarginSplit:     -1,
+			MinToxicRateFull:                   0.1,
+			MinToxicRateSplit:                  0.1,
+			MinContextUsefulImprovementFull:    -1,
+			MinContextUsefulImprovementSplit:   -1,
+			MinContextMarginImprovementFull:    -1,
+			MinContextMarginImprovementSplit:   -1,
+			MinContextToxicImprovementFull:     -1,
+			MinContextToxicImprovementSplit:    -1,
+			MaxBucketShareOfLocalBaselineFull:  1,
+			MaxBucketShareOfLocalBaselineSplit: 1,
+		}
+	}
+	defer func() { futuresDerivativesContextAuditConfigForRun = oldCfg }()
+
+	defaultOutDir := filepath.Join(dir, "default")
+	if err := runWithArgs([]string{"-csv", futuresPath, "-source-product", lab.SourceProductBinanceUSDMFutures, "-out-dir", defaultOutDir}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(defaultOutDir, "futures_derivatives_context_summary.csv")); !os.IsNotExist(err) {
+		t.Fatalf("default run should not write derivatives context audit artifacts, stat err=%v", err)
+	}
+
+	outDir := filepath.Join(dir, "deriv-context-audit")
+	if err := runWithArgs([]string{"-csv", futuresPath, "-source-product", lab.SourceProductBinanceUSDMFutures, "-futures-derivatives-context-audit", "-out-dir", outDir}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{
+		"source_manifest.json", "summary.csv", "summary.json", "trades.json",
+		"futures_derivatives_context_sources.csv", "futures_derivatives_context_sources.json",
+		"futures_derivatives_context_coverage.csv", "futures_derivatives_context_coverage.json",
+		"futures_derivatives_context_basis_features.csv", "futures_derivatives_context_basis_features.json",
+		"futures_derivatives_context_local_states.csv", "futures_derivatives_context_local_states.json",
+		"futures_derivatives_context_labels.csv", "futures_derivatives_context_labels.json",
+		"futures_derivatives_context_cohorts.csv", "futures_derivatives_context_cohorts.json",
+		"futures_derivatives_context_rankings.csv", "futures_derivatives_context_rankings.json",
+		"futures_derivatives_context_missingness.csv", "futures_derivatives_context_missingness.json",
+		"futures_derivatives_context_summary.csv", "futures_derivatives_context_summary.json",
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, name)); err != nil {
+			t.Fatalf("expected derivatives context audit artifact %s: %v", name, err)
+		}
+	}
+	data, err := os.ReadFile(filepath.Join(outDir, "trades.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var trades []lab.Trade
+	if err := json.Unmarshal(data, &trades); err != nil {
+		t.Fatal(err)
+	}
+	if len(trades) != 0 {
+		t.Fatalf("derivatives context audit must remain zero-trade, got %d", len(trades))
+	}
+	conflictErr := runWithArgs([]string{"-csv", futuresPath, "-source-product", lab.SourceProductBinanceUSDMFutures, "-futures-derivatives-context-audit", "-futures-derivatives-context-source-audit", "-out-dir", filepath.Join(dir, "conflict")})
+	if conflictErr == nil {
+		t.Fatalf("expected error combining derivatives context audit with another audit flag")
+	}
+}
+
 func writeCLITestCSV(t *testing.T, dir string, name string) string {
 	return writeCLITestCSVN(t, dir, name, 2)
 }

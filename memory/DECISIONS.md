@@ -184,10 +184,31 @@
   closed family. Forward labels stay in label/cohort/ranking/summary artifacts
   only, basis/premium context is built only from lagged closed source rows,
   missing context produces missingness/skip rows (never silent defaults), and
-  `summary.json`/`summary.csv`/`trades.json` stay zero-trade compatible. The
-  brief authorizes no implementation; the next derivatives step is explicit user
-  approval of the context-audit implementation, which would reuse the passed
-  source audit's loader and anti-lookahead alignment and stay zero-trade.
+  `summary.json`/`summary.csv`/`trades.json` stay zero-trade compatible. At
+  brief closeout, it authorized no implementation and required explicit user
+  approval before the context-audit implementation.
+- The derivatives context zero-trade audit in
+  `docs/FUTURES_DERIVATIVES_CONTEXT_AUDIT_REVIEW.md` was explicitly approved and
+  implemented behind `-futures-derivatives-context-audit`. It passed at
+  `derivatives_context_zero_trade_context_audit_passed_needs_strategy_premise_spec`.
+  It used only the `9` validated derivatives mark/index/premium `5m` CSVs plus
+  the `3` candle anchors, enforced the conservative one-`5m` source lag, kept
+  forward labels out of feature/state/gating inputs, recorded missing context as
+  skips with no fill/interpolation/nearest-future joins, and produced `0`
+  trades.
+- Durable boundary from that pass: only the `6` passing BTCUSDT `15m`
+  derivatives-context cohorts are candidates for a later strategy-premise spec
+  (`5` no-trade/toxic, `1` rotation candidate). ETHUSDT and SOLUSDT produced
+  `0` passing cohorts and are not promoted. The pass means basis/premium context
+  showed separation beyond the local price/volume state under the declared
+  gates; it does not authorize entries, exits, P&L backtests, optimizers, replay,
+  walk-forward, source expansion, paper/testnet/live paths, exchange API work,
+  credentials, deploy files, or strategy promotion.
+- A future strategy-premise spec must decide whether to pursue a no-trade filter
+  premise, a rotation premise, both as separate tracks, or no further strategy
+  work. It must not reopen, retune, rename, gate-relax, or promote any closed
+  family and must preserve the zero-trade context audit as separation evidence
+  only.
 - Spread-range source/engine work remains parked; it does not authorize
   implementation from current state. Volatility-aware exits remain unavailable
   until a future independent entry premise first shows gross edge before costs.
@@ -245,10 +266,12 @@ The following specs are parked and not implementation-ready from current state:
   through the docs-only source scope and source-audit brief boundary in
   `docs/FUTURES_DERIVATIVES_CONTEXT_SOURCE_SCOPE_REVIEW.md` and
   `docs/FUTURES_DERIVATIVES_CONTEXT_ZERO_TRADE_SOURCE_AUDIT_BRIEF.md`; the
-  next allowed step requires explicit user approval for a zero-trade source
-  audit implementation. It is market-data context only and does not permit API
-  keys, private endpoints, live/paper/testnet, exchange order paths, context
-  features, labels, cohorts, rankings, or strategy work.
+  source materialization, source audit, context-audit brief, and context audit
+  have since executed in reviewed form. Further derivatives source expansion is
+  not an automatic next step and may start only if a later strategy-premise spec
+  creates a specific approved need. It is market-data context only and does not
+  permit API keys, private endpoints, live/paper/testnet, exchange order paths,
+  entries, exits, P&L backtests, replay, walk-forward, or promotion.
 
 ## Exclusion Decisions
 
