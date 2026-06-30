@@ -1,6 +1,6 @@
 package lab
 
-import "strings"
+import "time"
 
 type RangeOptimizationWorkbenchTrialStrategy struct {
 	spec   RangeOptimizationWorkbenchTrialSpec
@@ -137,19 +137,11 @@ func rangeWorkbenchPosition(close float64, facts rangeWorkbenchFacts) float64 {
 	return (close - facts.low) / facts.width
 }
 
-func rangeWorkbenchSplit(t Time, splits []Split) string {
+func rangeWorkbenchSplit(t time.Time, splits []Split) string {
 	for _, split := range splits {
-		if split.Contains(t.Time) {
+		if split.Contains(t) {
 			return split.Name
 		}
 	}
 	return "unassigned"
-}
-
-func (s *RangeOptimizationWorkbenchTrialStrategy) skipRows() string {
-	parts := []string{}
-	for key, count := range s.skips {
-		parts = append(parts, key+":"+itoa(count))
-	}
-	return strings.Join(parts, ";")
 }
