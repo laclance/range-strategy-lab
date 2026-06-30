@@ -1,4 +1,4 @@
-# Next Codex Brief: Verify Rolling Value-Area Baseline
+# Next Codex Brief: Previous-Day Range Reversion Baseline
 
 ```text
 We are in /home/lance/range-strategy-lab, a standalone offline Go project for
@@ -15,66 +15,53 @@ Before work:
 - Inspect git status before editing.
 
 Current state:
-- The selected fixed baseline implementation for
-  btc_5m_rolling_value_area_reversion_v1 has been added.
+- The first selected backtest-first fixed baseline,
+  btc_5m_rolling_value_area_reversion_v1, was implemented and locally verified.
 - Stop state:
-  btc_5m_rolling_value_area_reversion_backtest_implementation_added_needs_local_verification.
-- Implementation files:
-  - cmd/rangelab/backtest_first_value_area_reversion.go
-  - internal/lab/backtest_first_btc_5m_value_area_types.go
-  - internal/lab/backtest_first_btc_5m_value_area_runner.go
-  - internal/lab/backtest_first_btc_5m_value_area_support.go
-- Review doc:
-  docs/BACKTEST_FIRST_BTC_5M_ROLLING_VALUE_AREA_REVERSION_IMPLEMENTATION_REVIEW.md.
+  btc_5m_rolling_value_area_reversion_backtest_failed_no_usable_strategy.
+- It produced 20,144 trades, but failed gross edge, net edge, and drawdown gates.
+- Full gross P&L was -489.49542250301454.
+- Full net P&L was -999.9999999684289.
+- Full profit factor was 0.6949768102636272.
+- Full max drawdown was 0.9999999999689176.
+- Do not rescue this candidate with alternate VWAP windows, outer-zone
+  percentages, target changes, time-stop changes, side selection, volume filters,
+  derivatives-veto interaction, replay, walk-forward, or optimizer grids.
 
-Selected baseline:
-- Candidate id: btc_5m_rolling_value_area_reversion_v1.
-- Flag:
-  -backtest-first-btc-5m-rolling-value-area-reversion-v1
-- Output path:
-  results/backtest-first-btc-5m-rolling-value-area-reversion-v1/.
-- Source:
-  ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv.
-- Product: Binance USDT-M futures.
-- Symbol/interval: BTCUSDT 5m.
-- Source facts to reproduce: 573,984 loaded candles; 2021-01-01T00:00:00Z
-  through 2026-06-16T23:55:00Z; gap_count=0; duplicate_count=0;
-  zero_volume_count=66; comparison_only=false; validation_status=accepted.
+Next candidate from the existing docs-only packet:
+- Candidate id: btc_15m_previous_day_range_reversion_v1.
+- Candidate packet section: docs/BACKTEST_FIRST_CANDIDATE_PACKET.md.
+- Source: current accepted BTCUSDT Binance USDT-M futures 5m CSV resampled to
+  exact closed UTC 15m bars.
+- Entry timing: next 15m open.
+- Hypothesis: when the current UTC day remains inside the previous UTC day's
+  high-low range, outer-decile tests of that previous-day range may revert
+  toward the previous-day midpoint before a true daily expansion starts.
 
-Required next task:
-- Verify the implementation locally/CI and run the fixed backtest.
-- Record the actual result review.
+Allowed next task, only after explicit user approval:
+- Implement exactly one fixed offline baseline backtest for
+  btc_15m_previous_day_range_reversion_v1.
 
-Required commands:
-/usr/local/go/bin/gofmt -w \
-  cmd/rangelab/backtest_first_value_area_reversion.go \
-  internal/lab/backtest_first_btc_5m_value_area_types.go \
-  internal/lab/backtest_first_btc_5m_value_area_runner.go \
-  internal/lab/backtest_first_btc_5m_value_area_support.go
+Fixed candidate rule from packet:
+- Build the prior UTC day's high, low, and midpoint from complete 15m candles.
+- Skip the current day if any current-day candle before d has closed outside the
+  prior day's high-low range.
+- Long candidate: close[d] is inside the prior-day range and in its lower 10%.
+- Short candidate: close[d] is inside the prior-day range and in its upper 10%.
+- Do not enter if a position is already open.
+- Stop: beyond the prior-day range extreme by 0.25 * ATR(14)[d-1].
+- Target: prior-day midpoint.
+- Time stop: 24 closed 15m bars.
+- Sizing/costs: 1% risk, 1x notional cap, 0.0004 fee per side, 0.000116 slippage
+  per side.
 
-env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
-
-env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
-  -backtest-first-btc-5m-rolling-value-area-reversion-v1
-
-wc -l results/backtest-first-btc-5m-rolling-value-area-reversion-v1/*.csv
-
-git diff --check
-git status --short
-
-After verification:
-- Add a result review that records source facts, signal rows, executed trades,
-  split metrics, long/short behavior, gross and net P&L, drawdown, pass/fail
-  gates, and final stop state.
-- Update memory/PROGRESS.md with the completed verification/result milestone.
-- Update memory/NEXT_CODEX_BRIEF.md to the next gate.
-- Update memory/DECISIONS.md only for durable decisions or constraints.
-
-No-rescue boundaries:
-- If the fixed baseline fails, do not rescue it with alternate VWAP windows,
-  outer-zone percentages, target changes, time-stop changes, side selection,
-  volume filters, derivatives-veto interaction, replay, walk-forward, or
-  optimizer grids.
+Boundaries:
+- No optimizer grid.
+- No adjacent-cell P&L selection.
+- No post-result filters.
+- No derivatives-veto interaction.
+- No replay or walk-forward.
 - No paper/testnet/live path, exchange API work, credentials, deploy files,
   martingale, averaging down, two-exchange logic, or promotion.
+- Do not reopen or rescue the failed rolling value-area candidate.
 ```
