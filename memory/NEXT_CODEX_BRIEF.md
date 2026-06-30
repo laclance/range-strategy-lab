@@ -1,35 +1,57 @@
-# Next Codex Brief: Range Optimization Workbench Implementation
+# Next Codex Brief: Verify Range Optimization Workbench
 
 ```text
 Current state:
-- All three candidates from docs/BACKTEST_FIRST_CANDIDATE_PACKET.md failed as
-  fixed baselines.
-- btc_5m_rolling_value_area_reversion_v1 failed and is closed.
-- btc_15m_previous_day_range_reversion_v1 failed and is closed.
-- btc_15m_range_edge_exhaustion_fade_v1 failed and is closed.
-- A docs-only optimization/workbench spec has been added:
-  docs/RANGE_OPTIMIZATION_WORKBENCH_SPEC.md.
+- The bounded offline range optimization workbench implementation has been added.
+- Implementation review doc:
+  docs/RANGE_OPTIMIZATION_WORKBENCH_IMPLEMENTATION_REVIEW.md.
 - Stop state:
-  range_optimization_workbench_spec_ready_for_implementation_approval.
+  range_optimization_workbench_implementation_added_needs_local_run.
 
-User intent:
-- Combining, tweaking, and optimizing range-family components is allowed only as
-  a controlled offline discovery workbench.
-- It must not be treated as a quiet rescue of failed baselines.
-- It must not authorize paper/testnet/live, exchange API work, credentials,
-  deploy files, martingale, averaging down, two-exchange logic, or promotion.
+Required next task:
+- Verify locally/CI and run exactly one immutable workbench run.
+- Do not delete any existing workbench run directories.
+- Use a unique RUN_ID and OUT_DIR under:
+  results/range-optimization-workbench-v1/runs/<run_id>/.
 
-Allowed next task only after explicit user approval:
-- Implement the bounded offline `-range-optimization-workbench-v1` harness from
-  docs/RANGE_OPTIMIZATION_WORKBENCH_SPEC.md.
-- Use the fixed source contract and trial logging rules from the spec.
-- Emit every trial into a unique immutable run directory under
-  `results/range-optimization-workbench-v1/runs/<run_id>/`.
-- The implementation must support `-out-dir` and `-run-id`.
-- Do not use `rm -rf` on the canonical workbench results parent during
-  verification; create a new run id for reruns instead.
-- Emit every trial; do not delete failed trials.
-- Select at most one candidate for later locked validation.
-- Optimizer output alone must stop at either failed/no-candidate, rejected
-  overfit risk, or candidate-selected-needs-fixed-validation.
+Required commands:
+/usr/local/go/bin/gofmt -w \
+  cmd/rangelab/workbench.go \
+  cmd/rangelab/workbench_run.go \
+  cmd/rangelab/workbench_outputs.go \
+  cmd/rangelab/workbench_csv.go \
+  internal/lab/range_workbench_types.go \
+  internal/lab/range_workbench_source.go \
+  internal/lab/range_workbench_grid.go \
+  internal/lab/range_workbench_strategy.go \
+  internal/lab/range_workbench_run.go \
+  internal/lab/range_workbench_evaluate.go \
+  internal/lab/workbench_score.go \
+  internal/lab/workbench_row.go \
+  internal/lab/workbench_rank.go
+
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
+
+RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)-$(git rev-parse --short HEAD)"
+OUT_DIR="results/range-optimization-workbench-v1/runs/${RUN_ID}"
+
+test ! -e "${OUT_DIR}"
+
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+  -range-optimization-workbench-v1 \
+  -out-dir "${OUT_DIR}" \
+  -run-id "${RUN_ID}"
+
+wc -l "${OUT_DIR}"/*.csv
+cat "${OUT_DIR}"/falsification.json
+cat "${OUT_DIR}"/robustness_summary.json
+
+git diff --check
+git status --short
+
+After verification:
+- Record trial count, source/resample facts, passing candidate count, selected
+  candidate if any, final stop state, and immutable run path in the review doc.
+- Preserve all generated run artifacts locally; do not delete failed/ugly trials.
+- Optimizer output alone cannot authorize paper/testnet/live or promotion.
 ```
