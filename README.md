@@ -48,14 +48,17 @@ then selected one conservative representative candidate for a later docs-only
 backtest spec:
 `btc_15m_post_compression_l192_q20_m020_none_long_h48_v1`, stopping at
 `post_compression_directional_expansion_strategy_premise_spec_ready_for_backtest_approval`.
+The docs-only backtest spec then fixed the implementation candidate, source
+contract, risk/exits, artifacts, and pass/fail gates, stopping at
+`post_compression_directional_expansion_backtest_spec_ready_for_implementation_approval`.
 No entry, exit, P&L backtest, optimizer, replay, or walk-forward run is
 authorized by the router, post-compression audit, post-compression
-strategy-premise spec, premise spec, premise audit, no-trade filter premise
-audit, no-trade filter integration spec, independent-entry map,
-post-compression premise spec, pivot review, BTC/ETH/SOL reviews, derivatives
-source scope review, derivatives context review, or derivatives
-strategy-premise spec. Older spot-data outputs are historical context unless a
-futures rerun explicitly revalidates a specific conclusion.
+strategy-premise spec, post-compression backtest spec, premise spec, premise
+audit, no-trade filter premise audit, no-trade filter integration spec,
+independent-entry map, post-compression premise spec, pivot review, BTC/ETH/SOL
+reviews, derivatives source scope review, derivatives context review, or
+derivatives strategy-premise spec. Older spot-data outputs are historical
+context unless a futures rerun explicitly revalidates a specific conclusion.
 
 ## Purpose
 
@@ -149,7 +152,8 @@ review, read the docs in this order:
 69. [docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_PREMISE_SPEC.md](docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_PREMISE_SPEC.md)
 70. [docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_AUDIT_REVIEW.md](docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_AUDIT_REVIEW.md)
 71. [docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_STRATEGY_PREMISE_SPEC.md](docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_STRATEGY_PREMISE_SPEC.md)
-72. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+72. [docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_SPEC.md](docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_SPEC.md)
+73. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 

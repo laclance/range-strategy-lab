@@ -327,6 +327,28 @@
   gate. The derivatives veto remains parked and may not shape entries, exits,
   side, ranking, scoring, P&L, pass/fail decisions, replay, walk-forward, or
   promotion.
+- The BTCUSDT `15m` post-compression directional expansion backtest spec in
+  `docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_SPEC.md`
+  was explicitly approved as a docs-only task and stopped at
+  `post_compression_directional_expansion_backtest_spec_ready_for_implementation_approval`.
+  It defines exactly one later offline implementation candidate:
+  `btc_15m_post_compression_l192_q20_m020_none_long_h48_v1`.
+- Durable boundary from the backtest spec: the later implementation may add
+  only one offline backtest flag for this candidate stream, with closed UTC
+  `15m` BTCUSDT futures decisions, long side only, prior `192`-bar range,
+  bottom `20%` compression against the prior `1,920` valid range-width
+  observations, decision close above prior range by `0.2` prior-bar `ATR(14)`,
+  no volume filter, and next-`15m`-open entry timing. The fixed risk/exit model
+  is stop at `entry_price - 1.0 * ATR(14)[d-1]`, target at
+  `entry_price + 2.0 * ATR(14)[d-1]`, max hold `48` closed `15m` bars,
+  one-position max, stop-first ambiguity, `1%` risk-at-stop sizing, `1x`
+  notional cap, start balance `1000`, fee `0.0004` per side, and slippage
+  `0.000116` per side. The implementation must reproduce `468` representative
+  raw candidate rows before one-position filtering, report both current-engine
+  net and an extra slippage-stress net, and use the stress view for pass/fail.
+  It may not add stop/target/hold/cell/volume/side/veto grids,
+  adjacent-cell P&L rescue, replay, walk-forward, derivatives veto interaction,
+  or promotion.
 - Spread-range source/engine work remains parked; it does not authorize
   implementation from current state. Volatility-aware exits remain unavailable
   until a future independent entry premise first shows gross edge before costs.
