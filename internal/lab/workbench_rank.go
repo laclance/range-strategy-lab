@@ -17,11 +17,8 @@ func rangeWorkbenchCandidates(runID string, trialRows []RangeOptimizationWorkben
 	})
 	candidates := []RangeOptimizationWorkbenchCandidate{}
 	for i, row := range passing {
-		if i >= 10 {
-			break
-		}
 		candidateID := "range_workbench_candidate_" + row.TrialID
-		candidates = append(candidates, RangeOptimizationWorkbenchCandidate{RunID: runID, Rank: i + 1, TrialID: row.TrialID, CandidateID: candidateID, FamilyID: row.FamilyID, Timeframe: row.Timeframe, EntryArchetype: row.EntryArchetype, RobustnessScore: row.RobustnessScore, FullTrades: row.FullTrades, FullGrossPnL: row.FullGrossPnL, FullNetPnL: row.FullNetPnL, FullProfitFactor: row.FullProfitFactor, FullMaxDrawdown: row.FullMaxDrawdown, SelectionReason: "passed_minimum_workbench_filters_ranked_by_robustness"})
+		candidates = append(candidates, RangeOptimizationWorkbenchCandidate{RunID: runID, Rank: i + 1, TrialID: row.TrialID, CandidateID: candidateID, FamilyID: row.FamilyID, Timeframe: row.Timeframe, EntryArchetype: row.EntryArchetype, RobustnessScore: row.RobustnessScore, FullTrades: row.FullTrades, FullGrossPnL: row.FullGrossPnL, FullNetPnL: row.FullNetPnL, FullProfitFactor: row.FullProfitFactor, FullMaxDrawdown: row.FullMaxDrawdown, SelectionReason: "passed_minimum_workbench_filters_sorted_by_robustness"})
 	}
 	return candidates, rejected
 }
