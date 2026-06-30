@@ -261,6 +261,19 @@
   entries, change entry logic, choose side, act as an exit, rank trades, score
   P&L, replay, walk forward, optimize, promote a strategy, expand sources or
   symbols, or reopen closed families.
+- The independent entry-premise and hypothesis map in
+  `docs/FUTURES_INDEPENDENT_ENTRY_PREMISE_AND_HYPOTHESIS_MAP.md` was explicitly
+  approved as a docs-only task and stopped at
+  `independent_entry_premise_and_hypothesis_map_needs_user_scope_choice`. No
+  single BTCUSDT `15m` local-source independent entry premise is selected from
+  the current reviewed evidence.
+- Durable boundary from the independent-entry map: future work must first choose
+  exactly one route: a new BTCUSDT `15m` closed-candle local-source event
+  premise, a higher-timeframe premise, spread-range/source scope, another
+  explicitly approved source family, or no further audit. The derivatives veto
+  remains parked as future skip/retain evidence only and may not shape candidate
+  rows, create entries, choose side, rank, score P&L, replay, walk forward,
+  optimize, promote a strategy, or reopen closed families.
 - Spread-range source/engine work remains parked; it does not authorize
   implementation from current state. Volatility-aware exits remain unavailable
   until a future independent entry premise first shows gross edge before costs.

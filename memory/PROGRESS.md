@@ -25,6 +25,15 @@ git history.
   absorption, higher-timeframe nested range rotation, `range_occupancy_rotation_v1`,
   and range quality/session/failure-mode triage cohorts in their reviewed forms.
 - The latest completed research doc is
+  `docs/FUTURES_INDEPENDENT_ENTRY_PREMISE_AND_HYPOTHESIS_MAP.md`. The user
+  explicitly approved implementing the combined docs-only hypothesis map and
+  independent entry-premise spec plan. The review stopped at
+  `independent_entry_premise_and_hypothesis_map_needs_user_scope_choice`
+  because the current reviewed evidence does not expose exactly one eligible
+  BTCUSDT `15m` local-source independent entry premise. A future step must
+  either supply a new BTCUSDT `15m` closed-candle local-source event premise or
+  explicitly choose a different source/scope route.
+- The prior completed research doc is
   `docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_INTEGRATION_SPEC.md`.
   The user explicitly approved the docs-only derivatives no-trade filter
   integration spec, and it stopped at
@@ -78,13 +87,13 @@ git history.
   `derivatives_context_source_materialization_passed_ready_for_source_audit_approval`;
   `729` checksum-verified raw zips, `9` normalized CSVs, and `5` manifests live
   under `../binance-bot/data/derivatives/`.
-- The next derivatives step is not an implementation. Neither the passing
-  source audit, context-audit brief, context-audit review, strategy-premise spec,
-  no-trade filter premise audit, nor no-trade filter integration spec authorizes
-  entries, exits, P&L, replay, walk-forward, packaging, paper/testnet/live paths,
-  exchange API work, credentials, deploy files, or promotion. A later veto
-  interaction audit requires a separate independent entry premise and explicit
-  approval.
+- The next step is not an implementation. Neither the passing source audit,
+  context-audit brief, context-audit review, strategy-premise spec, no-trade
+  filter premise audit, no-trade filter integration spec, nor independent-entry
+  map authorizes entries, exits, P&L, replay, walk-forward, packaging,
+  paper/testnet/live paths, exchange API work, credentials, deploy files, or
+  promotion. A later veto interaction audit requires a separate independent
+  entry premise and explicit approval.
 - The prior dependency docs are
   `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md` and
   `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
@@ -119,6 +128,44 @@ git history.
   exits remain rejected until a new independent entry premise first shows gross
   edge before costs.
 - `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt.
+
+## 2026-06-30
+
+Independent entry-premise and hypothesis map:
+
+- Added docs-only review:
+  `docs/FUTURES_INDEPENDENT_ENTRY_PREMISE_AND_HYPOTHESIS_MAP.md`.
+- Stop state:
+  `independent_entry_premise_and_hypothesis_map_needs_user_scope_choice`.
+- User explicitly approved implementing the combined hypothesis-map and
+  independent-entry-premise spec plan.
+- Decision: no single BTCUSDT `15m` local-source independent entry premise was
+  selected from the current reviewed evidence. The reviewed candidates either
+  collapse into closed families, remain filter/context evidence only, or require
+  a fresh user-supplied event premise or scope change.
+- The canonical derivatives veto
+  `btc_15m_basis_discount_no_trade_veto_v1` remains parked as future
+  skip/retain evidence only. It cannot shape the entry premise, create entries,
+  choose side, score P&L, or be tested until a separate independently approved
+  candidate-entry stream exists.
+- The next gate is a user scope/premise choice: a new BTCUSDT `15m`
+  local-source candidate event, a higher-timeframe premise, spread-range/source
+  scope, another explicitly approved source family, or no further audit.
+- The review authorizes no Go code, CLI flag, generated result directory, audit
+  run, source download, source materialization, data write, entry, exit, P&L
+  backtest, optimizer grid, replay, walk-forward, portfolio construction,
+  paper/testnet/live path, exchange API, credential, deploy file, martingale,
+  averaging down, two-exchange logic, closed-family rescue, veto integration, or
+  strategy promotion.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to the user-choice gate.
+- Commands run:
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+- Verification outcomes: reference scan found canonical
+  `memory/NEXT_CODEX_BRIEF.md` references plus historical/checklist mentions
+  only; `git diff --check` passed; pre-commit `git status --short` showed only
+  intended docs and memory changes.
 
 ## 2026-06-29
 

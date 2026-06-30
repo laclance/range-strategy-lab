@@ -31,12 +31,17 @@ audit then passed at
 The docs-only integration spec then preserved the canonical veto candidate but
 deferred implementation at
 `derivatives_context_no_trade_filter_integration_spec_deferred_until_entry_premise`.
+The combined independent-entry and hypothesis-map review then found no single
+eligible BTCUSDT `15m` local-source entry premise in the current reviewed
+evidence and stopped at
+`independent_entry_premise_and_hypothesis_map_needs_user_scope_choice`.
 No entry, exit, P&L backtest, optimizer, replay, or walk-forward run is
 authorized by the router, premise spec, premise audit, no-trade filter premise
-audit, no-trade filter integration spec, pivot review, BTC/ETH/SOL reviews,
-derivatives source scope review, derivatives context review, or derivatives
-strategy-premise spec. Older spot-data outputs are historical context unless a
-futures rerun explicitly revalidates a specific conclusion.
+audit, no-trade filter integration spec, independent-entry map, pivot review,
+BTC/ETH/SOL reviews, derivatives source scope review, derivatives context
+review, or derivatives strategy-premise spec. Older spot-data outputs are
+historical context unless a futures rerun explicitly revalidates a specific
+conclusion.
 
 ## Purpose
 
@@ -126,7 +131,8 @@ review, read the docs in this order:
 65. [docs/FUTURES_DERIVATIVES_CONTEXT_STRATEGY_PREMISE_SPEC.md](docs/FUTURES_DERIVATIVES_CONTEXT_STRATEGY_PREMISE_SPEC.md)
 66. [docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_PREMISE_AUDIT_REVIEW.md](docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_PREMISE_AUDIT_REVIEW.md)
 67. [docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_INTEGRATION_SPEC.md](docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_INTEGRATION_SPEC.md)
-68. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+68. [docs/FUTURES_INDEPENDENT_ENTRY_PREMISE_AND_HYPOTHESIS_MAP.md](docs/FUTURES_INDEPENDENT_ENTRY_PREMISE_AND_HYPOTHESIS_MAP.md)
+69. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 
