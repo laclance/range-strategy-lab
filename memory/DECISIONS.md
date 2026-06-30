@@ -306,6 +306,27 @@
   promotion. A later docs-only strategy-premise spec must decide whether the
   narrow long `48`-bar pocket justifies requesting a separate offline backtest
   spec, or whether the line should stop.
+- The BTCUSDT `15m` post-compression directional expansion strategy-premise spec
+  in
+  `docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_STRATEGY_PREMISE_SPEC.md`
+  was explicitly approved as a docs-only task and stopped at
+  `post_compression_directional_expansion_strategy_premise_spec_ready_for_backtest_approval`.
+  It selects exactly one conservative representative candidate for a later
+  docs-only offline backtest spec:
+  `btc_15m_post_compression_l192_q20_m020_none_long_h48_v1`.
+- Durable boundary from the strategy-premise spec: any later backtest spec may
+  use only this candidate stream: BTCUSDT Binance USDT-M futures `15m` closed
+  decision candles, long side only, prior `192`-bar local range, bottom `20%`
+  compression threshold against the prior `1,920` valid range-width
+  observations, decision close above the prior range by `0.2` prior-bar
+  `ATR(14)`, no volume confirmation, and next-`15m`-open timing. The adjacent
+  passing zero-trade cells are supporting robustness evidence only; they may not
+  become a P&L optimizer, rescue a failed representative-cell backtest, or
+  reopen the full `81`-cell grid. The later docs-only backtest spec must choose
+  one fixed risk/exit model before implementation or stop at a user-choice
+  gate. The derivatives veto remains parked and may not shape entries, exits,
+  side, ranking, scoring, P&L, pass/fail decisions, replay, walk-forward, or
+  promotion.
 - Spread-range source/engine work remains parked; it does not authorize
   implementation from current state. Volatility-aware exits remain unavailable
   until a future independent entry premise first shows gross edge before costs.

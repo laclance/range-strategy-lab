@@ -25,6 +25,19 @@ git history.
   absorption, higher-timeframe nested range rotation, `range_occupancy_rotation_v1`,
   and range quality/session/failure-mode triage cohorts in their reviewed forms.
 - The latest completed research doc is
+  `docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_STRATEGY_PREMISE_SPEC.md`.
+  The user explicitly approved the docs-only strategy-premise spec for
+  `btc_15m_post_compression_directional_expansion_v1`. It stopped at
+  `post_compression_directional_expansion_strategy_premise_spec_ready_for_backtest_approval`
+  and selected exactly one conservative representative candidate for a later
+  docs-only offline backtest spec:
+  `btc_15m_post_compression_l192_q20_m020_none_long_h48_v1`. The candidate is
+  long-only, uses the `192`-bar lookback, bottom `20%` compression threshold,
+  `0.2` prior-bar `ATR(14)` upside breakout, no volume filter, and the `48`
+  closed `15m` bar evidence horizon. It does not authorize backtest
+  implementation, P&L, replay, walk-forward, optimizer selection, derivatives
+  veto interaction, or promotion.
+- The prior completed research doc is
   `docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_AUDIT_REVIEW.md`.
   The user explicitly approved implementing the zero-trade audit for
   `btc_15m_post_compression_directional_expansion_v1`, and it passed at
@@ -34,7 +47,8 @@ git history.
   narrow long-only `48`-bar label-separation pocket at the `192`-bar lookback
   and bottom `20%` compression threshold across adjacent breakout/volume cells.
   It does not authorize a strategy, P&L, replay, walk-forward, or veto
-  interaction. The next gate is a separate docs-only strategy-premise spec.
+  interaction. The later strategy-premise spec narrowed this to one
+  representative backtest-spec candidate.
 - The prior completed research doc is
   `docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_PREMISE_SPEC.md`.
   The user explicitly approved the docs-only BTCUSDT `15m` post-compression
@@ -111,9 +125,11 @@ git history.
   independent-entry map, post-compression premise spec, nor post-compression
   zero-trade audit authorizes entries, exits, P&L, replay, walk-forward,
   packaging, paper/testnet/live paths, exchange API work, credentials, deploy
-  files, or promotion. A later strategy-premise spec for the passed
-  post-compression pocket requires explicit user approval. A later veto
-  interaction audit requires another separate approval.
+  files, or promotion. The post-compression strategy-premise spec authorizes
+  only a later docs-only backtest-spec approval gate for
+  `btc_15m_post_compression_l192_q20_m020_none_long_h48_v1`; any backtest
+  implementation and any later veto interaction require separate explicit
+  approvals.
 - The prior dependency docs are
   `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md` and
   `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
@@ -150,6 +166,50 @@ git history.
 - `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt.
 
 ## 2026-06-30
+
+BTCUSDT `15m` post-compression directional expansion strategy-premise spec:
+
+- Added docs-only spec:
+  `docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_STRATEGY_PREMISE_SPEC.md`.
+- Stop state:
+  `post_compression_directional_expansion_strategy_premise_spec_ready_for_backtest_approval`.
+- User explicitly approved the docs-only strategy-premise spec for
+  `btc_15m_post_compression_directional_expansion_v1`.
+- Decision: request a later docs-only offline backtest spec for exactly one
+  representative candidate from the passing zero-trade pocket:
+  `btc_15m_post_compression_l192_q20_m020_none_long_h48_v1`.
+- Candidate boundary: long side only, closed UTC `15m` BTCUSDT futures
+  decisions, `192` prior closed `15m` bars for the compression range, bottom
+  `20%` compression threshold from the prior `1,920` valid range-width
+  observations, close above the prior range by `0.2` prior-bar `ATR(14)`, no
+  volume confirmation, next-`15m`-open timing for any later approved backtest,
+  and the `48` closed `15m` bar zero-trade evidence horizon.
+- The adjacent passing cells from the zero-trade audit remain supporting
+  robustness evidence only. They may not reopen the `81`-cell grid, rank P&L,
+  rescue a failed representative-cell backtest, or authorize optimizer
+  selection.
+- The later docs-only backtest spec must choose one fixed risk/exit model
+  before any implementation. If it cannot do so without user preference, it
+  must stop at a user-choice gate.
+- The canonical derivatives veto
+  `btc_15m_basis_discount_no_trade_veto_v1` remains parked as future
+  skip/retain evidence only and may not shape entries, exits, side, ranking,
+  scoring, P&L, pass/fail decisions, replay, walk-forward, or promotion.
+- No Go code, CLI flag, generated result directory, audit run, backtest run,
+  source download, network request, data write, P&L artifact, replay,
+  walk-forward, derivatives veto interaction, or strategy promotion was made or
+  authorized.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to the docs-only offline backtest-spec
+  approval gate.
+- Commands run:
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+  - `git diff --cached --check`
+- Verification outcomes: reference scan found canonical
+  `memory/NEXT_CODEX_BRIEF.md` references plus historical/checklist mentions
+  only; `git diff --check` passed; pre-commit `git status --short` showed only
+  intended docs and memory changes; staged diff check passed.
 
 BTCUSDT `15m` post-compression directional expansion zero-trade audit:
 
