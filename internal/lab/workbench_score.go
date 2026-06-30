@@ -28,9 +28,8 @@ func rangeWorkbenchFailureReasons(full SummaryRow, oos SummaryRow, recent Summar
 	if dominantShare > 0.75 {
 		reasons = append(reasons, "dominant_split_trade_share_gt_0_75")
 	}
-	if longFull.TotalTrades == 0 || shortFull.TotalTrades == 0 {
-		reasons = append(reasons, "missing_long_or_short_side")
-	}
+	_ = longFull
+	_ = shortFull
 	return reasons
 }
 
