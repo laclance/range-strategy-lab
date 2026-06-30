@@ -31,6 +31,12 @@ Required run controls:
 
 The implementation validates the accepted BTCUSDT Binance USDT-M futures 5m source, exact-resamples closed UTC 15m candles, builds a bounded grid below the 2,500 trial cap, runs each trial through the existing backtest engine, emits every trial, ranks candidates by robustness, selects at most one candidate for a later locked validation lane, and refuses to overwrite an existing run directory.
 
+Candidate counting/reporting rules:
+
+- `top_candidates` contains the full sorted passing-candidate set, not a capped top-10 slice.
+- `PassingCandidates` in robustness/falsification artifacts therefore reports the full passing-cell count.
+- One-sided candidates are not rejected solely for having zero trades on the other side; side concentration remains a ranking/reporting penalty.
+
 This implementation does not authorize paper/testnet/live trading, exchange API work, credentials, deployment files, production integration, martingale, averaging down, two-exchange execution, or promotion from optimizer output.
 
 ## Expected Outputs
