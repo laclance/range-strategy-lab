@@ -341,20 +341,31 @@ must report all split metrics for every trial.
 
 Every trial must be recorded. No failed or ugly trial may be omitted.
 
-Required outputs:
+The implementation must write each run into an immutable run directory. The
+canonical parent directory is only an index/container and must not be deleted to
+rerun verification.
+
+Required run directory shape:
 
 ```text
 results/range-optimization-workbench-v1/
-  source_manifest.json
-  optimization_grid.json
-  trial_results.json
-  trial_results.csv
-  trial_summary.csv
-  top_candidates.csv
-  rejected_candidates.csv
-  robustness_summary.json
-  falsification.json
+  runs/
+    <run_id>/
+      source_manifest.json
+      optimization_grid.json
+      trial_results.json
+      trial_results.csv
+      trial_summary.csv
+      top_candidates.csv
+      rejected_candidates.csv
+      robustness_summary.json
+      falsification.json
+  latest_run.json
 ```
+
+`run_id` must be unique and stable for the run, for example a UTC timestamp plus
+short git SHA. If a run directory already exists, the implementation must fail or
+choose a new run ID; it must not overwrite prior trial outputs.
 
 Every trial row must include:
 
@@ -467,6 +478,7 @@ The implementation must include the following guardrails:
 - trial count is reported;
 - top candidates and rejected candidates are both reported;
 - no manual deletion of failed trials;
+- no deleting a prior workbench run to rerun verification;
 - no changing the grid after seeing the first result within the same run;
 - no adding a new filter because it improves the current best cell;
 - no optimizer output may authorize paper/testnet/live;
@@ -492,23 +504,33 @@ It may not:
 
 ## Required Next Local Verification For Implementation PR
 
-When implemented, the local verification command should look like:
+When implemented, the local verification command should preserve prior runs by
+writing into a unique run directory. Do not use `rm -rf` on the canonical
+workbench results parent once any workbench output may exist.
 
 ```bash
 env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
 
-rm -rf results/range-optimization-workbench-v1
+RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)-$(git rev-parse --short HEAD)"
+OUT_DIR="results/range-optimization-workbench-v1/runs/${RUN_ID}"
+
+test ! -e "${OUT_DIR}"
 
 env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
-  -range-optimization-workbench-v1
+  -range-optimization-workbench-v1 \
+  -out-dir "${OUT_DIR}" \
+  -run-id "${RUN_ID}"
 
-wc -l results/range-optimization-workbench-v1/*.csv
+wc -l "${OUT_DIR}"/*.csv
 
-cat results/range-optimization-workbench-v1/falsification.json
+cat "${OUT_DIR}"/falsification.json
 
 git diff --check
 git status --short
 ```
+
+If a rerun is needed, create a new `RUN_ID`. Existing run directories may be
+archived or indexed, but must not be deleted as part of normal verification.
 
 ## Operator Decision Required
 
