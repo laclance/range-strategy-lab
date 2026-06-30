@@ -1,4 +1,4 @@
-# Next Codex Brief: Backtest-First Research Lane
+# Next Codex Brief: Rolling Value-Area Reversion Baseline
 
 ```text
 We are in /home/lance/range-strategy-lab, a standalone offline Go project for
@@ -10,111 +10,115 @@ Before work:
 - Read README.md as the docs index.
 - Read docs/STRATEGY_WORKFLOW.md.
 - Read docs/BACKTEST_FIRST_RESEARCH_LANE.md.
+- Read docs/BACKTEST_FIRST_CANDIDATE_PACKET.md.
 - Inspect git status before editing.
 
 Current state:
+- The lab uses the backtest-first research lane for materially different simple
+  offline BTCUSDT range-entry ideas.
+- The docs-only candidate packet selected exactly one first fixed baseline:
+  btc_5m_rolling_value_area_reversion_v1.
+- Candidate packet doc:
+  docs/BACKTEST_FIRST_CANDIDATE_PACKET.md.
+- Stop state:
+  backtest_first_candidate_packet_selected_value_reversion_baseline_needs_implementation_approval.
+
+Prior failed backtest context:
 - The latest fixed offline backtest implementation was for
   btc_15m_post_compression_l192_q20_m020_none_long_h48_v1.
 - It stopped at:
   post_compression_directional_expansion_backtest_failed_no_usable_strategy.
 - Review doc:
   docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_REVIEW.md.
-- Result path:
-  results/futures-btc-15m-post-compression-l192-q20-m020-none-long-h48-backtest/.
-- Source reproduced:
-  ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv;
-  Binance USDT-M futures BTCUSDT 5m; 573,984 loaded candles;
-  2021-01-01T00:00:00Z through 2026-06-16T23:55:00Z; gap_count=0;
-  duplicate_count=0; zero_volume_count=66; comparison_only=false;
-  validation_status=accepted.
-- Exact 15m resample reproduced:
-  191,328 rows; first open 2021-01-01T00:00:00Z; last open
-  2026-06-16T23:45:00Z; last close 2026-06-16T23:59:59Z;
-  3 expected child bars; 0 missing child opens; validation accepted.
-- Candidate identity passed:
-  expected 468 raw representative-cell rows before one-position filtering,
-  got 468.
-- Execution produced 421 trades after one-position filtering.
-- Economics failed:
-  full gross P&L 208.560999; engine net -129.258571;
-  extra slippage-stress net -227.226250; stress PF 0.799666;
-  stress max drawdown 0.289326.
-- Recent split failed before costs:
-  2025_2026_recent gross P&L -15.799742, engine net -106.272938,
-  extra stress net -132.510165, stress PF 0.526275.
-- The exact fixed candidate is closed as no usable strategy in this form.
+- It reproduced 468 raw representative-cell rows and executed 421 trades, but
+  failed economics: full gross P&L 208.560999; engine net -129.258571; extra
+  slippage-stress net -227.226250; stress PF 0.799666; recent split gross P&L
+  -15.799742 before stress costs.
+- The exact fixed post-compression candidate is closed as no usable strategy in
+  this form.
 
-Workflow decision:
-- The lab is now using a backtest-first research lane for materially different
-  simple offline BTCUSDT range-entry ideas.
-- Do not create another long premise-spec -> zero-trade audit -> strategy-premise
-  spec -> backtest spec chain unless the user explicitly asks for that or the
-  idea changes source, timeframe, source family, engine mechanics, promotion
-  state, or paper/live readiness.
-- Prefer a short candidate packet plus one fixed baseline backtest.
-- Become stricter only after a fixed baseline passes.
+Selected implementation candidate:
+- Candidate id: btc_5m_rolling_value_area_reversion_v1.
+- Source: ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv.
+- Product: Binance USDT-M futures.
+- Symbol/interval: BTCUSDT 5m.
+- Loaded candles: 573,984.
+- Coverage: 2021-01-01T00:00:00Z through 2026-06-16T23:55:00Z.
+- Source validation facts: gap_count=0, duplicate_count=0, zero_volume_count=66,
+  comparison_only=false, validation_status=accepted.
+- Decision timeframe: native closed 5m candles.
+- Entry timing: next 5m open.
 
-Non-negotiable safeguards:
+Fixed baseline rule to implement only after explicit user approval:
+- For each closed 5m decision candle d, use prior 288 closed 5m bars [d-288,d-1]
+  as the rolling value window.
+- Compute range_high, range_low, range_width, rolling VWAP from typical price
+  weighted by volume, and ATR(14)[d-1].
+- Skip if rolling volume is zero, ATR is missing/non-positive, or range_width is
+  less than 6 * ATR(14)[d-1].
+- Long candidate: close[d] is in the lower 20% of the prior range and at least
+  0.15 * range_width below rolling VWAP.
+- Short candidate: close[d] is in the upper 20% of the prior range and at least
+  0.15 * range_width above rolling VWAP.
+- Do not enter if a position is already open.
+- Long stop: min(low[d], range_low) - 0.25 * ATR(14)[d-1].
+- Long target: rolling VWAP from the decision window.
+- Short stop/target are symmetric.
+- Time stop: close after 36 closed 5m bars after entry.
+- Sizing/costs: 1% risk at stop, 1x notional cap, 0.0004 fee per side,
+  0.000116 slippage per side.
+
+Expected implementation scope, only if approved:
+- Add exactly one offline CLI flag for the fixed baseline.
+- Suggested output path:
+  results/backtest-first-btc-5m-rolling-value-area-reversion-v1/.
+- Write source_manifest.json, summary.json, summary.csv, trades.json, and
+  strategy-specific sources/signals/skips/trades/summary/falsification CSV/JSON
+  files.
+- Report split metrics for 2021_2022_stress, 2023_2024_oos,
+  2025_2026_recent, and full_2021_2026.
+- Report long and short sides separately.
+
+Pass/fail gates:
+- Accepted BTCUSDT futures 5m source contract reproduced.
+- No leakage in features, thresholds, entry, stops, targets, sizing, ranking, or
+  selection.
+- At least 120 full-sample executed trades and at least 25 in each primary split.
+- Full-sample gross P&L positive.
+- 2023_2024_oos and 2025_2026_recent gross P&L not clearly negative.
+- Full-sample net after fees/slippage positive.
+- Result does not depend only on 2021_2022_stress.
+- Drawdown acceptable versus return.
+- Long and short side behavior reported separately.
+
+No-rescue boundaries:
+- If the fixed baseline fails, do not rescue it with alternate VWAP windows,
+  outer-zone percentages, target changes, time-stop changes, side selection,
+  volume filters, derivatives-veto interaction, replay, walk-forward, or
+  optimizer grids.
+- Record the result and move to a materially different candidate.
+
+Hard boundaries:
 - Offline research only.
-- Binance USDT-M futures BTCUSDT 5m remains the active source unless a reviewed
-  source-scope decision changes it.
-- Use confirmed closed-candle decisions only.
-- Use next-bar-open entries.
-- Preserve accepted source validation, source manifests, fees/slippage,
-  stop-first ambiguity, one-position max, split metrics, and reproducible
-  artifacts under results/.
-- No paper/testnet/live path, exchange API work, credentials, deploy files,
-  martingale, averaging down, or two-exchange logic.
-- No lookahead in features, thresholds, entry filters, stops, targets, sizing,
-  ranking, or selection.
+- No paper/testnet/live path.
+- No exchange API work, credentials, deploy files, martingale, averaging down, or
+  two-exchange logic.
+- No derivatives-veto interaction until an independent entry baseline passes and
+  the user separately approves interaction testing.
+- Do not reopen or rescue failed post-compression, structured compression,
+  breakout-retest acceptance, clean breakout continuation, hold-inside/midline,
+  impulse absorption, higher-timeframe nested range rotation, range occupancy
+  rotation, range router rotation, BTC-regime/ETH/SOL context, or derivatives
+  context paths.
 
-Closed-family boundaries:
-- Do not rescue the failed post-compression fixed candidate with adjacent-cell
-  P&L selection, stop/target/hold retuning, side changes, volume filters,
-  derivatives-veto interaction, replay, walk-forward, or promotion.
-- Do not reopen structured compression, breakout-retest acceptance, clean
-  breakout continuation, hold-inside/midline, impulse absorption,
-  higher-timeframe nested range rotation, range_occupancy_rotation_v1, router
-  rotation, BTC-regime/ETH/SOL context, or derivatives-veto paths merely by
-  renaming or retuning them.
-
-Valid next work:
-- If the user asks to continue strategy research without supplying a specific
-  idea, create a compact candidate packet with 3 to 5 materially different
-  BTCUSDT range-entry hypotheses.
-- Reject candidates that are only retuned closed-family rescues.
-- Select the simplest first fixed baseline candidate and state why.
-- If the user explicitly asks for implementation, implement exactly one fixed
-  offline baseline backtest for that selected candidate.
-- The first baseline may include one entry template, one fixed exit model, one
-  sizing model, fees/slippage, source manifest, split metrics, and artifacts.
-- It must not include optimizer grids, adjacent-cell P&L selection, post-result
-  filters, derivatives-veto interaction, replay, walk-forward, paper/testnet/live
-  paths, exchange API work, credentials, deploy files, or promotion.
-
-Candidate packet contents:
-1. hypothesis;
-2. material difference from closed failures;
-3. source and timeframe;
-4. closed-candle entry rule;
-5. fixed stop, target, time stop, sizing, fee, and slippage assumptions;
-6. expected output path and artifacts;
-7. pass/fail gates;
-8. no-rescue boundaries.
-
-Fast-fail rule:
-- If the fixed baseline fails gross edge, OOS/recent split quality, net/stress
-  edge, trade count, drawdown, leakage, source validation, or explainability,
-  record the result and close it. Move to a materially different candidate
-  instead of rescuing it by retuning.
-
-Memory and closeout:
-- Update README.md only when adding a durable doc that future users need to find
-  from the index.
-- Update memory/PROGRESS.md after completed milestones.
+If the user asks for the next implementation:
+- Implement exactly btc_5m_rolling_value_area_reversion_v1 as fixed above.
+- Do not add extra filters or parameter choices.
+- Run gofmt, go test ./..., the fixed backtest command, CSV line count checks,
+  git diff --check, and git status --short.
+- Update README.md only if a new durable doc needs indexing.
+- Update memory/PROGRESS.md after the completed milestone.
+- Update memory/NEXT_CODEX_BRIEF.md to the resulting review/next gate.
 - Update memory/DECISIONS.md only for durable decisions or constraints.
-- Run relevant closeout checks. For docs-only changes, at minimum run markdown or
-  diff hygiene checks available in the local environment plus git diff checks.
-- Commit completed changes after checks pass unless the user explicitly says not
-  to commit.
+- Commit completed changes and open a PR unless the user explicitly says not to.
 ```
