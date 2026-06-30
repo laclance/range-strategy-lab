@@ -349,6 +349,21 @@
   It may not add stop/target/hold/cell/volume/side/veto grids,
   adjacent-cell P&L rescue, replay, walk-forward, derivatives veto interaction,
   or promotion.
+- The BTCUSDT `15m` post-compression directional expansion backtest review in
+  `docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_REVIEW.md`
+  was explicitly approved for implementation and failed at
+  `post_compression_directional_expansion_backtest_failed_no_usable_strategy`.
+  It reproduced the source/resample contract and the `468` raw candidate rows,
+  then executed `421` trades, but failed the declared gross-edge, extra
+  slippage-stress edge, stress profit-factor, and drawdown gates.
+- Durable boundary from the backtest review: the exact fixed candidate
+  `btc_15m_post_compression_l192_q20_m020_none_long_h48_v1` is closed as no
+  usable strategy in this form. Do not rescue it with adjacent-cell P&L
+  selection, stop/target/hold retuning, volume filters, side changes, the full
+  `81`-cell grid, derivatives-veto interaction, replay, walk-forward, source
+  expansion, paper/testnet/live paths, exchange API work, credentials, deploy
+  files, or promotion. The canonical derivatives veto remains parked because
+  there is no passed independent entry stream for it to annotate.
 - Spread-range source/engine work remains parked; it does not authorize
   implementation from current state. Volatility-aware exits remain unavailable
   until a future independent entry premise first shows gross edge before costs.

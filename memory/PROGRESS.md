@@ -25,18 +25,30 @@ git history.
   absorption, higher-timeframe nested range rotation, `range_occupancy_rotation_v1`,
   and range quality/session/failure-mode triage cohorts in their reviewed forms.
 - The latest completed research doc is
+  `docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_REVIEW.md`.
+  The user explicitly approved implementing the offline backtest for
+  `btc_15m_post_compression_l192_q20_m020_none_long_h48_v1`, and it failed at
+  `post_compression_directional_expansion_backtest_failed_no_usable_strategy`.
+  The implementation reproduced the accepted source/resample contract and the
+  representative raw candidate identity (`468` raw rows), executed `421` trades,
+  and passed the trade-count gate, but failed gross edge, extra
+  slippage-stress edge, stress profit factor, and drawdown gates. Full gross P&L
+  was `208.560999`, engine net was `-129.258571`, extra slippage-stress net was
+  `-227.226250`, full stress PF was `0.799666`, and full stress max drawdown was
+  `0.289326`. The candidate is closed as no usable fixed strategy in this form;
+  no adjacent-cell rescue, exit retune, derivatives-veto interaction, replay,
+  walk-forward, paper/testnet/live path, or promotion is authorized.
+- The prior completed research doc is
   `docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_SPEC.md`.
   The user explicitly approved the docs-only offline backtest spec for
   `btc_15m_post_compression_l192_q20_m020_none_long_h48_v1`. It stopped at
-  `post_compression_directional_expansion_backtest_spec_ready_for_implementation_approval`.
-  The spec keeps the same long-only representative cell and fixes one offline
-  model for a later implementation approval gate: next-`15m`-open entry, stop
-  at `entry_price - 1.0 * ATR(14)[d-1]`, target at
+  `post_compression_directional_expansion_backtest_spec_ready_for_implementation_approval`
+  and fixed one model: next-`15m`-open entry, stop at
+  `entry_price - 1.0 * ATR(14)[d-1]`, target at
   `entry_price + 2.0 * ATR(14)[d-1]`, max hold `48` closed `15m` bars,
   one-position max, stop-first ambiguity, `1%` risk-at-stop sizing, `1x`
-  notional cap, `0.0004` fee per side, and `0.000116` slippage per side. It
-  authorizes no implementation, generated outputs, backtest run, P&L artifact,
-  optimizer, replay, walk-forward, derivatives veto interaction, or promotion.
+  notional cap, `0.0004` fee per side, and `0.000116` slippage per side. The
+  later approved implementation consumed that gate and failed in reviewed form.
 - The prior completed research doc is
   `docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_STRATEGY_PREMISE_SPEC.md`.
   The user explicitly approved the docs-only strategy-premise spec for
@@ -139,11 +151,11 @@ git history.
   independent-entry map, post-compression premise spec, nor post-compression
   zero-trade audit authorizes entries, exits, P&L, replay, walk-forward,
   packaging, paper/testnet/live paths, exchange API work, credentials, deploy
-  files, or promotion. The post-compression backtest spec authorizes only a
-  later offline implementation approval gate for
-  `btc_15m_post_compression_l192_q20_m020_none_long_h48_v1`; any backtest
-  implementation and any later veto interaction require separate explicit
-  approvals.
+  files, or promotion. The post-compression backtest implementation consumed the
+  fixed backtest-spec approval gate and failed in reviewed form, so there is no
+  selected next implementation. Any materially different premise, any
+  derivatives-veto interaction, and any new backtest/replay/walk-forward path
+  require separate explicit approval.
 - The prior dependency docs are
   `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md` and
   `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
@@ -180,6 +192,65 @@ git history.
 - `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt.
 
 ## 2026-06-30
+
+BTCUSDT `15m` post-compression directional expansion fixed backtest:
+
+- Added implementation and review doc:
+  `docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_REVIEW.md`.
+- Added CLI flag:
+  `-futures-btc-15m-post-compression-l192-q20-m020-none-long-h48-backtest`.
+- Output path:
+  `results/futures-btc-15m-post-compression-l192-q20-m020-none-long-h48-backtest/`.
+- Stop state:
+  `post_compression_directional_expansion_backtest_failed_no_usable_strategy`.
+- User explicitly approved the offline backtest implementation for
+  `btc_15m_post_compression_l192_q20_m020_none_long_h48_v1`.
+- Source reproduced:
+  `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv`; Binance USDT-M
+  futures `BTCUSDT` `5m`; `573,984` loaded candles;
+  `2021-01-01T00:00:00Z` through `2026-06-16T23:55:00Z`; `gap_count=0`;
+  `duplicate_count=0`; `zero_volume_count=66`; `comparison_only=false`;
+  `validation_status=accepted`.
+- Exact `15m` resample reproduced: `191,328` rows;
+  `2021-01-01T00:00:00Z` first open; `2026-06-16T23:45:00Z` last open;
+  `2026-06-16T23:59:59Z` last close; `3` expected child bars;
+  `0` missing child opens; validation accepted.
+- Candidate identity reproduced: expected `468` raw representative-cell signal
+  rows before one-position filtering, got `468`.
+- Executed `421` trades after one-position filtering; primary split trade
+  counts were `152` (`2021_2022_stress`), `146` (`2023_2024_oos`), and `123`
+  (`2025_2026_recent`).
+- Full-sample economics: gross P&L `208.560999`, engine net `-129.258571`,
+  extra slippage-stress net `-227.226250`, stress PF `0.799666`, stress max
+  drawdown `0.289326`, win rate `0.368171`.
+- Split economics: `2021_2022_stress` stress net `20.837617` and PF
+  `1.042668`; `2023_2024_oos` stress net `-115.553702` and PF `0.684405`;
+  `2025_2026_recent` gross P&L `-15.799742`, stress net `-132.510165`, and PF
+  `0.526275`.
+- Falsification: source/resample, candidate identity, leakage, trade count,
+  robustness, optimizer-contamination, closed-family, and derivatives-veto
+  gates passed; gross edge, extra slippage-stress edge, stress PF, and drawdown
+  gates failed.
+- CSV artifact line counts including headers: signals `469`, trades `422`,
+  strategy summary `13`, cost stress `13`, skips `7`, sources `2`, resample
+  coverage `2`, common summary `13`, total `941`.
+- Durable outcome: this exact fixed candidate is closed as no usable strategy in
+  this form; no adjacent-cell rescue, exit retune, derivatives-veto interaction,
+  replay, walk-forward, or promotion is authorized.
+- Commands run:
+  - `/usr/local/go/bin/gofmt -w cmd/rangelab/main.go cmd/rangelab/main_test.go internal/lab/futures_btc_15m_post_compression_l192_q20_m020_none_long_h48_backtest.go internal/lab/futures_btc_15m_post_compression_l192_q20_m020_none_long_h48_backtest_test.go`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -futures-btc-15m-post-compression-l192-q20-m020-none-long-h48-backtest`
+  - `wc -l results/futures-btc-15m-post-compression-l192-q20-m020-none-long-h48-backtest/*.csv`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+  - `git diff --cached --check`
+- Verification outcomes: `gofmt` completed; full Go tests passed; the backtest
+  rerun reproduced `468` signals, `421` trades, and the failed stop state;
+  `wc -l` totaled `941` CSV lines; reference scan found the canonical
+  `memory/NEXT_CODEX_BRIEF.md` references plus historical/checklist mentions
+  only; `git diff --check` passed.
 
 BTCUSDT `15m` post-compression directional expansion backtest spec:
 

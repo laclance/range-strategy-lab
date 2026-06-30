@@ -51,14 +51,21 @@ backtest spec:
 The docs-only backtest spec then fixed the implementation candidate, source
 contract, risk/exits, artifacts, and pass/fail gates, stopping at
 `post_compression_directional_expansion_backtest_spec_ready_for_implementation_approval`.
-No entry, exit, P&L backtest, optimizer, replay, or walk-forward run is
-authorized by the router, post-compression audit, post-compression
-strategy-premise spec, post-compression backtest spec, premise spec, premise
-audit, no-trade filter premise audit, no-trade filter integration spec,
-independent-entry map, post-compression premise spec, pivot review, BTC/ETH/SOL
-reviews, derivatives source scope review, derivatives context review, or
-derivatives strategy-premise spec. Older spot-data outputs are historical
-context unless a futures rerun explicitly revalidates a specific conclusion.
+The approved offline implementation then ran that one fixed candidate and
+failed at
+`post_compression_directional_expansion_backtest_failed_no_usable_strategy`:
+it reproduced the `468` raw candidate rows and executed `421` trades, but full
+extra slippage-stress net was negative (`-227.226250`) with stress PF
+`0.799666`, and the recent split was gross-negative before stress costs. No
+further entry, exit, P&L backtest, optimizer, replay, walk-forward,
+derivatives-veto interaction, or promotion is authorized by the router,
+post-compression audit, post-compression strategy-premise spec,
+post-compression backtest spec/review, premise spec, premise audit, no-trade
+filter premise audit, no-trade filter integration spec, independent-entry map,
+post-compression premise spec, pivot review, BTC/ETH/SOL reviews, derivatives
+source scope review, derivatives context review, or derivatives
+strategy-premise spec. Older spot-data outputs are historical context unless a
+futures rerun explicitly revalidates a specific conclusion.
 
 ## Purpose
 
@@ -153,7 +160,8 @@ review, read the docs in this order:
 70. [docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_AUDIT_REVIEW.md](docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_AUDIT_REVIEW.md)
 71. [docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_STRATEGY_PREMISE_SPEC.md](docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_STRATEGY_PREMISE_SPEC.md)
 72. [docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_SPEC.md](docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_SPEC.md)
-73. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+73. [docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_REVIEW.md](docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_REVIEW.md)
+74. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 

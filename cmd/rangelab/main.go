@@ -35,6 +35,7 @@ var futuresDerivativesContextSourceAuditConfigForRun = lab.DefaultFuturesDerivat
 var futuresDerivativesContextAuditConfigForRun = lab.DefaultFuturesDerivativesContextAuditConfig
 var futuresDerivativesNoTradeFilterPremiseAuditConfigForRun = lab.DefaultFuturesDerivativesNoTradeFilterPremiseAuditConfig
 var futuresBTC15MPostCompressionDirectionalExpansionAuditConfigForRun = lab.DefaultFuturesBTC15MPostCompressionDirectionalExpansionAuditConfig
+var futuresBTC15MPostCompressionL192Q20M020NoneLongH48BacktestConfigForRun = lab.DefaultFuturesBTC15MPostCompressionL192Q20M020NoneLongH48BacktestConfig
 
 func main() {
 	if err := run(); err != nil {
@@ -89,6 +90,7 @@ func runWithArgs(args []string) error {
 	futuresDerivativesContextAudit := fs.Bool("futures-derivatives-context-audit", false, "write zero-trade derivatives context separation audit diagnostics")
 	futuresDerivativesNoTradeFilterPremiseAudit := fs.Bool("futures-derivatives-no-trade-filter-premise-audit", false, "write zero-trade derivatives no-trade filter premise diagnostics")
 	futuresBTC15MPostCompressionDirectionalExpansionAudit := fs.Bool("futures-btc-15m-post-compression-directional-expansion-audit", false, "write zero-trade BTCUSDT 15m post-compression directional expansion diagnostics")
+	futuresBTC15MPostCompressionL192Q20M020NoneLongH48Backtest := fs.Bool("futures-btc-15m-post-compression-l192-q20-m020-none-long-h48-backtest", false, "run offline BTCUSDT 15m post-compression fixed long h48 backtest")
 	srAudit := fs.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
 	srBoundaryAudit := fs.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
 	srBoundaryInspect := fs.Bool("sr-boundary-inspect", false, "write compact non-trading SR boundary candidate comparison diagnostics")
@@ -140,6 +142,9 @@ func runWithArgs(args []string) error {
 	if *futuresBTC15MPostCompressionDirectionalExpansionAudit && !outDirWasSet {
 		*outDir = "results/futures-btc-15m-post-compression-directional-expansion-audit"
 	}
+	if *futuresBTC15MPostCompressionL192Q20M020NoneLongH48Backtest && !outDirWasSet {
+		*outDir = "results/futures-btc-15m-post-compression-l192-q20-m020-none-long-h48-backtest"
+	}
 
 	product := *sourceProduct
 	if *csvPath == defaultCSVPath && !sourceProductWasSet {
@@ -169,7 +174,7 @@ func runWithArgs(args []string) error {
 		MaxHoldBars:    *maxHoldBars,
 	}
 
-	tradeProducingFlagSelected := *holdInsideMidlineTouchPrototype || *futuresCleanBreakoutBaselineBacktest || *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest || *futuresRangeUniverseStructuredCompressionBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness || *futuresRangeFirstOccupancyRotationV1Optimization
+	tradeProducingFlagSelected := *holdInsideMidlineTouchPrototype || *futuresCleanBreakoutBaselineBacktest || *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest || *futuresRangeUniverseStructuredCompressionBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness || *futuresRangeFirstOccupancyRotationV1Optimization || *futuresBTC15MPostCompressionL192Q20M020NoneLongH48Backtest
 	if *futuresHigherTFNestedRangeRotationAudit {
 		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
 			return fmt.Errorf("-futures-higher-tf-nested-range-rotation-audit requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
@@ -272,6 +277,17 @@ func runWithArgs(args []string) error {
 		}
 		if *detector || *detectorSweep || *detectorDurabilitySweep || *detectorContextRefinementAudit || *holdInsideDirectionalEdgeAudit || *holdInsideMidlineTransitionAudit || *holdInsideMidlineReactionAudit || *futuresImpulseAbsorptionAudit || *futuresRangeCandidateDiscoveryAudit || *futuresRangeUniverseDiscoveryAudit || *futuresHigherTFNestedRangeRotationAudit || *futuresRangeContextTriageAudit || *futuresRangeStateConstructionLoopAudit || *futuresRangeContextRouterAudit || *futuresRangeRouterRotationPremiseAudit || *futuresBTCRegimeETHSOLContextAudit || *futuresDerivativesContextSourceAudit || *futuresDerivativesContextAudit || *futuresDerivativesNoTradeFilterPremiseAudit || *srAudit || *srBoundaryAudit || *srBoundaryInspect || *srRejectionTimingAudit || *srConfirmationTimingAudit || *srFalseBreakReclaimTimingAudit || *compressionBreakoutAudit || *rangeRegimeDurabilityAudit {
 			return fmt.Errorf("-futures-btc-15m-post-compression-directional-expansion-audit cannot be combined with other audit, detector, source-expansion, or diagnostic flags")
+		}
+	}
+	if *futuresBTC15MPostCompressionL192Q20M020NoneLongH48Backtest {
+		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
+			return fmt.Errorf("-futures-btc-15m-post-compression-l192-q20-m020-none-long-h48-backtest requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
+		}
+		if *holdInsideMidlineTouchPrototype || *futuresCleanBreakoutBaselineBacktest || *futuresRangeUniverseBreakoutRetestAcceptanceBaselineBacktest || *futuresRangeUniverseStructuredCompressionBaselineBacktest || *futuresRangeUniverseStructuredCompressionOptimization || *futuresRangeUniverseStructuredCompressionStrategyReplay || *futuresRangeUniverseStructuredCompressionWalkForwardRobustness || *futuresRangeFirstOccupancyRotationV1Optimization {
+			return fmt.Errorf("-futures-btc-15m-post-compression-l192-q20-m020-none-long-h48-backtest cannot be combined with other trade-producing prototype/backtest/optimization/replay/walk-forward flags")
+		}
+		if *detector || *detectorSweep || *detectorDurabilitySweep || *detectorContextRefinementAudit || *holdInsideDirectionalEdgeAudit || *holdInsideMidlineTransitionAudit || *holdInsideMidlineReactionAudit || *futuresImpulseAbsorptionAudit || *futuresRangeCandidateDiscoveryAudit || *futuresRangeUniverseDiscoveryAudit || *futuresHigherTFNestedRangeRotationAudit || *futuresRangeContextTriageAudit || *futuresRangeStateConstructionLoopAudit || *futuresRangeContextRouterAudit || *futuresRangeRouterRotationPremiseAudit || *futuresBTCRegimeETHSOLContextAudit || *futuresDerivativesContextSourceAudit || *futuresDerivativesContextAudit || *futuresDerivativesNoTradeFilterPremiseAudit || *futuresBTC15MPostCompressionDirectionalExpansionAudit || *srAudit || *srBoundaryAudit || *srBoundaryInspect || *srRejectionTimingAudit || *srConfirmationTimingAudit || *srFalseBreakReclaimTimingAudit || *compressionBreakoutAudit || *rangeRegimeDurabilityAudit {
+			return fmt.Errorf("-futures-btc-15m-post-compression-l192-q20-m020-none-long-h48-backtest cannot be combined with other audit, detector, source-expansion, or diagnostic flags")
 		}
 	}
 
@@ -387,6 +403,7 @@ func runWithArgs(args []string) error {
 	var derivativesContextAuditResult lab.FuturesDerivativesContextAuditResult
 	var derivativesNoTradeFilterPremiseAuditResult lab.FuturesDerivativesNoTradeFilterPremiseAuditResult
 	var btc15MPostCompressionDirectionalExpansionAuditResult lab.FuturesBTC15MPostCompressionDirectionalExpansionAuditResult
+	var btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult lab.FuturesBTC15MPostCompressionL192Q20M020NoneLongH48BacktestResult
 	var result lab.BacktestResult
 	if *futuresCleanBreakoutBaselineBacktest {
 		var err error
@@ -450,6 +467,15 @@ func runWithArgs(args []string) error {
 		}
 		result = lab.BacktestResult{Trades: occupancyRotationV1Result.Trades}
 		strategyName = lab.FuturesRangeFirstOccupancyRotationV1OptimizationName
+	} else if *futuresBTC15MPostCompressionL192Q20M020NoneLongH48Backtest {
+		var err error
+		backtestCfg := futuresBTC15MPostCompressionL192Q20M020NoneLongH48BacktestConfigForRun()
+		btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult, err = lab.RunFuturesBTC15MPostCompressionL192Q20M020NoneLongH48Backtest(candles, sourceManifest, backtestCfg, cfg, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+		result = lab.BacktestResult{Trades: btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.Trades}
+		strategyName = lab.FuturesBTC15MPostCompressionL192Q20M020NoneLongH48BacktestName
 	} else {
 		result = lab.RunBacktest(candles, strategy, cfg)
 	}
@@ -1659,6 +1685,60 @@ func runWithArgs(args []string) error {
 			btc15MPostCompressionDirectionalExpansionAuditResult.PassingCells,
 			btc15MPostCompressionDirectionalExpansionAuditResult.Falsification.AdjacentPassingCellSideHorizons,
 			btc15MPostCompressionDirectionalExpansionAuditResult.StopState,
+		)
+	}
+	if *futuresBTC15MPostCompressionL192Q20M020NoneLongH48Backtest {
+		artifacts := []struct {
+			name string
+			rows any
+		}{
+			{"btc_15m_post_compression_l192_q20_m020_none_long_h48_sources", btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.SourceRows},
+			{"btc_15m_post_compression_l192_q20_m020_none_long_h48_resample_coverage", btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.CoverageRows},
+			{"btc_15m_post_compression_l192_q20_m020_none_long_h48_signals", btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.SignalRows},
+			{"btc_15m_post_compression_l192_q20_m020_none_long_h48_skips", btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.SkipRows},
+			{"btc_15m_post_compression_l192_q20_m020_none_long_h48_trades", btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.TradeRows},
+			{"btc_15m_post_compression_l192_q20_m020_none_long_h48_summary", btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.SummaryRows},
+			{"btc_15m_post_compression_l192_q20_m020_none_long_h48_cost_stress", btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.CostStressRows},
+		}
+		for _, art := range artifacts {
+			if err := writeJSON(filepath.Join(*outDir, art.name+".json"), art.rows); err != nil {
+				return err
+			}
+		}
+		if err := writeFuturesBTC15MPostCompressionL192Q20M020NoneLongH48BacktestSourcesCSV(filepath.Join(*outDir, "btc_15m_post_compression_l192_q20_m020_none_long_h48_sources.csv"), btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.SourceRows); err != nil {
+			return err
+		}
+		if err := writeFuturesBTC15MPostCompressionL192Q20M020NoneLongH48BacktestCoverageCSV(filepath.Join(*outDir, "btc_15m_post_compression_l192_q20_m020_none_long_h48_resample_coverage.csv"), btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.CoverageRows); err != nil {
+			return err
+		}
+		if err := writeFuturesBTC15MPostCompressionL192Q20M020NoneLongH48BacktestSignalsCSV(filepath.Join(*outDir, "btc_15m_post_compression_l192_q20_m020_none_long_h48_signals.csv"), btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.SignalRows); err != nil {
+			return err
+		}
+		if err := writeFuturesBTC15MPostCompressionL192Q20M020NoneLongH48BacktestSkipsCSV(filepath.Join(*outDir, "btc_15m_post_compression_l192_q20_m020_none_long_h48_skips.csv"), btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.SkipRows); err != nil {
+			return err
+		}
+		if err := writeFuturesBTC15MPostCompressionL192Q20M020NoneLongH48BacktestTradesCSV(filepath.Join(*outDir, "btc_15m_post_compression_l192_q20_m020_none_long_h48_trades.csv"), btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.TradeRows); err != nil {
+			return err
+		}
+		if err := writeFuturesBTC15MPostCompressionL192Q20M020NoneLongH48BacktestSummaryCSV(filepath.Join(*outDir, "btc_15m_post_compression_l192_q20_m020_none_long_h48_summary.csv"), btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.SummaryRows); err != nil {
+			return err
+		}
+		if err := writeFuturesBTC15MPostCompressionL192Q20M020NoneLongH48BacktestCostStressCSV(filepath.Join(*outDir, "btc_15m_post_compression_l192_q20_m020_none_long_h48_cost_stress.csv"), btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.CostStressRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "btc_15m_post_compression_l192_q20_m020_none_long_h48_falsification.json"), btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.Falsification); err != nil {
+			return err
+		}
+		fmt.Printf("futures_btc_15m_post_compression_l192_q20_m020_none_long_h48_backtest source_rows=%d coverage_rows=%d signals=%d skips=%d trades=%d summary_rows=%d stop_state=%s stress_net=%.2f stress_pf=%.4f\n",
+			len(btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.SourceRows),
+			len(btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.CoverageRows),
+			len(btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.SignalRows),
+			len(btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.SkipRows),
+			len(btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.TradeRows),
+			len(btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.SummaryRows),
+			btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.StopState,
+			btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.Falsification.FullExtraSlippageStressNetPnL,
+			btc15MPostCompressionL192Q20M020NoneLongH48BacktestResult.Falsification.FullStressProfitFactor,
 		)
 	}
 	var srRows []lab.SRAuditRow
@@ -4079,6 +4159,34 @@ func writeFuturesBTC15MPostCompressionDirectionalExpansionAdjacencyCSV(path stri
 }
 
 func writeFuturesBTC15MPostCompressionDirectionalExpansionMissingnessCSV(path string, rows []lab.BTC15MPostCompressionMissingnessRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTC15MPostCompressionL192Q20M020NoneLongH48BacktestSourcesCSV(path string, rows []lab.BTC15MPostCompressionFixedBacktestSourceRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTC15MPostCompressionL192Q20M020NoneLongH48BacktestCoverageCSV(path string, rows []lab.BTC15MPostCompressionFixedBacktestCoverageRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTC15MPostCompressionL192Q20M020NoneLongH48BacktestSignalsCSV(path string, rows []lab.BTC15MPostCompressionFixedBacktestSignalRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTC15MPostCompressionL192Q20M020NoneLongH48BacktestSkipsCSV(path string, rows []lab.BTC15MPostCompressionFixedBacktestSkipRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTC15MPostCompressionL192Q20M020NoneLongH48BacktestTradesCSV(path string, rows []lab.BTC15MPostCompressionFixedBacktestTradeRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTC15MPostCompressionL192Q20M020NoneLongH48BacktestSummaryCSV(path string, rows []lab.BTC15MPostCompressionFixedBacktestSummaryRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTC15MPostCompressionL192Q20M020NoneLongH48BacktestCostStressCSV(path string, rows []lab.BTC15MPostCompressionFixedBacktestCostStressRow) error {
 	return writeJSONTaggedCSV(path, rows)
 }
 
