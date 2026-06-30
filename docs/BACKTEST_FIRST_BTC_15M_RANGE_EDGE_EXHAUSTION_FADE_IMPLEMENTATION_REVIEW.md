@@ -7,18 +7,18 @@ Date: 2026-06-30
 Stop state:
 
 ```text
-btc_15m_range_edge_exhaustion_fade_backtest_implementation_added_needs_local_verification
+btc_15m_range_edge_exhaustion_fade_backtest_failed_no_usable_strategy
 ```
 
-This implementation adds the fixed offline baseline candidate:
+The fixed offline baseline candidate was implemented and locally verified:
 
 ```text
 btc_15m_range_edge_exhaustion_fade_v1
 ```
 
-The implementation is not promoted and no result verdict is claimed here because
-this connector session could not run the local Go test suite or BTCUSDT CSV
-backtest command.
+The fixed baseline failed. It produced enough trades to pass the first-baseline
+trade-count gates, but failed gross edge, net edge, and drawdown gates. It is
+closed as no usable strategy in this form.
 
 ## Fixed Baseline Scope
 
@@ -44,80 +44,101 @@ No optimizer, replay, walk-forward, derivatives-veto interaction, source
 expansion, paper/testnet/live path, exchange API work, credentials, deploy file,
 martingale, averaging down, two-exchange logic, or promotion was added.
 
-## Fixed Flag And Output Path
+## Local Verification
+
+The user ran the required local verification from branch `edge-fade-baseline`.
+
+Build/test:
 
 ```text
--backtest-first-btc-15m-range-edge-exhaustion-fade-v1
+ok      range-strategy-lab/cmd/rangelab 0.366s
+ok      range-strategy-lab/internal/lab 0.065s
 ```
+
+Backtest command output:
 
 ```text
-results/backtest-first-btc-15m-range-edge-exhaustion-fade-v1/
+backtest_first_btc_15m_range_edge_exhaustion_fade signal_rows=156 trades=156 summary_rows=12 stop_state=btc_15m_range_edge_exhaustion_fade_backtest_failed_no_usable_strategy
 ```
 
-## Expected Artifacts
+CSV line counts:
 
-The fixed run should write:
-
-- `source_manifest.json`
-- `summary.json`
-- `summary.csv`
-- `trades.json`
-- `btc_15m_range_edge_exhaustion_fade_sources.json/csv`
-- `btc_15m_range_edge_exhaustion_fade_coverage.json/csv`
-- `btc_15m_range_edge_exhaustion_fade_signals.json/csv`
-- `btc_15m_range_edge_exhaustion_fade_skips.json/csv`
-- `btc_15m_range_edge_exhaustion_fade_trades.json/csv`
-- `btc_15m_range_edge_exhaustion_fade_summary.json/csv`
-- `btc_15m_range_edge_exhaustion_fade_falsification.json/csv`
-
-## Required Local Verification
-
-Run from repo root:
-
-```bash
-/usr/local/go/bin/gofmt -w \
-  cmd/rangelab/exfade.go \
-  cmd/rangelab/exfade_outputs.go \
-  cmd/rangelab/exfade_artifacts.go \
-  internal/lab/edge_types.go \
-  internal/lab/edge_rows.go \
-  internal/lab/edge_defaults.go \
-  internal/lab/edge_source.go \
-  internal/lab/edge_resample.go \
-  internal/lab/edge_runner.go \
-  internal/lab/edge_state.go \
-  internal/lab/edge_range.go \
-  internal/lab/edge_side.go \
-  internal/lab/edge_signal.go \
-  internal/lab/edge_exec.go \
-  internal/lab/edge_split.go \
-  internal/lab/edge_trade_rows.go \
-  internal/lab/edge_eval.go \
-  internal/lab/edge_falsification.go
-
-env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
-
-rm -rf results/backtest-first-btc-15m-range-edge-exhaustion-fade-v1
-
-env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
-  -backtest-first-btc-15m-range-edge-exhaustion-fade-v1
-
-wc -l results/backtest-first-btc-15m-range-edge-exhaustion-fade-v1/*.csv
-
-cat results/backtest-first-btc-15m-range-edge-exhaustion-fade-v1/btc_15m_range_edge_exhaustion_fade_falsification.json
-
-cat results/backtest-first-btc-15m-range-edge-exhaustion-fade-v1/btc_15m_range_edge_exhaustion_fade_summary.csv
-
-git diff --check
-git status --short
+```text
+    2 results/backtest-first-btc-15m-range-edge-exhaustion-fade-v1/btc_15m_range_edge_exhaustion_fade_coverage.csv
+    2 results/backtest-first-btc-15m-range-edge-exhaustion-fade-v1/btc_15m_range_edge_exhaustion_fade_falsification.csv
+  157 results/backtest-first-btc-15m-range-edge-exhaustion-fade-v1/btc_15m_range_edge_exhaustion_fade_signals.csv
+    2 results/backtest-first-btc-15m-range-edge-exhaustion-fade-v1/btc_15m_range_edge_exhaustion_fade_skips.csv
+    2 results/backtest-first-btc-15m-range-edge-exhaustion-fade-v1/btc_15m_range_edge_exhaustion_fade_sources.csv
+   13 results/backtest-first-btc-15m-range-edge-exhaustion-fade-v1/btc_15m_range_edge_exhaustion_fade_summary.csv
+  157 results/backtest-first-btc-15m-range-edge-exhaustion-fade-v1/btc_15m_range_edge_exhaustion_fade_trades.csv
+   13 results/backtest-first-btc-15m-range-edge-exhaustion-fade-v1/summary.csv
+  348 total
 ```
 
-## Next Gate
+## Falsification Result
 
-After local verification, record the result with source facts, coverage rows,
-signal rows, executed trades, split metrics, long/short behavior, gross and net
-P&L, drawdown, pass/fail gates, and final stop state.
+```json
+{
+  "backtest_name": "backtest_first_btc_15m_range_edge_exhaustion_fade",
+  "candidate_id": "btc_15m_range_edge_exhaustion_fade_v1",
+  "stop_state": "btc_15m_range_edge_exhaustion_fade_backtest_failed_no_usable_strategy",
+  "source_resample_pass": true,
+  "leakage_pass": true,
+  "trade_count_pass": true,
+  "gross_edge_pass": false,
+  "net_edge_pass": false,
+  "drawdown_pass": false,
+  "robustness_pass": true,
+  "side_reporting_pass": true,
+  "full_executed_trades": 156,
+  "required_full_executed_trades": 120,
+  "minimum_primary_split_executed_trades": 38,
+  "required_primary_split_trades": 25,
+  "full_gross_pnl": -154.40528599997904,
+  "full_net_pnl": -261.59525647142874,
+  "full_profit_factor": 0.48125879295748447,
+  "full_max_drawdown": 0.28473381700333156,
+  "dominant_primary_split_trade_share": 0.40384615384615385,
+  "failure_reasons": [
+    "gross_edge_gate_failed",
+    "net_edge_gate_failed",
+    "drawdown_gate_failed"
+  ]
+}
+```
 
-If this fixed baseline fails, do not rescue it with alternate range windows,
-progress thresholds, edge zones, midpoint variants, added volume filters,
-derivatives context, replay, walk-forward, or optimizer grids.
+## Key Split Summary
+
+| Split | Side | Trades | Win rate | Gross P&L | Net P&L | Profit factor | Max drawdown | Avg hold bars |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `2021_2022_stress` | all | 63 | 0.238095 | -34.287918 | -81.312641 | 0.656318 | 0.126355 | 3.682540 |
+| `2023_2024_oos` | all | 55 | 0.181818 | -75.755449 | -112.884803 | 0.350124 | 0.116621 | 3.654545 |
+| `2025_2026_recent` | all | 38 | 0.184211 | -44.361918 | -67.397812 | 0.282957 | 0.072759 | 3.947368 |
+| `full_2021_2026` | all | 156 | 0.205128 | -154.405286 | -261.595256 | 0.481259 | 0.284734 | 3.737179 |
+| `full_2021_2026` | long | 88 | 0.181818 | -106.970632 | -167.547236 | 0.437620 | 0.196456 | 3.352273 |
+| `full_2021_2026` | short | 68 | 0.235294 | -47.434654 | -94.048021 | 0.544260 | 0.094048 | 4.235294 |
+
+## Interpretation
+
+The baseline failed before any question of tuning or confirmation:
+
+- trade count passed with `156` trades;
+- minimum primary split trade count passed with `38` trades;
+- source/resample, leakage, side reporting, and robustness gates passed;
+- gross edge failed across full, stress, OOS, and recent splits;
+- net edge failed across all primary splits;
+- drawdown failed, with full max drawdown of `0.284734` versus the fixed `0.25`
+  gate;
+- profit factor was far below a usable threshold.
+
+This candidate should not be rescued by retuning.
+
+## Closure Boundary
+
+Do not rescue `btc_15m_range_edge_exhaustion_fade_v1` with alternate range
+windows, progress thresholds, edge zones, midpoint variants, added volume
+filters, derivatives context, replay, walk-forward, or optimizer grids.
+
+All candidates in the current backtest-first candidate packet have now failed as
+fixed baselines. The next research step should be a new materially different
+candidate packet, not a retune of these three baselines.
