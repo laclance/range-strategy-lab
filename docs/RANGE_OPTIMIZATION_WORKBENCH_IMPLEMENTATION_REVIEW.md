@@ -7,22 +7,22 @@ Date: 2026-06-30
 Stop state:
 
 ```text
-range_optimization_workbench_implementation_added_needs_local_run
+range_optimization_workbench_failed_no_candidate
 ```
 
-This implementation adds the bounded offline workbench specified in `docs/RANGE_OPTIMIZATION_WORKBENCH_SPEC.md`.
+The bounded offline workbench specified in `docs/RANGE_OPTIMIZATION_WORKBENCH_SPEC.md` was implemented and locally verified.
 
-No result verdict is claimed here because this connector session could not run the local Go test suite or BTCUSDT CSV workbench command.
+The workbench failed to find a candidate that passed the declared minimum filters. It produced `112` trials, preserved every trial in an immutable run directory, and selected no candidate for fixed validation.
 
 ## Scope
 
-Added offline CLI flag:
+Offline CLI flag:
 
 ```text
 -range-optimization-workbench-v1
 ```
 
-Required run controls:
+Run controls:
 
 ```text
 -run-id <unique_run_id>
@@ -39,24 +39,76 @@ Candidate counting/reporting rules:
 
 This implementation does not authorize paper/testnet/live trading, exchange API work, credentials, deployment files, production integration, martingale, averaging down, two-exchange execution, or promotion from optimizer output.
 
-## Expected Outputs
+## Verified Run
 
-For each immutable run directory:
+Immutable run path:
 
 ```text
-results/range-optimization-workbench-v1/runs/<run_id>/
+results/range-optimization-workbench-v1/runs/20260630T200041Z-78f9a9e/
 ```
 
-Expected outputs include source manifest, source contract, coverage, optimization grid, trial results, trial summary, top candidates, rejected candidates, robustness summary, and falsification artifacts in JSON/CSV form.
+Command output:
 
-The command also writes `results/range-optimization-workbench-v1/latest_run.json`. Existing run directories must not be deleted or overwritten during verification.
+```text
+range_optimization_workbench run_id=20260630T200041Z-78f9a9e trials=112 passing_candidates=0 selected= stop_state=range_optimization_workbench_failed_no_candidate
+```
 
-## Required Local Verification
+CSV line counts:
 
-Use the command block from `docs/RANGE_OPTIMIZATION_WORKBENCH_SPEC.md`, replacing only the generated `RUN_ID` if needed. The run must use a unique output directory and must not delete prior run directories.
+```text
+     2 results/range-optimization-workbench-v1/runs/20260630T200041Z-78f9a9e/coverage.csv
+   113 results/range-optimization-workbench-v1/runs/20260630T200041Z-78f9a9e/rejected_candidates.csv
+     2 results/range-optimization-workbench-v1/runs/20260630T200041Z-78f9a9e/source_contract.csv
+     1 results/range-optimization-workbench-v1/runs/20260630T200041Z-78f9a9e/top_candidates.csv
+   113 results/range-optimization-workbench-v1/runs/20260630T200041Z-78f9a9e/trial_results.csv
+  1345 results/range-optimization-workbench-v1/runs/20260630T200041Z-78f9a9e/trial_summary.csv
+  1576 total
+```
 
-## Next Gate
+Falsification artifact:
 
-After local verification, record the actual result review: trial count, source/resample facts, passing candidate count, selected candidate if any, final stop state, and immutable run path.
+```json
+{
+  "backtest_name": "range_optimization_workbench_v1",
+  "run_id": "20260630T200041Z-78f9a9e",
+  "stop_state": "range_optimization_workbench_failed_no_candidate",
+  "source_resample_pass": true,
+  "total_trials": 112,
+  "max_trials": 2500,
+  "passing_candidates": 0,
+  "failure_reasons": [
+    "no_candidate_passed_minimum_workbench_filters"
+  ]
+}
+```
 
-If a candidate is selected, the workbench must stop at `range_optimization_workbench_candidate_selected_needs_fixed_validation`. That candidate still requires a later locked fixed-validation spec before any stronger claim. If none pass, stop at `range_optimization_workbench_failed_no_candidate`.
+Robustness summary:
+
+```json
+{
+  "run_id": "20260630T200041Z-78f9a9e",
+  "total_trials": 112,
+  "max_trials": 2500,
+  "passing_candidates": 0,
+  "rejected_candidates": 112,
+  "stop_state": "range_optimization_workbench_failed_no_candidate"
+}
+```
+
+## Interpretation
+
+The workbench result is clean but negative:
+
+- Source and 15m resample gates passed.
+- All `112` trials were emitted and preserved.
+- `112` trials were rejected.
+- `0` trials passed the minimum workbench filters.
+- No selected candidate exists for fixed validation.
+
+This means the bounded first-pass combination/tuning workbench did not recover a robust candidate from the failed range-family components under the declared filters.
+
+## Closure Boundary
+
+This result does not authorize paper/testnet/live, exchange API work, credentials, deployment, promotion, martingale, averaging down, two-exchange logic, or production changes.
+
+Do not promote any workbench cell from this run. If further search is desired, it must be a separately approved spec revision or a materially different research lane, with explicit changes to the search space and guardrails.
