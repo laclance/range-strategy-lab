@@ -2,7 +2,7 @@ package lab
 
 import "math"
 
-func btc15MEdgeRange(candles []Candle, d int, lookback int) (btc15MEdgeRange, bool) {
+func btc15MEdgeRangeAt(candles []Candle, d int, lookback int) (btc15MEdgeRange, bool) {
 	if lookback <= 0 || d < lookback {
 		return btc15MEdgeRange{}, false
 	}
