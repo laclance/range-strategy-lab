@@ -57,23 +57,18 @@
   thresholds, alternate windows, side selection, added filters, derivatives
   context, replay, walk-forward, or optimizer grids as if they were the same
   fixed-baseline test.
-- The new docs-only workbench spec in
-  `docs/RANGE_OPTIMIZATION_WORKBENCH_SPEC.md` allows combining and optimizing
-  related range-family components only as controlled offline discovery.
-- Stop state:
-  `range_optimization_workbench_spec_ready_for_implementation_approval`.
-- The workbench may search bounded combinations of range context, volatility,
-  trend/impulse, activity, and session features, but every trial must be emitted
-  and preserved. No failed/ugly trials may be hidden or deleted.
-- Optimizer output alone cannot authorize paper/shadow/live, promotion,
-  production changes, exchange API work, credentials, deployment, martingale,
-  averaging down, or two-exchange logic.
-- At most one workbench candidate may be selected, and selection may only stop at
-  `range_optimization_workbench_candidate_selected_needs_fixed_validation`; a
-  later locked fixed-validation lane is required before stronger claims.
-- If no robust candidate passes the declared filters, stop at
-  `range_optimization_workbench_failed_no_candidate` or
-  `range_optimization_workbench_rejected_overfit_risk`.
+- The range optimization workbench in
+  `docs/RANGE_OPTIMIZATION_WORKBENCH_IMPLEMENTATION_REVIEW.md` was run as
+  controlled offline discovery and stopped at
+  `range_optimization_workbench_failed_no_candidate`.
+- Verified workbench run `20260630T200041Z-78f9a9e` executed `112` trials,
+  rejected all `112`, passed source/resample, and selected no candidate for
+  locked fixed validation.
+- No workbench cell from that run may be promoted, paper/testnet/live traded,
+  deployed, or integrated. Optimizer output remains discovery evidence only.
+- Further search requires a separately approved spec revision or materially
+  different research lane with explicit search-space changes and anti-overfitting
+  guardrails.
 
 ## Derivatives And Context Decisions
 

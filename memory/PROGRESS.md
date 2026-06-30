@@ -24,28 +24,42 @@ git history.
 
 ## Latest Milestone
 
+Range optimization workbench verified no-candidate result:
+
+- Review doc:
+  `docs/RANGE_OPTIMIZATION_WORKBENCH_IMPLEMENTATION_REVIEW.md`.
+- CLI flag:
+  `-range-optimization-workbench-v1`.
+- Stop state:
+  `range_optimization_workbench_failed_no_candidate`.
+- Immutable run path:
+  `results/range-optimization-workbench-v1/runs/20260630T200041Z-78f9a9e/`.
+- Result: source/resample passed; `112` trials ran; `112` trials were rejected;
+  `0` passing candidates; selected candidate is empty.
+- Artifact counts: coverage `2`, rejected candidates `113`, source contract `2`,
+  top candidates `1`, trial results `113`, trial summary `1345`, total CSV lines
+  `1576`.
+- Durable result: no candidate is selected for locked fixed validation. Optimizer
+  output from this run cannot authorize paper/testnet/live trading or promotion.
+- Further search, if desired, requires a separately approved spec revision or a
+  materially different research lane with explicit search-space changes and
+  guardrails.
+
+## 2026-06-30 Milestone Index
+
 Range optimization workbench implementation:
 
 - Added offline implementation review:
   `docs/RANGE_OPTIMIZATION_WORKBENCH_IMPLEMENTATION_REVIEW.md`.
 - Added CLI flag:
   `-range-optimization-workbench-v1`.
-- Stop state:
+- Earlier stop state before local run:
   `range_optimization_workbench_implementation_added_needs_local_run`.
 - The implementation consumes the approved docs-only spec:
   `docs/RANGE_OPTIMIZATION_WORKBENCH_SPEC.md`.
-- The implementation validates the accepted BTCUSDT futures source, exact
-  resamples closed UTC `15m` candles, builds a bounded grid below the `2,500`
-  trial cap, runs each trial through the existing backtest engine, emits every
-  trial, ranks candidates by robustness, and selects at most one candidate for a
-  later locked validation lane.
 - Workbench runs must write to immutable run directories under
   `results/range-optimization-workbench-v1/runs/<run_id>/`; normal verification
   must not delete the canonical workbench results parent.
-- The next required task is local verification and result review. Optimizer output
-  alone cannot authorize paper/testnet/live trading or promotion.
-
-## 2026-06-30 Milestone Index
 
 Range optimization workbench spec:
 
