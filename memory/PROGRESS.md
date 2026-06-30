@@ -25,14 +25,27 @@ git history.
   absorption, higher-timeframe nested range rotation, `range_occupancy_rotation_v1`,
   and range quality/session/failure-mode triage cohorts in their reviewed forms.
 - The latest completed research doc is
+  `docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_PREMISE_SPEC.md`.
+  The user explicitly approved the docs-only BTCUSDT `15m` post-compression
+  directional expansion premise spec. It stopped at
+  `independent_entry_premise_spec_ready_for_user_approval` and selected
+  `btc_15m_post_compression_directional_expansion_v1` as the one independent
+  BTCUSDT `15m` local-source premise family for a later zero-trade audit. The
+  bounded parameter grid is predeclared but not run: compression lookbacks
+  `48`/`96`/`192`, compression thresholds bottom `20%`/`30%`/`40%` of prior
+  `1,920`-bar rolling range width, breakout beyond prior range by
+  `0.1`/`0.2`/`0.3` prior-bar `ATR(14)`, and volume confirmation `none`,
+  above prior `96`-bar median, or above prior `96`-bar `60%` percentile.
+  A future zero-trade audit requires separate explicit approval.
+- The prior completed research doc is
   `docs/FUTURES_INDEPENDENT_ENTRY_PREMISE_AND_HYPOTHESIS_MAP.md`. The user
   explicitly approved implementing the combined docs-only hypothesis map and
   independent entry-premise spec plan. The review stopped at
   `independent_entry_premise_and_hypothesis_map_needs_user_scope_choice`
   because the current reviewed evidence does not expose exactly one eligible
-  BTCUSDT `15m` local-source independent entry premise. A future step must
-  either supply a new BTCUSDT `15m` closed-candle local-source event premise or
-  explicitly choose a different source/scope route.
+  BTCUSDT `15m` local-source independent entry premise. The later
+  post-compression premise spec supersedes its user-choice gate by selecting
+  exactly one new BTCUSDT `15m` local-source event premise for approval.
 - The prior completed research doc is
   `docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_INTEGRATION_SPEC.md`.
   The user explicitly approved the docs-only derivatives no-trade filter
@@ -87,13 +100,15 @@ git history.
   `derivatives_context_source_materialization_passed_ready_for_source_audit_approval`;
   `729` checksum-verified raw zips, `9` normalized CSVs, and `5` manifests live
   under `../binance-bot/data/derivatives/`.
-- The next step is not an implementation. Neither the passing source audit,
-  context-audit brief, context-audit review, strategy-premise spec, no-trade
-  filter premise audit, no-trade filter integration spec, nor independent-entry
-  map authorizes entries, exits, P&L, replay, walk-forward, packaging,
-  paper/testnet/live paths, exchange API work, credentials, deploy files, or
-  promotion. A later veto interaction audit requires a separate independent
-  entry premise and explicit approval.
+- The next step is not automatic implementation. Neither the passing source
+  audit, context-audit brief, context-audit review, strategy-premise spec,
+  no-trade filter premise audit, no-trade filter integration spec,
+  independent-entry map, nor post-compression premise spec authorizes entries,
+  exits, P&L, replay, walk-forward, packaging, paper/testnet/live paths,
+  exchange API work, credentials, deploy files, or promotion. A later
+  zero-trade audit for `btc_15m_post_compression_directional_expansion_v1`
+  requires explicit user approval. A later veto interaction audit requires that
+  independent entry audit to exist and needs another separate approval.
 - The prior dependency docs are
   `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md` and
   `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
@@ -130,6 +145,55 @@ git history.
 - `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt.
 
 ## 2026-06-30
+
+BTCUSDT `15m` post-compression directional expansion premise spec:
+
+- Added docs-only spec:
+  `docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_PREMISE_SPEC.md`.
+- Stop state:
+  `independent_entry_premise_spec_ready_for_user_approval`.
+- User explicitly approved the docs-only premise spec plan after supplying the
+  concrete route:
+  `btc_15m_post_compression_directional_expansion_v1`.
+- Decision: select one independent BTCUSDT `15m` local-source premise family for
+  a later zero-trade audit. Candidate rows are closed-candle post-compression
+  directional expansions over local BTCUSDT futures `15m` resamples only.
+- The bounded parameter grid is predeclared but not run: compression lookback
+  `48`/`96`/`192`; compression threshold bottom `20%`/`30%`/`40%` of prior
+  `1,920` closed `15m` range-width observations; breakout beyond prior range by
+  `0.1`/`0.2`/`0.3` prior-bar `ATR(14)`; volume confirmation `none`, above
+  prior `96`-bar median, or above prior `96`-bar `60%` percentile.
+- The later audit labels are zero-trade only: intended-side forward close
+  return, favorable excursion, adverse excursion, and
+  favorable-greater-than-adverse rate over `16`, `32`, and `48` `15m` bars,
+  compared against the unconditional eligible `15m` baseline by split, side, and
+  horizon.
+- Falsification gates include source/resample failure, leakage, fewer than
+  `300` de-duplicated `(decision_close, side)` candidates, fewer than `50`
+  candidates in any primary period split, no baseline separation, only one
+  isolated passing parameter cell, split instability, closed-family reslice, or
+  derivatives-veto contamination.
+- The canonical derivatives veto
+  `btc_15m_basis_discount_no_trade_veto_v1` remains parked as future
+  skip/retain evidence only. It cannot shape the entry premise, create entries,
+  choose side, score P&L, or be tested until a separate later interaction audit
+  is approved after an independent entry audit exists.
+- The spec authorizes no Go code, CLI flag, generated result directory, audit
+  run, source download, source materialization, data write, entry, exit, P&L
+  backtest, optimizer grid, replay, walk-forward, portfolio construction,
+  paper/testnet/live path, exchange API, credential, deploy file, martingale,
+  averaging down, two-exchange logic, closed-family rescue, veto interaction, or
+  strategy promotion.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to the zero-trade audit approval gate.
+- Commands run:
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+  - `git diff --cached --check`
+- Verification outcomes: reference scan found canonical
+  `memory/NEXT_CODEX_BRIEF.md` references plus historical/checklist mentions
+  only; `git diff --check` passed; pre-commit `git status --short` showed only
+  intended docs and memory changes; staged diff check passed.
 
 Next Codex brief gate hardening:
 

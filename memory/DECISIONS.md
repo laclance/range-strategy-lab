@@ -274,6 +274,24 @@
   remains parked as future skip/retain evidence only and may not shape candidate
   rows, create entries, choose side, rank, score P&L, replay, walk forward,
   optimize, promote a strategy, or reopen closed families.
+- The BTCUSDT `15m` post-compression directional expansion premise spec in
+  `docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_PREMISE_SPEC.md`
+  was explicitly approved as a docs-only task and stopped at
+  `independent_entry_premise_spec_ready_for_user_approval`. It supersedes the
+  independent-entry map's user-choice gate by selecting exactly one new
+  BTCUSDT `15m` local-source premise family for a later zero-trade audit:
+  `btc_15m_post_compression_directional_expansion_v1`.
+- Durable boundary from the post-compression premise spec: the later audit may
+  test only the predeclared local-source parameter family: compression lookbacks
+  `48`/`96`/`192`, compression thresholds bottom `20%`/`30%`/`40%` of prior
+  `1,920` closed `15m` range-width observations, breakout beyond prior range by
+  `0.1`/`0.2`/`0.3` prior-bar `ATR(14)`, and volume confirmation `none`, above
+  prior `96`-bar median, or above prior `96`-bar `60%` percentile. Candidate
+  viability must use de-duplicated `(decision_close, side)` rows; passing
+  evidence must separate from the unconditional eligible `15m` baseline across
+  splits and cannot be a single isolated parameter cell. The audit must reject
+  itself if it becomes a closed-family reslice or uses derivatives veto facts to
+  shape candidate rows, side, scoring, or pass/fail decisions.
 - Spread-range source/engine work remains parked; it does not authorize
   implementation from current state. Volatility-aware exits remain unavailable
   until a future independent entry premise first shows gross edge before costs.
