@@ -1,12 +1,20 @@
-# Next Codex Brief: No Selected Implementation After Post-Compression Backtest Failure
+# Next Codex Brief: Backtest-First Research Lane
 
 ```text
 We are in /home/lance/range-strategy-lab, a standalone offline Go project for
 Binance USDT-M futures range-strategy research.
 
+Before work:
+- Read AGENTS.md.
+- Read memory/README.md, memory/PROGRESS.md, and memory/DECISIONS.md.
+- Read README.md as the docs index.
+- Read docs/STRATEGY_WORKFLOW.md.
+- Read docs/BACKTEST_FIRST_RESEARCH_LANE.md.
+- Inspect git status before editing.
+
 Current state:
-- The approved offline backtest implementation for
-  btc_15m_post_compression_l192_q20_m020_none_long_h48_v1 is complete.
+- The latest fixed offline backtest implementation was for
+  btc_15m_post_compression_l192_q20_m020_none_long_h48_v1.
 - It stopped at:
   post_compression_directional_expansion_backtest_failed_no_usable_strategy.
 - Review doc:
@@ -27,7 +35,6 @@ Current state:
   expected 468 raw representative-cell rows before one-position filtering,
   got 468.
 - Execution produced 421 trades after one-position filtering.
-- Trade-count gate passed: full 421, primary splits 152/146/123.
 - Economics failed:
   full gross P&L 208.560999; engine net -129.258571;
   extra slippage-stress net -227.226250; stress PF 0.799666;
@@ -35,54 +42,79 @@ Current state:
 - Recent split failed before costs:
   2025_2026_recent gross P&L -15.799742, engine net -106.272938,
   extra stress net -132.510165, stress PF 0.526275.
-- Falsification failed gross edge, extra slippage-stress edge, stress PF, and
-  drawdown gates. Source/resample, candidate identity, leakage, trade count,
-  robustness, optimizer-contamination, closed-family, and derivatives-veto
-  gates passed.
+- The exact fixed candidate is closed as no usable strategy in this form.
 
-Important boundary:
-- This exact fixed candidate is closed as no usable strategy in this form.
-- Do not rescue it with adjacent-cell P&L selection, stop/target/hold retuning,
-  volume filters, side changes, the full 81-cell grid, derivatives-veto
-  interaction, replay, walk-forward, source expansion, paper/testnet/live paths,
-  exchange API work, credentials, deploy files, or promotion.
-- The canonical derivatives veto
-  btc_15m_basis_discount_no_trade_veto_v1 remains parked because there is no
-  passed independent entry stream for it to annotate.
+Workflow decision:
+- The lab is now using a backtest-first research lane for materially different
+  simple offline BTCUSDT range-entry ideas.
+- Do not create another long premise-spec -> zero-trade audit -> strategy-premise
+  spec -> backtest spec chain unless the user explicitly asks for that or the
+  idea changes source, timeframe, source family, engine mechanics, promotion
+  state, or paper/live readiness.
+- Prefer a short candidate packet plus one fixed baseline backtest.
+- Become stricter only after a fixed baseline passes.
 
-Before any nontrivial work:
-- Read AGENTS.md.
-- Read memory/README.md, memory/PROGRESS.md, and memory/DECISIONS.md.
-- Read README.md as the docs index.
-- Read docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_REVIEW.md.
-- If the user asks about how we got here, also read:
-  docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_SPEC.md,
-  docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_STRATEGY_PREMISE_SPEC.md,
-  and docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_AUDIT_REVIEW.md.
-- Inspect git status before editing.
+Non-negotiable safeguards:
+- Offline research only.
+- Binance USDT-M futures BTCUSDT 5m remains the active source unless a reviewed
+  source-scope decision changes it.
+- Use confirmed closed-candle decisions only.
+- Use next-bar-open entries.
+- Preserve accepted source validation, source manifests, fees/slippage,
+  stop-first ambiguity, one-position max, split metrics, and reproducible
+  artifacts under results/.
+- No paper/testnet/live path, exchange API work, credentials, deploy files,
+  martingale, averaging down, or two-exchange logic.
+- No lookahead in features, thresholds, entry filters, stops, targets, sizing,
+  ranking, or selection.
 
-No selected next implementation:
-- If the user asks to continue without supplying a materially different premise
-  or explicit docs-only scope task, make no code changes, no generated results,
-  no backtest/audit run, no source download, and no strategy/veto work.
-- Report that the latest fixed post-compression backtest failed and that there
-  is no selected next implementation.
-- Valid next work requires explicit user direction, such as:
-  1. a docs-only hypothesis map for materially different independent entry
-     premise candidates;
-  2. a new BTCUSDT closed-candle local-source premise spec that is not a
-     retuned post-compression/closed-family rescue;
-  3. a docs-only stop/parking decision for this research lane.
+Closed-family boundaries:
+- Do not rescue the failed post-compression fixed candidate with adjacent-cell
+  P&L selection, stop/target/hold retuning, side changes, volume filters,
+  derivatives-veto interaction, replay, walk-forward, or promotion.
+- Do not reopen structured compression, breakout-retest acceptance, clean
+  breakout continuation, hold-inside/midline, impulse absorption,
+  higher-timeframe nested range rotation, range_occupancy_rotation_v1, router
+  rotation, BTC-regime/ETH/SOL context, or derivatives-veto paths merely by
+  renaming or retuning them.
 
-If a later user supplies and approves a materially different docs-only premise
-task:
-- Keep it docs-only unless the user explicitly approves implementation.
-- Preserve BTCUSDT Binance USDT-M futures as the active source unless a
-  separate source-scope review changes it.
-- Keep derivatives veto facts parked unless a future independent entry stream
-  first passes its own fixed backtest and the user separately approves an
-  interaction audit.
-- Update README.md and memory only for the completed bounded milestone.
-- Run the appropriate docs/memory or code closeout checks.
-- Commit completed changes after checks pass unless explicitly told not to.
+Valid next work:
+- If the user asks to continue strategy research without supplying a specific
+  idea, create a compact candidate packet with 3 to 5 materially different
+  BTCUSDT range-entry hypotheses.
+- Reject candidates that are only retuned closed-family rescues.
+- Select the simplest first fixed baseline candidate and state why.
+- If the user explicitly asks for implementation, implement exactly one fixed
+  offline baseline backtest for that selected candidate.
+- The first baseline may include one entry template, one fixed exit model, one
+  sizing model, fees/slippage, source manifest, split metrics, and artifacts.
+- It must not include optimizer grids, adjacent-cell P&L selection, post-result
+  filters, derivatives-veto interaction, replay, walk-forward, paper/testnet/live
+  paths, exchange API work, credentials, deploy files, or promotion.
+
+Candidate packet contents:
+1. hypothesis;
+2. material difference from closed failures;
+3. source and timeframe;
+4. closed-candle entry rule;
+5. fixed stop, target, time stop, sizing, fee, and slippage assumptions;
+6. expected output path and artifacts;
+7. pass/fail gates;
+8. no-rescue boundaries.
+
+Fast-fail rule:
+- If the fixed baseline fails gross edge, OOS/recent split quality, net/stress
+  edge, trade count, drawdown, leakage, source validation, or explainability,
+  record the result and close it. Move to a materially different candidate
+  instead of rescuing it by retuning.
+
+Memory and closeout:
+- Update README.md only when adding a durable doc that future users need to find
+  from the index.
+- Update memory/PROGRESS.md after completed milestones.
+- Update memory/DECISIONS.md only for durable decisions or constraints.
+- Run relevant closeout checks. For docs-only changes, at minimum run markdown or
+  diff hygiene checks available in the local environment plus git diff checks.
+- Commit completed changes after checks pass unless the user explicitly says not
+  to commit.
 ```

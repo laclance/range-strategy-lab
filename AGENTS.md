@@ -9,6 +9,8 @@ Before nontrivial work:
 2. Read `memory/PROGRESS.md`.
 3. Read `memory/DECISIONS.md`.
 4. Read `README.md` and only the relevant docs under `docs/`.
+5. For strategy-continuation work, read
+   `docs/BACKTEST_FIRST_RESEARCH_LANE.md` before adding more premise/audit gates.
 
 Keep project memory current:
 
@@ -32,6 +34,17 @@ Context budget:
   feeling bulky or repetitive.
 - Put detailed evidence in focused docs, generated artifacts under `results/`,
   or git history instead of expanding always-read memory files.
+
+Workflow preference:
+
+- For materially different offline BTCUSDT range-entry ideas, prefer a short
+  candidate packet plus one fixed baseline backtest over repeated docs-only
+  premise/audit/spec gates.
+- Do not use the backtest-first lane to rescue a closed failed family by
+  retuning parameters, adding filters after seeing results, or applying parked
+  derivatives vetoes.
+- Become stricter after a fixed baseline passes, not before the first executable
+  test of a simple hypothesis.
 
 Hard boundaries:
 
