@@ -24,6 +24,29 @@ git history.
 
 ## Latest Milestone
 
+Range optimization workbench implementation:
+
+- Added offline implementation review:
+  `docs/RANGE_OPTIMIZATION_WORKBENCH_IMPLEMENTATION_REVIEW.md`.
+- Added CLI flag:
+  `-range-optimization-workbench-v1`.
+- Stop state:
+  `range_optimization_workbench_implementation_added_needs_local_run`.
+- The implementation consumes the approved docs-only spec:
+  `docs/RANGE_OPTIMIZATION_WORKBENCH_SPEC.md`.
+- The implementation validates the accepted BTCUSDT futures source, exact
+  resamples closed UTC `15m` candles, builds a bounded grid below the `2,500`
+  trial cap, runs each trial through the existing backtest engine, emits every
+  trial, ranks candidates by robustness, and selects at most one candidate for a
+  later locked validation lane.
+- Workbench runs must write to immutable run directories under
+  `results/range-optimization-workbench-v1/runs/<run_id>/`; normal verification
+  must not delete the canonical workbench results parent.
+- The next required task is local verification and result review. Optimizer output
+  alone cannot authorize paper/testnet/live trading or promotion.
+
+## 2026-06-30 Milestone Index
+
 Range optimization workbench spec:
 
 - Added docs-only spec:
@@ -36,14 +59,6 @@ Range optimization workbench spec:
   of failed range-family components plus allowed decision-time context. It does
   not authorize paper/testnet/live trading, exchange API work, credentials,
   deploy files, martingale, averaging down, two-exchange logic, or promotion.
-- Trial preservation is now a durable requirement: workbench runs must write to
-  immutable run directories under
-  `results/range-optimization-workbench-v1/runs/<run_id>/`; normal verification
-  must not delete the canonical workbench results parent.
-- The next allowed task, only after explicit operator approval, is one bounded
-  offline implementation for `-range-optimization-workbench-v1`.
-
-## 2026-06-30 Milestone Index
 
 Backtest-first candidate packet:
 
