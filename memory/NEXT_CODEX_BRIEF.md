@@ -23,6 +23,11 @@ Allowed next task only after explicit user approval:
 - Implement the bounded offline `-range-optimization-workbench-v1` harness from
   docs/RANGE_OPTIMIZATION_WORKBENCH_SPEC.md.
 - Use the fixed source contract and trial logging rules from the spec.
+- Emit every trial into a unique immutable run directory under
+  `results/range-optimization-workbench-v1/runs/<run_id>/`.
+- The implementation must support `-out-dir` and `-run-id`.
+- Do not use `rm -rf` on the canonical workbench results parent during
+  verification; create a new run id for reruns instead.
 - Emit every trial; do not delete failed trials.
 - Select at most one candidate for later locked validation.
 - Optimizer output alone must stop at either failed/no-candidate, rejected
