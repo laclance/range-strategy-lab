@@ -38,14 +38,19 @@ evidence and stopped at
 The docs-only post-compression directional expansion premise spec then selected
 `btc_15m_post_compression_directional_expansion_v1` as the one independent
 BTCUSDT `15m` local-source premise family for a later zero-trade audit, stopping
-at `independent_entry_premise_spec_ready_for_user_approval`.
+at `independent_entry_premise_spec_ready_for_user_approval`. The approved
+zero-trade audit then passed at
+`btc_15m_post_compression_directional_expansion_zero_trade_audit_passed_needs_review`:
+the evidence is a narrow long-only `48`-bar label-separation pocket at the
+`192`-bar lookback and bottom `20%` compression threshold, across adjacent
+breakout/volume cells, with `0` trades.
 No entry, exit, P&L backtest, optimizer, replay, or walk-forward run is
-authorized by the router, premise spec, premise audit, no-trade filter premise
-audit, no-trade filter integration spec, independent-entry map,
-post-compression premise spec, pivot review, BTC/ETH/SOL reviews, derivatives
-source scope review, derivatives context review, or derivatives strategy-
-premise spec. Older spot-data outputs are historical context unless a futures
-rerun explicitly revalidates a specific conclusion.
+authorized by the router, post-compression audit, premise spec, premise audit,
+no-trade filter premise audit, no-trade filter integration spec,
+independent-entry map, post-compression premise spec, pivot review, BTC/ETH/SOL
+reviews, derivatives source scope review, derivatives context review, or
+derivatives strategy-premise spec. Older spot-data outputs are historical
+context unless a futures rerun explicitly revalidates a specific conclusion.
 
 ## Purpose
 
@@ -137,7 +142,8 @@ review, read the docs in this order:
 67. [docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_INTEGRATION_SPEC.md](docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_INTEGRATION_SPEC.md)
 68. [docs/FUTURES_INDEPENDENT_ENTRY_PREMISE_AND_HYPOTHESIS_MAP.md](docs/FUTURES_INDEPENDENT_ENTRY_PREMISE_AND_HYPOTHESIS_MAP.md)
 69. [docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_PREMISE_SPEC.md](docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_PREMISE_SPEC.md)
-70. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+70. [docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_AUDIT_REVIEW.md](docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_AUDIT_REVIEW.md)
+71. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 

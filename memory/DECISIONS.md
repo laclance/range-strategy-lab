@@ -292,6 +292,20 @@
   splits and cannot be a single isolated parameter cell. The audit must reject
   itself if it becomes a closed-family reslice or uses derivatives veto facts to
   shape candidate rows, side, scoring, or pass/fail decisions.
+- The BTCUSDT `15m` post-compression directional expansion zero-trade audit in
+  `docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_AUDIT_REVIEW.md`
+  was explicitly approved for implementation and passed at
+  `btc_15m_post_compression_directional_expansion_zero_trade_audit_passed_needs_review`.
+  It produced `0` trades and found only a narrow long-side `48`-bar diagnostic
+  pocket at lookback `192` and bottom `20%` compression, across adjacent
+  breakout/volume cells. No short-side, `16`-bar, `32`-bar, lookback `48`/`96`,
+  or compression threshold `30%`/`40%` surface passed the full gate.
+- Durable boundary from the post-compression audit: this pass is zero-trade
+  label-separation evidence only. It authorizes no entries, exits, P&L,
+  optimizer selection, replay, walk-forward, derivatives veto interaction, or
+  promotion. A later docs-only strategy-premise spec must decide whether the
+  narrow long `48`-bar pocket justifies requesting a separate offline backtest
+  spec, or whether the line should stop.
 - Spread-range source/engine work remains parked; it does not authorize
   implementation from current state. Volatility-aware exits remain unavailable
   until a future independent entry premise first shows gross edge before costs.

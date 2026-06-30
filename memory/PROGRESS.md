@@ -25,18 +25,23 @@ git history.
   absorption, higher-timeframe nested range rotation, `range_occupancy_rotation_v1`,
   and range quality/session/failure-mode triage cohorts in their reviewed forms.
 - The latest completed research doc is
+  `docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_AUDIT_REVIEW.md`.
+  The user explicitly approved implementing the zero-trade audit for
+  `btc_15m_post_compression_directional_expansion_v1`, and it passed at
+  `btc_15m_post_compression_directional_expansion_zero_trade_audit_passed_needs_review`.
+  The audit used only local BTCUSDT Binance USDT-M futures `5m` candles
+  resampled to exact closed UTC `15m` bars, emitted `0` trades, and found a
+  narrow long-only `48`-bar label-separation pocket at the `192`-bar lookback
+  and bottom `20%` compression threshold across adjacent breakout/volume cells.
+  It does not authorize a strategy, P&L, replay, walk-forward, or veto
+  interaction. The next gate is a separate docs-only strategy-premise spec.
+- The prior completed research doc is
   `docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_PREMISE_SPEC.md`.
   The user explicitly approved the docs-only BTCUSDT `15m` post-compression
   directional expansion premise spec. It stopped at
   `independent_entry_premise_spec_ready_for_user_approval` and selected
   `btc_15m_post_compression_directional_expansion_v1` as the one independent
-  BTCUSDT `15m` local-source premise family for a later zero-trade audit. The
-  bounded parameter grid is predeclared but not run: compression lookbacks
-  `48`/`96`/`192`, compression thresholds bottom `20%`/`30%`/`40%` of prior
-  `1,920`-bar rolling range width, breakout beyond prior range by
-  `0.1`/`0.2`/`0.3` prior-bar `ATR(14)`, and volume confirmation `none`,
-  above prior `96`-bar median, or above prior `96`-bar `60%` percentile.
-  A future zero-trade audit requires separate explicit approval.
+  BTCUSDT `15m` local-source premise family for zero-trade audit.
 - The prior completed research doc is
   `docs/FUTURES_INDEPENDENT_ENTRY_PREMISE_AND_HYPOTHESIS_MAP.md`. The user
   explicitly approved implementing the combined docs-only hypothesis map and
@@ -103,12 +108,12 @@ git history.
 - The next step is not automatic implementation. Neither the passing source
   audit, context-audit brief, context-audit review, strategy-premise spec,
   no-trade filter premise audit, no-trade filter integration spec,
-  independent-entry map, nor post-compression premise spec authorizes entries,
-  exits, P&L, replay, walk-forward, packaging, paper/testnet/live paths,
-  exchange API work, credentials, deploy files, or promotion. A later
-  zero-trade audit for `btc_15m_post_compression_directional_expansion_v1`
-  requires explicit user approval. A later veto interaction audit requires that
-  independent entry audit to exist and needs another separate approval.
+  independent-entry map, post-compression premise spec, nor post-compression
+  zero-trade audit authorizes entries, exits, P&L, replay, walk-forward,
+  packaging, paper/testnet/live paths, exchange API work, credentials, deploy
+  files, or promotion. A later strategy-premise spec for the passed
+  post-compression pocket requires explicit user approval. A later veto
+  interaction audit requires another separate approval.
 - The prior dependency docs are
   `docs/FUTURES_RANGE_ROUTER_ROTATION_PREMISE_SPEC.md` and
   `docs/FUTURES_RANGE_CONTEXT_ROUTER_AUDIT_REVIEW.md`.
@@ -145,6 +150,67 @@ git history.
 - `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt.
 
 ## 2026-06-30
+
+BTCUSDT `15m` post-compression directional expansion zero-trade audit:
+
+- Added implementation review:
+  `docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_AUDIT_REVIEW.md`.
+- Stop state:
+  `btc_15m_post_compression_directional_expansion_zero_trade_audit_passed_needs_review`.
+- User explicitly approved implementing the zero-trade audit for
+  `btc_15m_post_compression_directional_expansion_v1`.
+- Implemented CLI flag:
+  `-futures-btc-15m-post-compression-directional-expansion-audit`, defaulting
+  to
+  `results/futures-btc-15m-post-compression-directional-expansion-audit/`.
+- Source facts reproduced: `573,984` BTCUSDT Binance USDT-M futures `5m`
+  candles from `2021-01-01T00:00:00Z` through `2026-06-16T23:55:00Z`,
+  `gap_count=0`, `duplicate_count=0`, `zero_volume_count=66`,
+  `comparison_only=false`, `validation_status=accepted`.
+- Exact closed UTC `15m` resample facts: `191,328` rows, first open
+  `2021-01-01T00:00:00Z`, last open `2026-06-16T23:45:00Z`, last close
+  `2026-06-16T23:59:59Z`, `3` expected child bars, `0` missing child opens,
+  validation accepted.
+- Result path:
+  `results/futures-btc-15m-post-compression-directional-expansion-audit/`.
+  Audit artifacts reported `parameter_cells=81`, `candidate_rows=386,694`,
+  `dedup_events=4,677`, `baseline_rows=24`, `split_summary_rows=1,944`,
+  `adjacency_rows=486`, `missingness_rows=4`, `passing_cells=9`,
+  `adjacent_pass_clusters=9`, and common outputs with `trades=0`.
+- Falsification gates passed: source/resample, leakage, full de-duplicated
+  candidate size (`4,677` versus required `300`), split size (minimum primary
+  split `1,484` versus required `50`), baseline separation, adjacent-cell
+  cluster, split stability, closed-family protection, derivatives-veto
+  contamination, and zero-trade common outputs.
+- Passing evidence is narrow and diagnostic only: long-side `48`-bar labels at
+  lookback `192`, compression threshold bottom `20%`, all breakout thresholds
+  `0.1`/`0.2`/`0.3` prior-bar `ATR(14)`, and all volume modes. No short-side,
+  `16`-bar, `32`-bar, lookback `48`/`96`, or compression threshold `30%`/`40%`
+  surface passed the full gate.
+- Missingness was skipped, never filled: audit warmup `2,112`, missing forward
+  label `27`, missing max-horizon future `48`, and missing volume reference
+  `780`.
+- Added Go tests for event construction, label anchoring/symmetry,
+  de-duplication, baseline comparison, adjacency, stop-state precedence, CLI
+  artifact creation, zero-trade common outputs, spot rejection, and flag
+  conflicts.
+- Refreshed `memory/NEXT_CODEX_BRIEF.md` to the docs-only strategy-premise spec
+  approval gate. No trading implementation is authorized.
+- Commands run:
+  - `gofmt -w cmd/rangelab/main.go cmd/rangelab/main_test.go internal/lab/futures_btc_15m_post_compression_directional_expansion_audit.go internal/lab/futures_btc_15m_post_compression_directional_expansion_audit_test.go`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  - `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -futures-btc-15m-post-compression-directional-expansion-audit`
+  - `wc -l results/futures-btc-15m-post-compression-directional-expansion-audit/*.csv`
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+  - `git diff --cached --check`
+- Verification outcomes: all package tests passed; audit run passed with `0`
+  trades and the passing stop state; CSV line count totaled `393,934`
+  including headers; reference scan found canonical `memory/NEXT_CODEX_BRIEF.md`
+  references plus historical/checklist mentions only; `git diff --check`
+  passed; pre-staged `git status --short` showed only intended code, docs, and
+  memory changes; staged diff check passed.
 
 BTCUSDT `15m` post-compression directional expansion premise spec:
 

@@ -34,6 +34,7 @@ var futuresBTCRegimeETHSOLContextAuditConfigForRun = lab.DefaultFuturesBTCRegime
 var futuresDerivativesContextSourceAuditConfigForRun = lab.DefaultFuturesDerivativesContextSourceAuditConfig
 var futuresDerivativesContextAuditConfigForRun = lab.DefaultFuturesDerivativesContextAuditConfig
 var futuresDerivativesNoTradeFilterPremiseAuditConfigForRun = lab.DefaultFuturesDerivativesNoTradeFilterPremiseAuditConfig
+var futuresBTC15MPostCompressionDirectionalExpansionAuditConfigForRun = lab.DefaultFuturesBTC15MPostCompressionDirectionalExpansionAuditConfig
 
 func main() {
 	if err := run(); err != nil {
@@ -87,6 +88,7 @@ func runWithArgs(args []string) error {
 	futuresDerivativesContextSourceAudit := fs.Bool("futures-derivatives-context-source-audit", false, "write zero-trade derivatives context source audit diagnostics")
 	futuresDerivativesContextAudit := fs.Bool("futures-derivatives-context-audit", false, "write zero-trade derivatives context separation audit diagnostics")
 	futuresDerivativesNoTradeFilterPremiseAudit := fs.Bool("futures-derivatives-no-trade-filter-premise-audit", false, "write zero-trade derivatives no-trade filter premise diagnostics")
+	futuresBTC15MPostCompressionDirectionalExpansionAudit := fs.Bool("futures-btc-15m-post-compression-directional-expansion-audit", false, "write zero-trade BTCUSDT 15m post-compression directional expansion diagnostics")
 	srAudit := fs.Bool("sr-audit", false, "write go-sr support/resistance audit diagnostics")
 	srBoundaryAudit := fs.Bool("sr-boundary-audit", false, "write non-trading SR boundary quality diagnostics")
 	srBoundaryInspect := fs.Bool("sr-boundary-inspect", false, "write compact non-trading SR boundary candidate comparison diagnostics")
@@ -134,6 +136,9 @@ func runWithArgs(args []string) error {
 	}
 	if *futuresDerivativesNoTradeFilterPremiseAudit && !outDirWasSet {
 		*outDir = "results/futures-derivatives-no-trade-filter-premise-audit"
+	}
+	if *futuresBTC15MPostCompressionDirectionalExpansionAudit && !outDirWasSet {
+		*outDir = "results/futures-btc-15m-post-compression-directional-expansion-audit"
 	}
 
 	product := *sourceProduct
@@ -258,6 +263,17 @@ func runWithArgs(args []string) error {
 			return fmt.Errorf("-futures-derivatives-no-trade-filter-premise-audit cannot be combined with other audit, detector, source-expansion, or diagnostic flags")
 		}
 	}
+	if *futuresBTC15MPostCompressionDirectionalExpansionAudit {
+		if sourceManifest.ComparisonOnly || sourceManifest.Product != "Binance USDT-M futures" {
+			return fmt.Errorf("-futures-btc-15m-post-compression-directional-expansion-audit requires Binance USDT-M futures source; got product=%q comparison_only=%t", sourceManifest.Product, sourceManifest.ComparisonOnly)
+		}
+		if tradeProducingFlagSelected {
+			return fmt.Errorf("-futures-btc-15m-post-compression-directional-expansion-audit cannot be combined with trade-producing prototype/backtest/optimization/replay/walk-forward flags")
+		}
+		if *detector || *detectorSweep || *detectorDurabilitySweep || *detectorContextRefinementAudit || *holdInsideDirectionalEdgeAudit || *holdInsideMidlineTransitionAudit || *holdInsideMidlineReactionAudit || *futuresImpulseAbsorptionAudit || *futuresRangeCandidateDiscoveryAudit || *futuresRangeUniverseDiscoveryAudit || *futuresHigherTFNestedRangeRotationAudit || *futuresRangeContextTriageAudit || *futuresRangeStateConstructionLoopAudit || *futuresRangeContextRouterAudit || *futuresRangeRouterRotationPremiseAudit || *futuresBTCRegimeETHSOLContextAudit || *futuresDerivativesContextSourceAudit || *futuresDerivativesContextAudit || *futuresDerivativesNoTradeFilterPremiseAudit || *srAudit || *srBoundaryAudit || *srBoundaryInspect || *srRejectionTimingAudit || *srConfirmationTimingAudit || *srFalseBreakReclaimTimingAudit || *compressionBreakoutAudit || *rangeRegimeDurabilityAudit {
+			return fmt.Errorf("-futures-btc-15m-post-compression-directional-expansion-audit cannot be combined with other audit, detector, source-expansion, or diagnostic flags")
+		}
+	}
 
 	var strategy lab.Strategy = lab.EmptyStrategy{}
 	strategyName := strategy.Name()
@@ -370,6 +386,7 @@ func runWithArgs(args []string) error {
 	var btcRegimeETHSOLContextResult lab.FuturesBTCRegimeETHSOLContextAuditResult
 	var derivativesContextAuditResult lab.FuturesDerivativesContextAuditResult
 	var derivativesNoTradeFilterPremiseAuditResult lab.FuturesDerivativesNoTradeFilterPremiseAuditResult
+	var btc15MPostCompressionDirectionalExpansionAuditResult lab.FuturesBTC15MPostCompressionDirectionalExpansionAuditResult
 	var result lab.BacktestResult
 	if *futuresCleanBreakoutBaselineBacktest {
 		var err error
@@ -1571,6 +1588,77 @@ func runWithArgs(args []string) error {
 			derivativesNoTradeFilterPremiseAuditResult.ExactCandidatesPassed,
 			derivativesNoTradeFilterPremiseAuditResult.CanonicalUnionPassed,
 			derivativesNoTradeFilterPremiseAuditResult.StopState,
+		)
+	}
+	if *futuresBTC15MPostCompressionDirectionalExpansionAudit {
+		auditCfg := futuresBTC15MPostCompressionDirectionalExpansionAuditConfigForRun()
+		var err error
+		btc15MPostCompressionDirectionalExpansionAuditResult, err = lab.RunFuturesBTC15MPostCompressionDirectionalExpansionAudit(candles, sourceManifest, auditCfg, lab.DefaultSplits())
+		if err != nil {
+			return err
+		}
+		artifacts := []struct {
+			name string
+			rows any
+		}{
+			{"btc_15m_post_compression_directional_expansion_sources", btc15MPostCompressionDirectionalExpansionAuditResult.SourceRows},
+			{"btc_15m_post_compression_directional_expansion_resample_coverage", btc15MPostCompressionDirectionalExpansionAuditResult.CoverageRows},
+			{"btc_15m_post_compression_directional_expansion_parameter_cells", btc15MPostCompressionDirectionalExpansionAuditResult.ParameterCells},
+			{"btc_15m_post_compression_directional_expansion_candidates", btc15MPostCompressionDirectionalExpansionAuditResult.CandidateRows},
+			{"btc_15m_post_compression_directional_expansion_dedup_events", btc15MPostCompressionDirectionalExpansionAuditResult.DedupEvents},
+			{"btc_15m_post_compression_directional_expansion_baseline", btc15MPostCompressionDirectionalExpansionAuditResult.BaselineRows},
+			{"btc_15m_post_compression_directional_expansion_split_summary", btc15MPostCompressionDirectionalExpansionAuditResult.SplitSummaryRows},
+			{"btc_15m_post_compression_directional_expansion_adjacency", btc15MPostCompressionDirectionalExpansionAuditResult.AdjacencyRows},
+			{"btc_15m_post_compression_directional_expansion_missingness", btc15MPostCompressionDirectionalExpansionAuditResult.MissingnessRows},
+		}
+		for _, art := range artifacts {
+			if err := writeJSON(filepath.Join(*outDir, art.name+".json"), art.rows); err != nil {
+				return err
+			}
+		}
+		if err := writeFuturesBTC15MPostCompressionDirectionalExpansionSourcesCSV(filepath.Join(*outDir, "btc_15m_post_compression_directional_expansion_sources.csv"), btc15MPostCompressionDirectionalExpansionAuditResult.SourceRows); err != nil {
+			return err
+		}
+		if err := writeFuturesBTC15MPostCompressionDirectionalExpansionCoverageCSV(filepath.Join(*outDir, "btc_15m_post_compression_directional_expansion_resample_coverage.csv"), btc15MPostCompressionDirectionalExpansionAuditResult.CoverageRows); err != nil {
+			return err
+		}
+		if err := writeFuturesBTC15MPostCompressionDirectionalExpansionParameterCellsCSV(filepath.Join(*outDir, "btc_15m_post_compression_directional_expansion_parameter_cells.csv"), btc15MPostCompressionDirectionalExpansionAuditResult.ParameterCells); err != nil {
+			return err
+		}
+		if err := writeFuturesBTC15MPostCompressionDirectionalExpansionCandidatesCSV(filepath.Join(*outDir, "btc_15m_post_compression_directional_expansion_candidates.csv"), btc15MPostCompressionDirectionalExpansionAuditResult.CandidateRows); err != nil {
+			return err
+		}
+		if err := writeFuturesBTC15MPostCompressionDirectionalExpansionDedupEventsCSV(filepath.Join(*outDir, "btc_15m_post_compression_directional_expansion_dedup_events.csv"), btc15MPostCompressionDirectionalExpansionAuditResult.DedupEvents); err != nil {
+			return err
+		}
+		if err := writeFuturesBTC15MPostCompressionDirectionalExpansionBaselineCSV(filepath.Join(*outDir, "btc_15m_post_compression_directional_expansion_baseline.csv"), btc15MPostCompressionDirectionalExpansionAuditResult.BaselineRows); err != nil {
+			return err
+		}
+		if err := writeFuturesBTC15MPostCompressionDirectionalExpansionSplitSummaryCSV(filepath.Join(*outDir, "btc_15m_post_compression_directional_expansion_split_summary.csv"), btc15MPostCompressionDirectionalExpansionAuditResult.SplitSummaryRows); err != nil {
+			return err
+		}
+		if err := writeFuturesBTC15MPostCompressionDirectionalExpansionAdjacencyCSV(filepath.Join(*outDir, "btc_15m_post_compression_directional_expansion_adjacency.csv"), btc15MPostCompressionDirectionalExpansionAuditResult.AdjacencyRows); err != nil {
+			return err
+		}
+		if err := writeFuturesBTC15MPostCompressionDirectionalExpansionMissingnessCSV(filepath.Join(*outDir, "btc_15m_post_compression_directional_expansion_missingness.csv"), btc15MPostCompressionDirectionalExpansionAuditResult.MissingnessRows); err != nil {
+			return err
+		}
+		if err := writeJSON(filepath.Join(*outDir, "btc_15m_post_compression_directional_expansion_falsification.json"), btc15MPostCompressionDirectionalExpansionAuditResult.Falsification); err != nil {
+			return err
+		}
+		fmt.Printf("futures_btc_15m_post_compression_directional_expansion_audit source_rows=%d coverage_rows=%d parameter_cells=%d candidate_rows=%d dedup_events=%d baseline_rows=%d split_summary_rows=%d adjacency_rows=%d missingness_rows=%d passing_cells=%d adjacent_pass_clusters=%d stop_state=%s\n",
+			len(btc15MPostCompressionDirectionalExpansionAuditResult.SourceRows),
+			len(btc15MPostCompressionDirectionalExpansionAuditResult.CoverageRows),
+			len(btc15MPostCompressionDirectionalExpansionAuditResult.ParameterCells),
+			len(btc15MPostCompressionDirectionalExpansionAuditResult.CandidateRows),
+			len(btc15MPostCompressionDirectionalExpansionAuditResult.DedupEvents),
+			len(btc15MPostCompressionDirectionalExpansionAuditResult.BaselineRows),
+			len(btc15MPostCompressionDirectionalExpansionAuditResult.SplitSummaryRows),
+			len(btc15MPostCompressionDirectionalExpansionAuditResult.AdjacencyRows),
+			len(btc15MPostCompressionDirectionalExpansionAuditResult.MissingnessRows),
+			btc15MPostCompressionDirectionalExpansionAuditResult.PassingCells,
+			btc15MPostCompressionDirectionalExpansionAuditResult.Falsification.AdjacentPassingCellSideHorizons,
+			btc15MPostCompressionDirectionalExpansionAuditResult.StopState,
 		)
 	}
 	var srRows []lab.SRAuditRow
@@ -3955,6 +4043,42 @@ func writeFuturesDerivativesNoTradeFilterPremiseMissingnessCSV(path string, rows
 }
 
 func writeFuturesDerivativesNoTradeFilterPremiseSummaryCSV(path string, rows []lab.FuturesDerivativesNoTradeFilterPremiseSummaryRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTC15MPostCompressionDirectionalExpansionSourcesCSV(path string, rows []lab.BTC15MPostCompressionSourceRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTC15MPostCompressionDirectionalExpansionCoverageCSV(path string, rows []lab.BTC15MPostCompressionCoverageRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTC15MPostCompressionDirectionalExpansionParameterCellsCSV(path string, rows []lab.BTC15MPostCompressionParameterCell) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTC15MPostCompressionDirectionalExpansionCandidatesCSV(path string, rows []lab.BTC15MPostCompressionCandidateRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTC15MPostCompressionDirectionalExpansionDedupEventsCSV(path string, rows []lab.BTC15MPostCompressionDedupEventRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTC15MPostCompressionDirectionalExpansionBaselineCSV(path string, rows []lab.BTC15MPostCompressionBaselineRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTC15MPostCompressionDirectionalExpansionSplitSummaryCSV(path string, rows []lab.BTC15MPostCompressionSplitSummaryRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTC15MPostCompressionDirectionalExpansionAdjacencyCSV(path string, rows []lab.BTC15MPostCompressionAdjacencyRow) error {
+	return writeJSONTaggedCSV(path, rows)
+}
+
+func writeFuturesBTC15MPostCompressionDirectionalExpansionMissingnessCSV(path string, rows []lab.BTC15MPostCompressionMissingnessRow) error {
 	return writeJSONTaggedCSV(path, rows)
 }
 

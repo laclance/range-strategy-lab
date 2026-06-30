@@ -1770,6 +1770,82 @@ func TestRunWithArgsFuturesDerivativesNoTradeFilterPremiseAuditFlagWritesArtifac
 	}
 }
 
+func TestRunWithArgsFuturesBTC15MPostCompressionDirectionalExpansionAuditFlagWritesArtifactsAndRejectsConflicts(t *testing.T) {
+	dir := t.TempDir()
+	futuresPath := writeCLITestCSVN(t, dir, "btcusdt_futures_um_5m_post_compression_cli.csv", 96)
+	oldCfg := futuresBTC15MPostCompressionDirectionalExpansionAuditConfigForRun
+	futuresBTC15MPostCompressionDirectionalExpansionAuditConfigForRun = func() lab.FuturesBTC15MPostCompressionDirectionalExpansionAuditConfig {
+		cfg := lab.DefaultFuturesBTC15MPostCompressionDirectionalExpansionAuditConfig()
+		cfg.ApprovedSourcePath = futuresPath
+		cfg.SkipSourceFactCheck = true
+		cfg.SkipCoverageCountCheck = true
+		cfg.CompressionLookbacks = []int{2}
+		cfg.CompressionPercentiles = []float64{0.8}
+		cfg.PercentileReferenceBars = 2
+		cfg.BreakoutATRMultiples = []float64{0.1}
+		cfg.VolumeModes = []string{lab.BTC15MPostCompressionVolumeNone}
+		cfg.VolumeLookbackBars = 2
+		cfg.ATRPeriod = 2
+		cfg.HorizonsBars = []int{1}
+		cfg.MinFullDedupCandidates = 1
+		cfg.MinSplitDedupCandidates = 1
+		return cfg
+	}
+	defer func() { futuresBTC15MPostCompressionDirectionalExpansionAuditConfigForRun = oldCfg }()
+
+	defaultOutDir := filepath.Join(dir, "default")
+	if err := runWithArgs([]string{"-csv", futuresPath, "-source-product", lab.SourceProductBinanceUSDMFutures, "-out-dir", defaultOutDir}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(defaultOutDir, "btc_15m_post_compression_directional_expansion_sources.csv")); !os.IsNotExist(err) {
+		t.Fatalf("default run should not write post-compression audit artifacts, stat err=%v", err)
+	}
+
+	outDir := filepath.Join(dir, "post-compression")
+	if err := runWithArgs([]string{"-csv", futuresPath, "-source-product", lab.SourceProductBinanceUSDMFutures, "-futures-btc-15m-post-compression-directional-expansion-audit", "-out-dir", outDir}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{
+		"source_manifest.json", "summary.csv", "summary.json", "trades.json",
+		"btc_15m_post_compression_directional_expansion_sources.csv", "btc_15m_post_compression_directional_expansion_sources.json",
+		"btc_15m_post_compression_directional_expansion_resample_coverage.csv", "btc_15m_post_compression_directional_expansion_resample_coverage.json",
+		"btc_15m_post_compression_directional_expansion_parameter_cells.csv", "btc_15m_post_compression_directional_expansion_parameter_cells.json",
+		"btc_15m_post_compression_directional_expansion_candidates.csv", "btc_15m_post_compression_directional_expansion_candidates.json",
+		"btc_15m_post_compression_directional_expansion_dedup_events.csv", "btc_15m_post_compression_directional_expansion_dedup_events.json",
+		"btc_15m_post_compression_directional_expansion_baseline.csv", "btc_15m_post_compression_directional_expansion_baseline.json",
+		"btc_15m_post_compression_directional_expansion_split_summary.csv", "btc_15m_post_compression_directional_expansion_split_summary.json",
+		"btc_15m_post_compression_directional_expansion_adjacency.csv", "btc_15m_post_compression_directional_expansion_adjacency.json",
+		"btc_15m_post_compression_directional_expansion_missingness.csv", "btc_15m_post_compression_directional_expansion_missingness.json",
+		"btc_15m_post_compression_directional_expansion_falsification.json",
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, name)); err != nil {
+			t.Fatalf("expected post-compression audit artifact %s: %v", name, err)
+		}
+	}
+	data, err := os.ReadFile(filepath.Join(outDir, "trades.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var trades []lab.Trade
+	if err := json.Unmarshal(data, &trades); err != nil {
+		t.Fatal(err)
+	}
+	if len(trades) != 0 {
+		t.Fatalf("post-compression audit must remain zero-trade, got %d", len(trades))
+	}
+
+	spotPath := writeCLITestCSV(t, dir, "btcusdt_spot_5m_post_compression.csv")
+	spotErr := runWithArgs([]string{"-csv", spotPath, "-source-product", lab.SourceProductBinanceSpot, "-allow-spot-comparison", "-futures-btc-15m-post-compression-directional-expansion-audit", "-out-dir", filepath.Join(dir, "spot")})
+	if spotErr == nil || !strings.Contains(spotErr.Error(), "requires Binance USDT-M futures source") {
+		t.Fatalf("expected post-compression futures-source error, got %v", spotErr)
+	}
+
+	conflictErr := runWithArgs([]string{"-csv", futuresPath, "-source-product", lab.SourceProductBinanceUSDMFutures, "-futures-btc-15m-post-compression-directional-expansion-audit", "-futures-derivatives-no-trade-filter-premise-audit", "-out-dir", filepath.Join(dir, "conflict")})
+	if conflictErr == nil || !strings.Contains(conflictErr.Error(), "cannot be combined") {
+		t.Fatalf("expected error combining post-compression audit with another audit flag, got %v", conflictErr)
+	}
+}
+
 func writeCLITestCSV(t *testing.T, dir string, name string) string {
 	return writeCLITestCSVN(t, dir, name, 2)
 }
