@@ -47,6 +47,41 @@ Immutable run path:
 results/range-optimization-workbench-v1/runs/20260630T200041Z-78f9a9e/
 ```
 
+Verification command used for this verdict:
+
+```bash
+RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)-$(git rev-parse --short HEAD)"
+OUT_DIR="results/range-optimization-workbench-v1/runs/${RUN_ID}"
+
+test ! -e "${OUT_DIR}"
+
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+  -range-optimization-workbench-v1 \
+  -out-dir "${OUT_DIR}" \
+  -run-id "${RUN_ID}"
+
+wc -l "${OUT_DIR}"/*.csv
+cat "${OUT_DIR}"/falsification.json
+cat "${OUT_DIR}"/robustness_summary.json
+
+git diff --check
+git status --short
+```
+
+Resolved values for the verified run:
+
+```bash
+RUN_ID="20260630T200041Z-78f9a9e"
+OUT_DIR="results/range-optimization-workbench-v1/runs/20260630T200041Z-78f9a9e"
+
+env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
+  -range-optimization-workbench-v1 \
+  -out-dir "results/range-optimization-workbench-v1/runs/20260630T200041Z-78f9a9e" \
+  -run-id "20260630T200041Z-78f9a9e"
+```
+
+No explicit `-csv` or `-source-product` flag was passed. The run therefore used the default accepted source path and source-product behavior from the merged CLI: `../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv` as Binance USDT-M futures BTCUSDT `5m`.
+
 Command output:
 
 ```text
