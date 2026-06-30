@@ -7,12 +7,14 @@ Binance USDT-M futures range-strategy research.
 There is no selected implementation from the current state. Do not implement an
 entry audit, derivatives veto interaction, strategy, P&L run, replay,
 walk-forward, source expansion, or generated result directory unless the user
-first supplies and explicitly approves one concrete next route.
+first supplies and explicitly approves one complete concrete next route.
 
 If the user has not chosen exactly one next route, make no docs edits, no Go
 code changes, no CLI flag, no generated result directory, no audit run, no
 source download, no network request, no data write, and no strategy/P&L work.
-Report the waiting state and stop.
+Report the waiting state and stop. A route name alone is not enough; if the
+required details for that route are missing, ask for the missing details and keep
+the worktree unchanged.
 
 Before any nontrivial work:
 - Read AGENTS.md.
@@ -45,27 +47,25 @@ Current state:
 - The canonical derivatives veto candidate is preserved as future skip/retain
   evidence only:
   btc_15m_basis_discount_no_trade_veto_v1.
-- The veto premise facts remain: 1,823 de-duplicated veto rows; 1,241 no-trade
-  toxic rows; toxic rate 0.680746; minimum split toxic rate 0.665485; weakest
-  split rows 387; full toxic improvement versus local-only baseline 0.046269;
-  311 rotation-useful and 271 continuation-useful full-sample collateral rows
-  were reported.
+- The detailed veto premise facts remain in
+  docs/FUTURES_DERIVATIVES_CONTEXT_NO_TRADE_FILTER_INTEGRATION_SPEC.md. Do not
+  use those facts to select, shape, or rank an entry premise.
 - There is no independently approved candidate-entry stream for the veto to
   filter, so no veto interaction audit is selected.
 
 The user must choose exactly one next route before work starts:
 1. New BTCUSDT 15m local-source premise: requires a closed-candle candidate
    event, intended side/timing, why it is not a closed-family reslice, and a
-   falsification rule. First task should be a docs-only premise spec unless the
-   user provides a complete spec and explicitly approves a zero-trade audit.
+   falsification rule. First task must be a docs-only premise spec.
 2. Higher-timeframe premise: requires interval set and materially different
    range behavior, not the failed nested rotation premise. First task should be
-   a docs-only premise spec or zero-trade audit brief.
+   a docs-only premise spec or zero-trade audit brief, not audit implementation.
 3. Spread-range / pair-range: requires explicit source and engine scope
    acceptance. First task should be a docs-only source/engine scope spec.
 4. New source family: requires source family, provenance plan, and anti-leakage
    alignment premise. First task should be a docs-only source-scope or
-   source-audit brief.
+   source-audit brief. Default to source-scope first unless the source is
+   already local, provenance-bound, and coverage-known.
 5. No further audit: update docs/memory only if the user explicitly asks for a
    closeout note.
 
@@ -112,6 +112,8 @@ Closeout if a future approved milestone is completed:
   rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md
   git diff --check
   git status --short
+- After staging, run:
+  git diff --cached --check
 - Also run Go tests and artifact row-count checks only when code or generated
   outputs changed.
 - Commit completed docs/memory/code changes after checks pass unless told not

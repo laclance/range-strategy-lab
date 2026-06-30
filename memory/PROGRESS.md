@@ -131,6 +131,35 @@ git history.
 
 ## 2026-06-30
 
+Next Codex brief gate hardening:
+
+- User asked to apply the recommendations from the read-only review of
+  `memory/NEXT_CODEX_BRIEF.md`.
+- Refined the canonical next-session brief without changing the active stop
+  state:
+  `independent_entry_premise_and_hypothesis_map_needs_user_scope_choice`.
+- The brief now requires one complete route before work starts, treats a route
+  name alone as insufficient, and keeps the worktree unchanged when required
+  route details are missing.
+- The brief now keeps a new BTCUSDT `15m` local-source premise docs-first,
+  points detailed veto metrics back to the integration spec instead of
+  foregrounding them in the user-choice gate, defaults new source-family work to
+  source-scope first unless the source is already local/provenance-bound/
+  coverage-known, and adds `git diff --cached --check` to staged closeout.
+- No Go code, CLI flag, generated result directory, audit run, source download,
+  data write, entry, exit, P&L backtest, replay, walk-forward, veto interaction,
+  strategy promotion, README index change, or durable `memory/DECISIONS.md`
+  boundary change was made.
+- Commands run:
+  - `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md`
+  - `git diff --check`
+  - `git status --short`
+  - `git diff --cached --check`
+- Verification outcomes: reference scan found canonical
+  `memory/NEXT_CODEX_BRIEF.md` references plus historical/checklist mentions
+  only; `git diff --check` passed; pre-commit `git status --short` showed only
+  intended memory changes; staged diff check passed.
+
 Independent entry-premise and hypothesis map:
 
 - Added docs-only review:
