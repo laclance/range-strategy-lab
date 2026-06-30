@@ -1,27 +1,30 @@
-# Next Codex Brief: New Candidate Packet
+# Next Codex Brief: Range Optimization Workbench Implementation
 
 ```text
 Current state:
-- All three candidates from docs/BACKTEST_FIRST_CANDIDATE_PACKET.md failed.
+- All three candidates from docs/BACKTEST_FIRST_CANDIDATE_PACKET.md failed as
+  fixed baselines.
 - btc_5m_rolling_value_area_reversion_v1 failed and is closed.
 - btc_15m_previous_day_range_reversion_v1 failed and is closed.
 - btc_15m_range_edge_exhaustion_fade_v1 failed and is closed.
+- A docs-only optimization/workbench spec has been added:
+  docs/RANGE_OPTIMIZATION_WORKBENCH_SPEC.md.
+- Stop state:
+  range_optimization_workbench_spec_ready_for_implementation_approval.
 
-Latest result:
-- btc_15m_range_edge_exhaustion_fade_v1 produced 156 trades.
-- Full gross P&L: -154.40528599997904.
-- Full net P&L: -261.59525647142874.
-- Full profit factor: 0.48125879295748447.
-- Full max drawdown: 0.28473381700333156.
-- Failed gates: gross edge, net edge, drawdown.
+User intent:
+- Combining, tweaking, and optimizing range-family components is allowed only as
+  a controlled offline discovery workbench.
+- It must not be treated as a quiet rescue of failed baselines.
+- It must not authorize paper/testnet/live, exchange API work, credentials,
+  deploy files, martingale, averaging down, two-exchange logic, or promotion.
 
-Do not rescue any failed baseline by retuning.
-
-Next allowed research task:
-- Create a new backtest-first candidate packet with materially different BTCUSDT
-  range-entry ideas.
-- Select exactly one new fixed baseline candidate only after explicit user
-  approval.
-- Offline only; no paper/testnet/live, exchange API, credentials, deploy files,
-  martingale, averaging down, two-exchange logic, or promotion.
+Allowed next task only after explicit user approval:
+- Implement the bounded offline `-range-optimization-workbench-v1` harness from
+  docs/RANGE_OPTIMIZATION_WORKBENCH_SPEC.md.
+- Use the fixed source contract and trial logging rules from the spec.
+- Emit every trial; do not delete failed trials.
+- Select at most one candidate for later locked validation.
+- Optimizer output alone must stop at either failed/no-candidate, rejected
+  overfit risk, or candidate-selected-needs-fixed-validation.
 ```
