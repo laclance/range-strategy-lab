@@ -1,31 +1,27 @@
-# Next Codex Brief: Verify Range-Edge Exhaustion Fade Baseline
+# Next Codex Brief: New Candidate Packet
 
 ```text
 Current state:
+- All three candidates from docs/BACKTEST_FIRST_CANDIDATE_PACKET.md failed.
 - btc_5m_rolling_value_area_reversion_v1 failed and is closed.
 - btc_15m_previous_day_range_reversion_v1 failed and is closed.
-- btc_15m_range_edge_exhaustion_fade_v1 implementation has been added.
-- Stop state:
-  btc_15m_range_edge_exhaustion_fade_backtest_implementation_added_needs_local_verification.
+- btc_15m_range_edge_exhaustion_fade_v1 failed and is closed.
 
-Selected baseline:
-- Candidate id: btc_15m_range_edge_exhaustion_fade_v1.
-- Flag:
-  -backtest-first-btc-15m-range-edge-exhaustion-fade-v1
-- Output path:
-  results/backtest-first-btc-15m-range-edge-exhaustion-fade-v1/.
-- Source: ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv.
-- Exact 15m resample expected: 191,328 rows, last open 2026-06-16T23:45:00Z.
+Latest result:
+- btc_15m_range_edge_exhaustion_fade_v1 produced 156 trades.
+- Full gross P&L: -154.40528599997904.
+- Full net P&L: -261.59525647142874.
+- Full profit factor: 0.48125879295748447.
+- Full max drawdown: 0.28473381700333156.
+- Failed gates: gross edge, net edge, drawdown.
 
-Required next task:
-- Verify locally/CI and run the fixed backtest.
-- Record actual result review in
-  docs/BACKTEST_FIRST_BTC_15M_RANGE_EDGE_EXHAUSTION_FADE_IMPLEMENTATION_REVIEW.md.
+Do not rescue any failed baseline by retuning.
 
-No-rescue boundaries:
-- If this fixed baseline fails, do not rescue it with alternate range windows,
-  progress thresholds, edge zones, midpoint variants, added volume filters,
-  derivatives context, replay, walk-forward, or optimizer grids.
-- No paper/testnet/live path, exchange API, credentials, deploy files,
+Next allowed research task:
+- Create a new backtest-first candidate packet with materially different BTCUSDT
+  range-entry ideas.
+- Select exactly one new fixed baseline candidate only after explicit user
+  approval.
+- Offline only; no paper/testnet/live, exchange API, credentials, deploy files,
   martingale, averaging down, two-exchange logic, or promotion.
 ```
