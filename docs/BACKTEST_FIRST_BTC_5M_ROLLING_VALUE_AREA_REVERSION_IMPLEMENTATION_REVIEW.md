@@ -7,18 +7,19 @@ Date: 2026-06-30
 Stop state:
 
 ```text
-btc_5m_rolling_value_area_reversion_backtest_implementation_added_needs_local_verification
+btc_5m_rolling_value_area_reversion_backtest_failed_no_usable_strategy
 ```
 
-This implementation adds the selected fixed offline baseline candidate:
+The selected fixed offline baseline candidate was implemented and locally
+verified:
 
 ```text
 btc_5m_rolling_value_area_reversion_v1
 ```
 
-The implementation is not promoted and no result verdict is claimed here because
-this connector session could not run the local Go test suite or the BTCUSDT CSV
-backtest command.
+The fixed baseline failed decisively. It produced more than enough trades, but
+failed gross edge, net edge, and drawdown gates. It is closed as no usable
+strategy in this form.
 
 ## What Was Added
 
@@ -60,58 +61,114 @@ No optimizer, replay, walk-forward, derivatives-veto interaction, source
 expansion, paper/testnet/live path, exchange API work, credentials, deploy file,
 martingale, averaging down, two-exchange logic, or promotion was added.
 
-## Expected Artifacts
+## Local Verification
 
-The fixed run should write:
+The user ran the required local verification from branch
+`value-area-reversion-baseline-2`.
 
-- `source_manifest.json`
-- `summary.json`
-- `summary.csv`
-- `trades.json`
-- `btc_5m_rolling_value_area_reversion_sources.json/csv`
-- `btc_5m_rolling_value_area_reversion_signals.json/csv`
-- `btc_5m_rolling_value_area_reversion_skips.json/csv`
-- `btc_5m_rolling_value_area_reversion_trades.json/csv`
-- `btc_5m_rolling_value_area_reversion_summary.json/csv`
-- `btc_5m_rolling_value_area_reversion_falsification.json/csv`
+Source file check:
 
-## Required Local Verification
-
-Run from repo root:
-
-```bash
-/usr/local/go/bin/gofmt -w \
-  cmd/rangelab/backtest_first_value_area_reversion.go \
-  internal/lab/backtest_first_btc_5m_value_area_types.go \
-  internal/lab/backtest_first_btc_5m_value_area_runner.go \
-  internal/lab/backtest_first_btc_5m_value_area_support.go
-
-env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...
-
-env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab \
-  -backtest-first-btc-5m-rolling-value-area-reversion-v1
-
-wc -l results/backtest-first-btc-5m-rolling-value-area-reversion-v1/*.csv
-
-git diff --check
-git status --short
+```text
+573985 ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv
 ```
 
-## Next Gate
+Build/test:
 
-After local verification, create a result review recording:
+```text
+ok      range-strategy-lab/cmd/rangelab 0.310s
+ok      range-strategy-lab/internal/lab 0.044s
+```
 
-- source manifest facts;
-- signal rows;
-- executed trades;
-- split metrics;
-- long/short behavior;
-- gross and net P&L;
-- drawdown;
-- pass/fail gate outcomes;
-- stop state.
+Backtest command output:
 
-If the fixed baseline fails, do not rescue it with alternate VWAP windows,
-outer-zone percentages, target changes, time-stop changes, side selection,
-volume filters, derivatives-veto interaction, replay, walk-forward, or optimizer
-grids.
+```text
+backtest_first_btc_5m_rolling_value_area_reversion signal_rows=20144 trades=20144 summary_rows=12 stop_state=btc_5m_rolling_value_area_reversion_backtest_failed_no_usable_strategy
+```
+
+CSV line counts:
+
+```text
+      2 results/backtest-first-btc-5m-rolling-value-area-reversion-v1/btc_5m_rolling_value_area_reversion_falsification.csv
+  20145 results/backtest-first-btc-5m-rolling-value-area-reversion-v1/btc_5m_rolling_value_area_reversion_signals.csv
+      2 results/backtest-first-btc-5m-rolling-value-area-reversion-v1/btc_5m_rolling_value_area_reversion_skips.csv
+      2 results/backtest-first-btc-5m-rolling-value-area-reversion-v1/btc_5m_rolling_value_area_reversion_sources.csv
+     13 results/backtest-first-btc-5m-rolling-value-area-reversion-v1/btc_5m_rolling_value_area_reversion_summary.csv
+  20145 results/backtest-first-btc-5m-rolling-value-area-reversion-v1/btc_5m_rolling_value_area_reversion_trades.csv
+     13 results/backtest-first-btc-5m-rolling-value-area-reversion-v1/summary.csv
+  40322 total
+```
+
+## Falsification Result
+
+```json
+{
+  "backtest_name": "backtest_first_btc_5m_rolling_value_area_reversion",
+  "candidate_id": "btc_5m_rolling_value_area_reversion_v1",
+  "stop_state": "btc_5m_rolling_value_area_reversion_backtest_failed_no_usable_strategy",
+  "source_pass": true,
+  "leakage_pass": true,
+  "trade_count_pass": true,
+  "gross_edge_pass": false,
+  "net_edge_pass": false,
+  "drawdown_pass": false,
+  "robustness_pass": true,
+  "side_reporting_pass": true,
+  "full_executed_trades": 20144,
+  "required_full_executed_trades": 120,
+  "minimum_primary_split_executed_trades": 6070,
+  "required_primary_split_trades": 25,
+  "full_gross_pnl": -489.49542250301454,
+  "full_net_pnl": -999.9999999684289,
+  "full_profit_factor": 0.6949768102636272,
+  "full_max_drawdown": 0.9999999999689176,
+  "dominant_primary_split_trade_share": 0.3622418586179508,
+  "failure_reasons": [
+    "gross_edge_gate_failed",
+    "net_edge_gate_failed",
+    "drawdown_gate_failed"
+  ]
+}
+```
+
+## Split Summary
+
+| Split | Side | Trades | Win rate | Gross P&L | Net P&L | Profit factor | Max drawdown | Avg hold bars |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `2021_2022_stress` | all | 7297 | 0.286556 | -489.466883 | -999.933313 | 0.694983 | 0.999933 | 15.207208 |
+| `2021_2022_stress` | long | 3592 | 0.281180 | -170.274671 | -356.429591 | 0.751350 | 0.371164 | 14.720768 |
+| `2021_2022_stress` | short | 3705 | 0.291768 | -319.192212 | -643.503722 | 0.651185 | 0.643504 | 15.678812 |
+| `2023_2024_oos` | all | 6777 | 0.278589 | -0.028533 | -0.066666 | 0.558752 | 0.000067 | 14.642467 |
+| `2023_2024_oos` | long | 2876 | 0.305633 | -0.005717 | -0.020506 | 0.650666 | 0.000023 | 15.463839 |
+| `2023_2024_oos` | short | 3901 | 0.258652 | -0.022815 | -0.046161 | 0.500354 | 0.000046 | 14.036914 |
+| `2025_2026_recent` | all | 6070 | 0.246623 | -0.000007 | -0.000021 | 0.565299 | 0.000000 | 13.625535 |
+| `2025_2026_recent` | long | 3041 | 0.232818 | -0.000006 | -0.000013 | 0.507911 | 0.000000 | 13.036830 |
+| `2025_2026_recent` | short | 3029 | 0.260482 | -0.000001 | -0.000008 | 0.634330 | 0.000000 | 14.216573 |
+| `full_2021_2026` | all | 20144 | 0.271843 | -489.495423 | -1000.000000 | 0.694977 | 1.000000 | 14.540608 |
+| `full_2021_2026` | long | 9509 | 0.273110 | -170.280394 | -356.450109 | 0.751346 | 0.371184 | 14.406983 |
+| `full_2021_2026` | short | 10635 | 0.270710 | -319.215028 | -643.549891 | 0.651178 | 0.643550 | 14.660085 |
+
+## Interpretation
+
+The baseline failed before any question of tuning or confirmation:
+
+- trade count passed with `20,144` trades;
+- split trade count passed with minimum primary split trades of `6,070`;
+- both long and short sides were reported;
+- source and leakage gates passed;
+- gross edge failed across the full sample and primary splits;
+- net edge failed, with full net P&L effectively depleting starting equity;
+- drawdown failed at effectively `100%` full-sample drawdown;
+- profit factor was far below a usable threshold.
+
+This is not a close failure. The candidate should not be rescued by retuning.
+
+## Closure Boundary
+
+Do not rescue `btc_5m_rolling_value_area_reversion_v1` with alternate VWAP
+windows, outer-zone percentages, target changes, time-stop changes, side
+selection, volume filters, derivatives-veto interaction, replay, walk-forward,
+or optimizer grids.
+
+The next research step, if continuing the backtest-first lane, should move to a
+materially different parked candidate from `docs/BACKTEST_FIRST_CANDIDATE_PACKET.md`,
+not a retuned value-area variant.
