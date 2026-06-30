@@ -14,7 +14,7 @@ func (s *BTC15MRangeEdgeExhaustionFadeStrategy) OnCandle(ctx StrategyContext) (S
 		s.skips[split+"|missing_prior_atr"]++
 		return Signal{}, false
 	}
-	r, ok := btc15MEdgeRange(candles, d, s.cfg.LookbackBars)
+	r, ok := btc15MEdgeRangeAt(candles, d, s.cfg.LookbackBars)
 	if !ok {
 		s.skips[split+"|missing_prior_range"]++
 		return Signal{}, false
