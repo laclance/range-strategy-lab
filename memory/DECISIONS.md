@@ -72,13 +72,15 @@
 - The strategy-class pivot assessment in
   `docs/STRATEGY_CLASS_PIVOT_ASSESSMENT.md` recommends trend-pullback
   continuation as the next materially different research class.
-- The next allowed artifact after operator approval is the docs-only candidate
-  packet
-  `docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_CANDIDATE_PACKET.md`.
-  This recommendation does not authorize implementation, backtesting,
+- The docs-only candidate packet
+  `docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_CANDIDATE_PACKET.md` selected
+  `btc_15m_trend_pullback_continuation_v1` as the only fixed trend-pullback
+  baseline for the next implementation/backtest approval gate.
+- This candidate selection does not authorize implementation, backtesting,
   optimization, generated results, source expansion, derivatives-veto
   interaction, paper/testnet/live flow, exchange APIs, credentials, deployment,
-  martingale, averaging down, two-exchange logic, or promotion.
+  martingale, averaging down, two-exchange logic, or promotion without a later
+  explicit operator approval.
 
 ## Derivatives And Context Decisions
 

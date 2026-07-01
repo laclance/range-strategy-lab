@@ -24,27 +24,36 @@ git history.
 
 ## Latest Milestone
 
-Strategy class pivot assessment:
+Trend-pullback continuation candidate packet:
 
-- Review doc:
-  `docs/STRATEGY_CLASS_PIVOT_ASSESSMENT.md`.
-- Stop state:
-  `strategy_class_pivot_assessment_recommends_trend_pullback`.
-- Result: docs-only scoring ranked trend-pullback continuation first (`26`),
-  volatility expansion / breakout continuation second (`25`), session-based
-  opening-range expansion third (`25`), liquidity sweep plus reclaim fourth
-  (`19`), and cross-asset or regime filter before entries fifth (`14`).
-- Durable result: the current range-reversion / midpoint / edge-fade /
-  previous-day range / bounded range-optimization path remains closed for now.
-  The recommended next lane is a docs-only trend-pullback continuation candidate
-  packet after operator approval.
-- Exact next allowed artifact after approval:
+- Candidate packet:
   `docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_CANDIDATE_PACKET.md`.
-- No backtest, optimizer, generated result, source mutation, exchange API,
-  credential, deployment, paper/testnet/live flow, martingale, averaging down,
-  two-exchange logic, or promotion was authorized or added.
+- Stop state:
+  `trend_pullback_candidate_packet_ready_for_implementation_approval`.
+- Selected baseline:
+  `btc_15m_trend_pullback_continuation_v1`.
+- Result: docs-only packet locked exactly one BTCUSDT Binance USDT-M futures
+  trend-pullback continuation baseline on exact closed UTC `15m` bars resampled
+  from the accepted `5m` source. It fixed the EMA trend stack, pullback window,
+  continuation trigger, stop, `2.0R` target, `32`-bar time stop, sizing, costs,
+  output path, pass/fail gates, side reporting, and no-rescue boundaries.
+- Next bounded gate: explicit operator approval to implement and run this one
+  fixed offline baseline.
+- No Go code, CLI flag, backtest, optimizer, generated result, source mutation,
+  derivatives-veto interaction, exchange API, credential, deployment,
+  paper/testnet/live flow, martingale, averaging down, two-exchange logic, or
+  promotion was authorized or added.
 
 ## 2026-07-01 Milestone Index
+
+Trend-pullback continuation candidate packet:
+
+- Added docs-only candidate packet:
+  `docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_CANDIDATE_PACKET.md`.
+- Defined exactly one fixed baseline:
+  `btc_15m_trend_pullback_continuation_v1`.
+- Updated `memory/NEXT_CODEX_BRIEF.md` to stop at the implementation/backtest
+  approval gate for that fixed baseline.
 
 Strategy class pivot assessment:
 

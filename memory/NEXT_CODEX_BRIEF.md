@@ -1,21 +1,25 @@
-# Next Codex Brief: Trend-Pullback Candidate Packet
+# Next Codex Brief: Trend-Pullback Implementation Approval Gate
 
 ```text
 Current state:
-- The bounded offline range optimization workbench has been implemented and run:
-  docs/RANGE_OPTIMIZATION_WORKBENCH_IMPLEMENTATION_REVIEW.md.
-- Run id: 20260630T200041Z-78f9a9e.
-- Total trials: 112.
-- Passing candidates: 0.
-- Rejected candidates: 112.
-- Selected candidate: none.
-- Stop state: range_optimization_workbench_failed_no_candidate.
-- The docs-only strategy-class pivot assessment has been added:
+- The bounded offline range optimization workbench failed with no candidate:
+  range_optimization_workbench_failed_no_candidate.
+- The docs-only strategy-class pivot assessment recommended trend-pullback
+  continuation:
   docs/STRATEGY_CLASS_PIVOT_ASSESSMENT.md.
-- Stop state:
+- Assessment stop state:
   strategy_class_pivot_assessment_recommends_trend_pullback.
-- Recommended next research lane:
-  trend-pullback continuation.
+- The docs-only backtest-first trend-pullback candidate packet has been added:
+  docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_CANDIDATE_PACKET.md.
+- Packet stop state:
+  trend_pullback_candidate_packet_ready_for_implementation_approval.
+- Selected fixed baseline:
+  btc_15m_trend_pullback_continuation_v1.
+- Source contract remains:
+  ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv;
+  Binance USDT-M futures BTCUSDT 5m; 573,984 loaded candles;
+  2021-01-01T00:00:00Z through 2026-06-16T23:55:00Z; gap_count=0;
+  duplicate_count=0; zero_volume_count=66; validation_status=accepted.
 
 Boundaries:
 - The current range-reversion / midpoint / edge-fade / previous-day range /
@@ -23,19 +27,30 @@ Boundaries:
 - Do not rescue failed range work with retuned thresholds, windows, sessions,
   filters, side selection, derivatives-veto interaction, replay, walk-forward,
   or optimizer grids.
-- Do not implement a strategy or run a backtest from this brief.
+- The trend-pullback packet is not implementation approval by itself.
+- Do not change the fixed packet rules after seeing results.
+- Do not add optimizer, source expansion, derivatives-veto interaction,
+  paper/testnet/live flow, exchange APIs, credentials, deploy files, martingale,
+  averaging down, two-exchange logic, or promotion.
 
-Next allowed artifact after operator approval:
-- Create exactly one docs-only backtest-first candidate packet:
+Next bounded gate:
+- Stop until the operator explicitly approves implementation/backtest of
+  btc_15m_trend_pullback_continuation_v1.
+
+If implementation/backtest is explicitly approved:
+- Read AGENTS.md, README.md, memory/README.md, memory/PROGRESS.md,
+  memory/DECISIONS.md, memory/NEXT_CODEX_BRIEF.md,
   docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_CANDIDATE_PACKET.md.
-- The packet should define one fixed BTCUSDT futures trend-pullback continuation
-  baseline, likely on exact closed UTC 15m bars from the accepted 5m source.
-- It must lock the source, timeframe, trend definition, pullback definition,
-  continuation trigger, stop, target, time stop, sizing, fees, slippage,
-  pass/fail gates, side reporting, split reporting, output path, and no-rescue
-  boundaries.
-- No Go code, CLI flags, generated results, optimizer, source expansion,
-  derivatives-veto interaction, paper/testnet/live path, exchange API,
-  credentials, deploy files, martingale, averaging down, two-exchange logic, or
-  promotion is authorized.
+- Also read docs/BACKTEST_FIRST_RESEARCH_LANE.md and docs/STRATEGY_WORKFLOW.md.
+- Implement exactly one offline fixed baseline matching the packet:
+  btc_15m_trend_pullback_continuation_v1.
+- Run exactly that fixed backtest against the accepted BTCUSDT Binance USDT-M
+  futures source.
+- Write generated outputs only under:
+  results/backtest-first-btc-15m-trend-pullback-continuation-v1/.
+- Add a concise implementation review doc only if the implementation/backtest is
+  approved:
+  docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_IMPLEMENTATION_REVIEW.md.
+- Update memory with the exact command, output path, stop state, and factual
+  pass/fail result.
 ```
