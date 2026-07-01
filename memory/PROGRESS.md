@@ -21,8 +21,41 @@ git history.
 - Research is not stopped, but failed fixed baselines and closed premises must
   not be silently retuned, rescued, renamed, or promoted.
 - `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt.
+- No next implementation is selected. The current next bounded gate is a
+  docs-only candidate packet for session-based opening-range expansion after
+  explicit operator approval.
 
 ## Latest Milestone
+
+Session opening-range expansion docs-only lane selection:
+
+- Selection doc:
+  `docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_LANE_SELECTION.md`.
+- Stop state:
+  `session_opening_range_expansion_lane_selected_for_candidate_packet`.
+- Selected lane:
+  `session-based opening-range expansion`.
+- Next bounded approval gate:
+  `docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_CANDIDATE_PACKET.md`.
+- Why materially different: the lane uses a predeclared UTC session time box and
+  closed-candle expansion away from it. It must not fade range edges or target
+  midpoints, and it must not use EMA trend stacks, EMA pullback bands, or the
+  failed trend-pullback trigger/exits.
+- Boundaries: docs-only selection; no Go code, CLI flags, generated results,
+  backtests, optimizers, source expansion, derivatives-veto interaction,
+  paper/testnet/live flow, exchange API, credentials, deployment, martingale,
+  averaging down, two-exchange logic, or promotion.
+
+## 2026-07-01 Milestone Index
+
+Session opening-range expansion docs-only lane selection:
+
+- Added selection doc:
+  `docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_LANE_SELECTION.md`.
+- Selected session-based opening-range expansion as the next materially
+  different lane after the failed trend-pullback baseline.
+- Updated `memory/NEXT_CODEX_BRIEF.md` to stop at the docs-only candidate packet
+  approval gate.
 
 Trend-pullback continuation fixed backtest:
 
@@ -56,8 +89,6 @@ Trend-pullback continuation fixed backtest:
   walk-forward, or optimizer grids.
 - No paper/testnet/live flow, exchange API, credential, deployment, martingale,
   averaging down, two-exchange logic, or promotion is authorized.
-
-## 2026-07-01 Milestone Index
 
 Trend-pullback continuation fixed backtest:
 

@@ -90,6 +90,20 @@
 - The failed trend-pullback backtest does not authorize paper/testnet/live flow,
   exchange APIs, credentials, deployment, martingale, averaging down,
   two-exchange logic, or promotion.
+- The docs-only lane selection in
+  `docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_LANE_SELECTION.md`
+  selects session-based opening-range expansion as the next materially different
+  research lane.
+- The next bounded gate is only a docs-only candidate packet at
+  `docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_CANDIDATE_PACKET.md`
+  after explicit operator approval. No implementation, backtest, optimizer,
+  source expansion, derivatives-veto interaction, paper/testnet/live flow, or
+  promotion is authorized by the lane selection.
+- Session-based opening-range expansion must stay separated from closed
+  range-reversion and trend-pullback work: it may use a predeclared UTC session
+  time box and closed-candle expansion away from that box, but must not fade
+  range edges, target midpoints, retune previous-day/value-area range work, use
+  EMA trend-pullback rules, or mine session anchors after seeing results.
 
 ## Derivatives And Context Decisions
 

@@ -75,8 +75,12 @@ backtest then failed at
 `btc_15m_trend_pullback_continuation_backtest_failed_no_usable_strategy`:
 source/resample passed and `3,816` trades executed, but full gross P&L
 (`-123.427844`), full net P&L (`-956.566589`), PF (`0.837958`), and max
-drawdown (`0.958438`) failed the fixed gates. No next implementation is
-selected.
+drawdown (`0.958438`) failed the fixed gates. The docs-only next-lane selection
+after that failure recommends session-based opening-range expansion as the next
+materially different research lane, stopping at
+`session_opening_range_expansion_lane_selected_for_candidate_packet`. No next
+implementation is selected; the next bounded gate is a docs-only candidate
+packet only after operator approval.
 
 ## Purpose
 
@@ -177,7 +181,8 @@ review, read the docs in this order:
 76. [docs/STRATEGY_CLASS_PIVOT_ASSESSMENT.md](docs/STRATEGY_CLASS_PIVOT_ASSESSMENT.md)
 77. [docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_CANDIDATE_PACKET.md](docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_CANDIDATE_PACKET.md)
 78. [docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_IMPLEMENTATION_REVIEW.md](docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_IMPLEMENTATION_REVIEW.md)
-79. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+79. [docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_LANE_SELECTION.md](docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_LANE_SELECTION.md)
+80. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 
