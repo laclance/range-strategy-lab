@@ -105,10 +105,23 @@
   next-bar-open entry, an opposite-side opening-range stop with `0.10 * ATR(14)`
   buffer, a `1.5R` target, a `24` closed `15m` bar time stop, `1%` risk at stop
   capped at `1x`, `0.0004` fee per side, and `0.000116` slippage per side.
-- The next bounded gate is explicit operator approval to implement and run this
-  one fixed offline baseline. No implementation, backtest, optimizer, source
-  expansion, derivatives-veto interaction, paper/testnet/live flow, or promotion
-  is authorized by the candidate packet alone.
+- The approved fixed session opening-range expansion backtest in
+  `docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_IMPLEMENTATION_REVIEW.md`
+  failed as no usable strategy in this form:
+  `btc_15m_session_opening_range_expansion_backtest_failed_no_usable_strategy`.
+- It produced `1,652` executed trades, full gross P&L `151.732485`, full net
+  P&L `-546.240518`, full PF `0.875398`, and full max drawdown `0.578097`.
+- The recent split was gross-negative (`-16.997499`) and all primary splits were
+  net-negative after the fixed fees and slippage.
+- This fixed session opening-range expansion candidate is closed. Do not rescue
+  it with alternate UTC anchors, opening-range lengths, expansion windows,
+  acceptance buffers, ATR windows, stop buffers, target R values, time stops,
+  one-trade-per-day changes, side selection, weekday/volume/volatility filters,
+  derivatives-veto interaction, source expansion, replay, walk-forward, or
+  optimizer grids.
+- The failed opening-range expansion backtest does not authorize paper/testnet/live
+  flow, exchange APIs, credentials, deployment, martingale, averaging down,
+  two-exchange logic, or promotion.
 - Session-based opening-range expansion must stay separated from closed
   range-reversion and trend-pullback work: it may use a predeclared UTC session
   time box and closed-candle expansion away from that box, but must not fade

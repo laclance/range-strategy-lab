@@ -21,37 +21,63 @@ git history.
 - Research is not stopped, but failed fixed baselines and closed premises must
   not be silently retuned, rescued, renamed, or promoted.
 - `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt.
-- No implementation or backtest is currently authorized. The current next
-  bounded gate is explicit operator approval to implement and run the fixed
-  session opening-range expansion baseline defined in
-  `docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_CANDIDATE_PACKET.md`.
+- No implementation or backtest is currently selected. The approved fixed
+  session opening-range expansion baseline failed and is closed in reviewed
+  form. Any further strategy work needs a separately approved materially
+  different lane or an explicit docs-only strategy-class/premise decision.
 
 ## Latest Milestone
 
-Session opening-range expansion docs-only candidate packet:
+Session opening-range expansion fixed backtest:
 
-- Candidate packet:
-  `docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_CANDIDATE_PACKET.md`.
+- Review doc:
+  `docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_IMPLEMENTATION_REVIEW.md`.
 - Stop state:
-  `session_opening_range_expansion_candidate_packet_ready_for_implementation_approval`.
-- Selected fixed baseline:
+  `btc_15m_session_opening_range_expansion_backtest_failed_no_usable_strategy`.
+- Candidate:
   `btc_15m_session_opening_range_expansion_v1`.
-- Next bounded approval gate:
-  explicit operator approval to implement and run this one fixed offline
-  baseline.
-- Locked baseline: accepted BTCUSDT Binance USDT-M futures `5m` source resampled
-  to closed UTC `15m`; fixed `13:30 UTC` session anchor; `60` minute opening
-  range; `[14:30, 17:30) UTC` expansion window; `0.10 * ATR(14)` closed-candle
-  acceptance outside the opening range; next-bar-open entry; opposite-side
-  opening-range stop with `0.10 * ATR(14)` buffer; `1.5R` target; `24` closed
-  `15m` bar time stop; `1%` risk at stop capped at `1x`; `0.0004` fee per side;
-  `0.000116` slippage per side.
-- Boundaries: docs-only packet; no Go code, CLI flags, generated results,
-  backtests, optimizers, source expansion, derivatives-veto interaction,
-  paper/testnet/live flow, exchange API, credentials, deployment, martingale,
-  averaging down, two-exchange logic, or promotion was authorized.
+- CLI flag:
+  `-backtest-first-btc-15m-session-opening-range-expansion-v1`.
+- Command:
+  `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -backtest-first-btc-15m-session-opening-range-expansion-v1 -out-dir results/backtest-first-btc-15m-session-opening-range-expansion-v1`.
+- Output path:
+  `results/backtest-first-btc-15m-session-opening-range-expansion-v1/`.
+- Result: source/resample passed; `1,993` session-range rows; `1,652` signal
+  rows; `1,652` executed trades; `12` summary rows.
+- Full all-side metrics: gross P&L `151.732485`, net P&L `-546.240518`,
+  PF `0.875398`, max drawdown `0.578097`.
+- Split result: `2021_2022_stress` gross `45.770589` / net `-237.826052`;
+  `2023_2024_oos` gross `122.959395` / net `-139.289001`;
+  `2025_2026_recent` gross `-16.997499` / net `-169.125465`.
+- Failed gates: gross edge, net edge, profit factor, drawdown.
+- Artifact counts: coverage `2`, falsification `2`, session ranges `1,994`,
+  signals `1,653`, skips `5`, sources `2`, strategy summary `13`, strategy
+  trades `1,653`, common summary `13`, total CSV lines `5,337`.
+- Verification commands: pre-change and post-change
+  `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go test ./...`
+  passed; fixed backtest command above ran; CSV counts were recorded with
+  `wc -l results/backtest-first-btc-15m-session-opening-range-expansion-v1/*.csv`;
+  `rg -n "CODEX_BRIEF|NEXT_CODEX_BRIEF" README.md docs memory AGENTS.md` found
+  canonical handoff references; `git diff --check` passed.
+- Closed boundary: do not rescue with alternate UTC anchors, opening-range
+  lengths, expansion windows, acceptance buffers, ATR windows, stop buffers,
+  target R values, time stops, one-trade-per-day changes, side selection,
+  weekday/volume/volatility filters, derivatives-veto interaction, source
+  expansion, replay, walk-forward, or optimizer grids.
+- No paper/testnet/live flow, exchange API, credential, deployment, martingale,
+  averaging down, two-exchange logic, or promotion is authorized.
 
 ## 2026-07-01 Milestone Index
+
+Session opening-range expansion fixed backtest:
+
+- Implemented and ran exactly one fixed offline baseline:
+  `btc_15m_session_opening_range_expansion_v1`.
+- Added implementation review:
+  `docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_IMPLEMENTATION_REVIEW.md`.
+- Result: failed as no usable strategy in this form.
+- Updated `memory/NEXT_CODEX_BRIEF.md` to a no-selected-next-implementation
+  stop state.
 
 Session opening-range expansion docs-only candidate packet:
 

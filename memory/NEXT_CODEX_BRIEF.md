@@ -1,45 +1,40 @@
-# Next Codex Brief: Implement Session Opening-Range Expansion Baseline
+# Next Codex Brief: No Selected Next Implementation After Session OR Failure
 
 ```text
 Current state:
 - The current range-reversion / midpoint / edge-fade / previous-day range /
   bounded range-optimization path remains closed.
-- The approved fixed trend-pullback baseline also failed and is closed:
+- The fixed trend-pullback baseline failed and is closed:
   docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_IMPLEMENTATION_REVIEW.md.
   btc_15m_trend_pullback_continuation_backtest_failed_no_usable_strategy.
-- The docs-only lane selection selected session-based opening-range expansion:
+- The session-based opening-range expansion lane was selected and packeted:
   docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_LANE_SELECTION.md.
-- The docs-only candidate packet is now ready:
   docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_CANDIDATE_PACKET.md.
+- The approved fixed session opening-range expansion baseline was implemented
+  and backtested:
+  docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_IMPLEMENTATION_REVIEW.md.
 - Stop state:
-  session_opening_range_expansion_candidate_packet_ready_for_implementation_approval.
+  btc_15m_session_opening_range_expansion_backtest_failed_no_usable_strategy.
 
-Locked fixed baseline:
+Latest fixed-baseline result:
 - Candidate id: btc_15m_session_opening_range_expansion_v1.
-- Source: ../binance-bot/data/btcusdt_futures_um_5m_2021_2026.csv.
-- Product/symbol/interval: Binance USDT-M futures BTCUSDT 5m.
-- Accepted source facts: 573,984 loaded candles; 2021-01-01T00:00:00Z through
-  2026-06-16T23:55:00Z; gap_count=0; duplicate_count=0;
-  zero_volume_count=66; comparison_only=false; validation_status=accepted.
-- Decision timeframe: exact closed UTC 15m bars resampled from the accepted 5m
-  source.
-- Session anchor: every UTC calendar date at 13:30:00Z, fixed in UTC with no DST
-  shifting and no alternate anchor comparison.
-- Opening range: four closed 15m bars with open times 13:30, 13:45, 14:00, and
-  14:15 UTC.
-- Expansion window: closed decision bars with open times in [14:30, 17:30) UTC
-  on the same UTC date.
-- Trigger: first same-date closed 15m candle that closes outside the opening
-  range by 0.10 * ATR(14), long above the opening-range high or short below the
-  opening-range low.
-- Entry: next 15m bar open after the closed decision candle.
-- Stop: opposite side of the opening range with a 0.10 * ATR(14) buffer.
-- Target: 1.5R from entry using initial stop distance.
-- Time stop: close after 24 closed 15m bars after entry.
-- Sizing/costs: 1% risk at stop, capped at 1x notional; 0.0004 fee per side;
-  0.000116 slippage per side.
+- CLI flag: -backtest-first-btc-15m-session-opening-range-expansion-v1.
 - Output path:
   results/backtest-first-btc-15m-session-opening-range-expansion-v1/.
+- Source/resample passed on the accepted BTCUSDT Binance USDT-M futures 5m
+  source: 573,984 loaded candles; 2021-01-01T00:00:00Z through
+  2026-06-16T23:55:00Z; gap_count=0; duplicate_count=0;
+  zero_volume_count=66; comparison_only=false; validation_status=accepted;
+  exact closed UTC 15m row_count=191,328.
+- Result: 1,993 session-range rows; 1,652 signal rows; 1,652 executed trades;
+  12 summary rows.
+- Full all-side metrics: gross P&L 151.732485; net P&L -546.240518;
+  PF 0.875398; max drawdown 0.578097.
+- Primary split all-side metrics:
+  2021_2022_stress gross 45.770589 / net -237.826052;
+  2023_2024_oos gross 122.959395 / net -139.289001;
+  2025_2026_recent gross -16.997499 / net -169.125465.
+- Failed gates: gross edge, net edge, profit factor, drawdown.
 
 Closed boundaries:
 - Do not rescue failed trend-pullback with alternate EMA lengths, slope
@@ -47,48 +42,46 @@ Closed boundaries:
   buffers, target R values, time stops, side selection, session filters, volume
   filters, volatility filters, derivatives-veto interaction, source expansion,
   replay, walk-forward, or optimizer grids.
+- Do not rescue failed session opening-range expansion with alternate UTC
+  anchors, opening-range lengths, expansion windows, acceptance buffers, ATR
+  windows, stop buffers, target R values, time stops, one-trade-per-day changes,
+  side selection, weekday filters, volume filters, volatility filters,
+  derivatives-veto interaction, source expansion, replay, walk-forward, or
+  optimizer grids.
 - Do not rescue closed range-reversion, midpoint, edge-fade, previous-day range,
-  value-area, range-optimization, post-compression, clean-breakout, or
-  router/rotation branches by renaming them as opening-range expansion.
-- Do not retune this opening-range candidate while implementing it. Use the
-  candidate packet exactly; no alternate UTC anchor, opening-range length,
-  expansion window, acceptance buffer, ATR window, stop, target, time stop,
-  one-trade-per-day rule, side selection, weekday filter, volume filter,
-  volatility filter, derivatives-veto interaction, source expansion, replay,
-  walk-forward, or optimizer grid.
+  value-area, range-optimization, post-compression, clean-breakout,
+  router/rotation, trend-pullback, or opening-range branches by renaming them.
 - Do not add paper/testnet/live flow, exchange APIs, credentials, deploy files,
   martingale, averaging down, two-exchange logic, or promotion.
 
 Next bounded gate:
-- Only if explicitly approved, implement and run exactly one fixed offline
-  baseline:
-  btc_15m_session_opening_range_expansion_v1.
-- Add the minimal Go code and CLI flag needed for that one baseline.
-- Write generated artifacts only under:
-  results/backtest-first-btc-15m-session-opening-range-expansion-v1/.
-- Record source/resample facts, artifact counts, full and split metrics,
-  side-separated metrics, pass/fail gates, and the factual verdict in a review
-  doc after the run.
-- If the baseline fails, close it instead of rescuing it. If it passes all gates,
-  stop at a later review approval gate; do not promote or add live flow.
+- No implementation, backtest, optimizer, replay, walk-forward, derivatives-veto
+  interaction, source expansion, or promotion is currently selected.
+- The next valid action requires the operator to provide either:
+  1. a materially different BTCUSDT Binance USDT-M futures offline strategy
+     premise for a docs-only candidate packet or short lane selection; or
+  2. an explicit docs-only progress/status/handoff task.
+- If the operator supplies a materially different premise, use
+  docs/BACKTEST_FIRST_RESEARCH_LANE.md and docs/STRATEGY_WORKFLOW.md to decide
+  whether a short candidate packet is enough before any code.
+- If no materially different premise is supplied, stay read-only or docs/memory
+  only and do not invent a new implementation lane.
 
-Required reads:
+Required reads for any next strategy-continuation work:
 - Read AGENTS.md, README.md, memory/README.md, memory/PROGRESS.md,
   memory/DECISIONS.md, memory/NEXT_CODEX_BRIEF.md,
   docs/BACKTEST_FIRST_RESEARCH_LANE.md, docs/STRATEGY_WORKFLOW.md,
-  docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_LANE_SELECTION.md, and
-  docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_CANDIDATE_PACKET.md.
-
-Verification:
-- Run the relevant Go tests before and after the implementation.
-- Run the fixed offline backtest command for the approved CLI flag.
-- Run git diff --check.
+  docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_IMPLEMENTATION_REVIEW.md,
+  and only the additional docs directly relevant to the operator's new premise.
 
 Hard exclusions:
+- No rescue retuning of closed candidates or families.
+- No generated results/backtests unless a specific materially different fixed
+  candidate is explicitly approved.
 - No source expansion, derivatives-veto interaction, optimizer, replay,
   walk-forward, exchange API, credentials, deployment, paper/testnet/live flow,
   martingale, averaging down, two-exchange logic, or promotion.
-- Update memory/PROGRESS.md after the implementation/backtest milestone, update
-  memory/DECISIONS.md only if a durable decision is created, and update
+- If a docs-only milestone is completed, update memory/PROGRESS.md, update
+  memory/DECISIONS.md only for durable decisions, and update
   memory/NEXT_CODEX_BRIEF.md to point to the next bounded gate.
 ```

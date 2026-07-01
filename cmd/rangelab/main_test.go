@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"range-strategy-lab/internal/lab"
 )
@@ -1935,8 +1936,99 @@ func TestRunWithArgsFuturesBTC15MPostCompressionFixedBacktestFlagWritesArtifacts
 	}
 }
 
+func TestRunSessionOpeningRangeExpansionFlagWritesArtifacts(t *testing.T) {
+	dir := t.TempDir()
+	futuresPath := writeSessionOpeningRangeExpansionCLITestCSV(t, dir, "btcusdt_futures_um_5m_session_opening_range.csv")
+	oldCfg := sessionOpeningRangeExpansionConfigForRun
+	sessionOpeningRangeExpansionConfigForRun = func() lab.BacktestFirstBTC15MSessionOpeningRangeExpansionConfig {
+		cfg := lab.DefaultBacktestFirstBTC15MSessionOpeningRangeExpansionConfig()
+		cfg.ApprovedSourcePath = futuresPath
+		cfg.SkipSourceFactCheck = true
+		cfg.SkipCoverageCountCheck = true
+		cfg.MinFullTrades = 1
+		cfg.MinSplitTrades = 1
+		return cfg
+	}
+	defer func() { sessionOpeningRangeExpansionConfigForRun = oldCfg }()
+
+	outDir := filepath.Join(dir, "opening-range")
+	if err := runSessionOpeningRangeExpansionWithArgs([]string{
+		"-csv", futuresPath,
+		"-" + sessionOpeningRangeExpansionFlagName,
+		"-out-dir", outDir,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{
+		"source_manifest.json", "summary.json", "summary.csv", "trades.json",
+		"btc_15m_session_opening_range_expansion_sources.csv", "btc_15m_session_opening_range_expansion_sources.json",
+		"btc_15m_session_opening_range_expansion_coverage.csv", "btc_15m_session_opening_range_expansion_coverage.json",
+		"btc_15m_session_opening_range_expansion_session_ranges.csv", "btc_15m_session_opening_range_expansion_session_ranges.json",
+		"btc_15m_session_opening_range_expansion_signals.csv", "btc_15m_session_opening_range_expansion_signals.json",
+		"btc_15m_session_opening_range_expansion_skips.csv", "btc_15m_session_opening_range_expansion_skips.json",
+		"btc_15m_session_opening_range_expansion_trades.csv", "btc_15m_session_opening_range_expansion_trades.json",
+		"btc_15m_session_opening_range_expansion_summary.csv", "btc_15m_session_opening_range_expansion_summary.json",
+		"btc_15m_session_opening_range_expansion_falsification.csv", "btc_15m_session_opening_range_expansion_falsification.json",
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, name)); err != nil {
+			t.Fatalf("expected session opening-range artifact %s: %v", name, err)
+		}
+	}
+	data, err := os.ReadFile(filepath.Join(outDir, "trades.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var trades []lab.Trade
+	if err := json.Unmarshal(data, &trades); err != nil {
+		t.Fatal(err)
+	}
+	if len(trades) != 1 {
+		t.Fatalf("trades=%d want 1", len(trades))
+	}
+}
+
 func writeCLITestCSV(t *testing.T, dir string, name string) string {
 	return writeCLITestCSVN(t, dir, name, 2)
+}
+
+func writeSessionOpeningRangeExpansionCLITestCSV(t *testing.T, dir, name string) string {
+	t.Helper()
+	path := filepath.Join(dir, name)
+	start := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
+	data := "open_time,open,high,low,close,volume,close_time\n"
+	for i := 0; i < 80; i++ {
+		openPrice, high, low, closePrice := 100.0, 100.8, 99.2, 100.0
+		if i >= 54 && i <= 57 {
+			high = 101
+			low = 99
+		}
+		if i == 58 {
+			high = 102.4
+			low = 99.8
+			closePrice = 102
+		}
+		if i == 59 {
+			openPrice = 102
+			high = 108
+			low = 101.5
+			closePrice = 107
+		}
+		for offset := 0; offset < 3; offset++ {
+			openTime := start.Add(time.Duration(i*15+offset*5) * time.Minute)
+			closeTime := openTime.Add(5*time.Minute - time.Millisecond)
+			data += strconv.FormatInt(openTime.UnixMilli(), 10) + "," +
+				strconv.FormatFloat(openPrice, 'f', -1, 64) + "," +
+				strconv.FormatFloat(high, 'f', -1, 64) + "," +
+				strconv.FormatFloat(low, 'f', -1, 64) + "," +
+				strconv.FormatFloat(closePrice, 'f', -1, 64) + "," +
+				"100," +
+				strconv.FormatInt(closeTime.UnixMilli(), 10) + "\n"
+		}
+	}
+	if err := os.WriteFile(path, []byte(data), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	return path
 }
 
 func writeCLITestCSVN(t *testing.T, dir string, name string, rows int) string {
