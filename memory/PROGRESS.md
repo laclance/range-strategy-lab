@@ -24,6 +24,39 @@ git history.
 
 ## Latest Milestone
 
+Strategy class pivot assessment:
+
+- Review doc:
+  `docs/STRATEGY_CLASS_PIVOT_ASSESSMENT.md`.
+- Stop state:
+  `strategy_class_pivot_assessment_recommends_trend_pullback`.
+- Result: docs-only scoring ranked trend-pullback continuation first (`26`),
+  volatility expansion / breakout continuation second (`25`), session-based
+  opening-range expansion third (`25`), liquidity sweep plus reclaim fourth
+  (`19`), and cross-asset or regime filter before entries fifth (`14`).
+- Durable result: the current range-reversion / midpoint / edge-fade /
+  previous-day range / bounded range-optimization path remains closed for now.
+  The recommended next lane is a docs-only trend-pullback continuation candidate
+  packet after operator approval.
+- Exact next allowed artifact after approval:
+  `docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_CANDIDATE_PACKET.md`.
+- No backtest, optimizer, generated result, source mutation, exchange API,
+  credential, deployment, paper/testnet/live flow, martingale, averaging down,
+  two-exchange logic, or promotion was authorized or added.
+
+## 2026-07-01 Milestone Index
+
+Strategy class pivot assessment:
+
+- Added docs-only assessment:
+  `docs/STRATEGY_CLASS_PIVOT_ASSESSMENT.md`.
+- Recommended trend-pullback continuation as the cleanest materially different
+  next research class for a future backtest-first candidate packet.
+- Updated `memory/NEXT_CODEX_BRIEF.md` to point only to the next bounded
+  docs-only candidate packet after operator approval.
+
+## 2026-06-30 Milestone Index
+
 Range optimization workbench verified no-candidate result:
 
 - Review doc:
@@ -44,8 +77,6 @@ Range optimization workbench verified no-candidate result:
 - Further search, if desired, requires a separately approved spec revision or a
   materially different research lane with explicit search-space changes and
   guardrails.
-
-## 2026-06-30 Milestone Index
 
 Range optimization workbench implementation:
 

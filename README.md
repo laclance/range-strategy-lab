@@ -65,11 +65,13 @@ filter premise audit, no-trade filter integration spec, independent-entry map,
 post-compression premise spec, pivot review, BTC/ETH/SOL reviews, derivatives
 source scope review, derivatives context review, or derivatives
 strategy-premise spec. Older spot-data outputs are historical context unless a
-futures rerun explicitly revalidates a specific conclusion. The backtest-first
-research lane is now active for materially different simple offline ideas, and
-the current docs-only candidate packet selected
-`btc_5m_rolling_value_area_reversion_v1` as the next fixed baseline candidate
-pending explicit implementation approval.
+futures rerun explicitly revalidates a specific conclusion. The three fixed
+backtest-first range candidates have now failed as no usable strategies, and the
+bounded range optimization workbench produced `112` trials with `0` passing
+candidates at `range_optimization_workbench_failed_no_candidate`. The docs-only
+strategy-class pivot assessment recommends trend-pullback continuation as the
+next materially different research lane, with only a docs-only candidate packet
+authorized after explicit operator approval.
 
 ## Purpose
 
@@ -167,7 +169,8 @@ review, read the docs in this order:
 73. [docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_STRATEGY_PREMISE_SPEC.md](docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_STRATEGY_PREMISE_SPEC.md)
 74. [docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_SPEC.md](docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_SPEC.md)
 75. [docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_REVIEW.md](docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_REVIEW.md)
-76. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+76. [docs/STRATEGY_CLASS_PIVOT_ASSESSMENT.md](docs/STRATEGY_CLASS_PIVOT_ASSESSMENT.md)
+77. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 

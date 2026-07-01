@@ -69,6 +69,16 @@
 - Further search requires a separately approved spec revision or materially
   different research lane with explicit search-space changes and anti-overfitting
   guardrails.
+- The strategy-class pivot assessment in
+  `docs/STRATEGY_CLASS_PIVOT_ASSESSMENT.md` recommends trend-pullback
+  continuation as the next materially different research class.
+- The next allowed artifact after operator approval is the docs-only candidate
+  packet
+  `docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_CANDIDATE_PACKET.md`.
+  This recommendation does not authorize implementation, backtesting,
+  optimization, generated results, source expansion, derivatives-veto
+  interaction, paper/testnet/live flow, exchange APIs, credentials, deployment,
+  martingale, averaging down, two-exchange logic, or promotion.
 
 ## Derivatives And Context Decisions
 
