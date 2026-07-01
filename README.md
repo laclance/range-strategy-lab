@@ -70,8 +70,13 @@ backtest-first range candidates have now failed as no usable strategies, and the
 bounded range optimization workbench produced `112` trials with `0` passing
 candidates at `range_optimization_workbench_failed_no_candidate`. The docs-only
 strategy-class pivot assessment recommends trend-pullback continuation as the
-next materially different research lane, with only a docs-only candidate packet
-authorized after explicit operator approval.
+next materially different research lane. The approved fixed trend-pullback
+backtest then failed at
+`btc_15m_trend_pullback_continuation_backtest_failed_no_usable_strategy`:
+source/resample passed and `3,816` trades executed, but full gross P&L
+(`-123.427844`), full net P&L (`-956.566589`), PF (`0.837958`), and max
+drawdown (`0.958438`) failed the fixed gates. No next implementation is
+selected.
 
 ## Purpose
 
@@ -170,7 +175,9 @@ review, read the docs in this order:
 74. [docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_SPEC.md](docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_SPEC.md)
 75. [docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_REVIEW.md](docs/FUTURES_BTCUSDT_15M_POST_COMPRESSION_DIRECTIONAL_EXPANSION_BACKTEST_REVIEW.md)
 76. [docs/STRATEGY_CLASS_PIVOT_ASSESSMENT.md](docs/STRATEGY_CLASS_PIVOT_ASSESSMENT.md)
-77. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+77. [docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_CANDIDATE_PACKET.md](docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_CANDIDATE_PACKET.md)
+78. [docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_IMPLEMENTATION_REVIEW.md](docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_IMPLEMENTATION_REVIEW.md)
+79. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 

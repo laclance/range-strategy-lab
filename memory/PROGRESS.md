@@ -24,27 +24,50 @@ git history.
 
 ## Latest Milestone
 
-Trend-pullback continuation candidate packet:
+Trend-pullback continuation fixed backtest:
 
-- Candidate packet:
-  `docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_CANDIDATE_PACKET.md`.
+- Review doc:
+  `docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_IMPLEMENTATION_REVIEW.md`.
+- CLI flag:
+  `-backtest-first-btc-15m-trend-pullback-continuation-v1`.
 - Stop state:
-  `trend_pullback_candidate_packet_ready_for_implementation_approval`.
-- Selected baseline:
+  `btc_15m_trend_pullback_continuation_backtest_failed_no_usable_strategy`.
+- Candidate:
   `btc_15m_trend_pullback_continuation_v1`.
-- Result: docs-only packet locked exactly one BTCUSDT Binance USDT-M futures
-  trend-pullback continuation baseline on exact closed UTC `15m` bars resampled
-  from the accepted `5m` source. It fixed the EMA trend stack, pullback window,
-  continuation trigger, stop, `2.0R` target, `32`-bar time stop, sizing, costs,
-  output path, pass/fail gates, side reporting, and no-rescue boundaries.
-- Next bounded gate: explicit operator approval to implement and run this one
-  fixed offline baseline.
-- No Go code, CLI flag, backtest, optimizer, generated result, source mutation,
-  derivatives-veto interaction, exchange API, credential, deployment,
-  paper/testnet/live flow, martingale, averaging down, two-exchange logic, or
-  promotion was authorized or added.
+- Command:
+  `env GOCACHE=/tmp/range-strategy-lab-go-build /usr/local/go/bin/go run ./cmd/rangelab -backtest-first-btc-15m-trend-pullback-continuation-v1 -out-dir results/backtest-first-btc-15m-trend-pullback-continuation-v1`.
+- Output path:
+  `results/backtest-first-btc-15m-trend-pullback-continuation-v1/`.
+- Result: source/resample passed; `13,190` signal rows; `3,816` executed
+  trades; `12` summary rows.
+- Full all-side metrics: gross P&L `-123.427844`, net P&L `-956.566589`,
+  PF `0.837958`, max drawdown `0.958438`.
+- Split gross P&L was negative in every primary split:
+  `2021_2022_stress=-67.949612`, `2023_2024_oos=-36.293536`,
+  `2025_2026_recent=-19.184695`.
+- Failed gates: gross edge, net edge, profit factor, drawdown.
+- Artifact counts: coverage `2`, falsification `2`, signals `13,191`, skips
+  `13`, sources `2`, strategy summary `13`, strategy trades `3,817`, common
+  summary `13`, total CSV lines `17,053`.
+- Closed boundary: do not rescue with alternate EMA lengths, slope lookbacks,
+  pullback windows, EMA-band definitions, continuation triggers, stop buffers,
+  target R values, time stops, side selection, session/volume/volatility
+  filters, derivatives-veto interaction, source expansion, replay,
+  walk-forward, or optimizer grids.
+- No paper/testnet/live flow, exchange API, credential, deployment, martingale,
+  averaging down, two-exchange logic, or promotion is authorized.
 
 ## 2026-07-01 Milestone Index
+
+Trend-pullback continuation fixed backtest:
+
+- Implemented and ran exactly one fixed offline baseline:
+  `btc_15m_trend_pullback_continuation_v1`.
+- Added implementation review:
+  `docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_IMPLEMENTATION_REVIEW.md`.
+- Result: failed as no usable strategy in this form.
+- Updated `memory/NEXT_CODEX_BRIEF.md` to a no-selected-next-implementation
+  stop state.
 
 Trend-pullback continuation candidate packet:
 

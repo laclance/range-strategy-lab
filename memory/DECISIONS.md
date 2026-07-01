@@ -76,11 +76,20 @@
   `docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_CANDIDATE_PACKET.md` selected
   `btc_15m_trend_pullback_continuation_v1` as the only fixed trend-pullback
   baseline for the next implementation/backtest approval gate.
-- This candidate selection does not authorize implementation, backtesting,
-  optimization, generated results, source expansion, derivatives-veto
-  interaction, paper/testnet/live flow, exchange APIs, credentials, deployment,
-  martingale, averaging down, two-exchange logic, or promotion without a later
-  explicit operator approval.
+- The approved fixed trend-pullback backtest in
+  `docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_IMPLEMENTATION_REVIEW.md`
+  failed as no usable strategy in this form:
+  `btc_15m_trend_pullback_continuation_backtest_failed_no_usable_strategy`.
+- It produced `3,816` executed trades, full gross P&L `-123.427844`, full net
+  P&L `-956.566589`, full PF `0.837958`, and full max drawdown `0.958438`.
+- This fixed trend-pullback candidate is closed. Do not rescue it with alternate
+  EMA lengths, slope lookbacks, pullback windows, EMA-band definitions,
+  continuation triggers, stop buffers, target R values, time stops, side
+  selection, session/volume/volatility filters, derivatives-veto interaction,
+  source expansion, replay, walk-forward, or optimizer grids.
+- The failed trend-pullback backtest does not authorize paper/testnet/live flow,
+  exchange APIs, credentials, deployment, martingale, averaging down,
+  two-exchange logic, or promotion.
 
 ## Derivatives And Context Decisions
 
