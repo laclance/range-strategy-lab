@@ -78,9 +78,11 @@ source/resample passed and `3,816` trades executed, but full gross P&L
 drawdown (`0.958438`) failed the fixed gates. The docs-only next-lane selection
 after that failure recommends session-based opening-range expansion as the next
 materially different research lane, stopping at
-`session_opening_range_expansion_lane_selected_for_candidate_packet`. No next
-implementation is selected; the next bounded gate is a docs-only candidate
-packet only after operator approval.
+`session_opening_range_expansion_lane_selected_for_candidate_packet`. The
+docs-only candidate packet then selected exactly one fixed baseline,
+`btc_15m_session_opening_range_expansion_v1`, and stopped at
+`session_opening_range_expansion_candidate_packet_ready_for_implementation_approval`.
+No implementation or backtest is selected until explicit operator approval.
 
 ## Purpose
 
@@ -182,7 +184,8 @@ review, read the docs in this order:
 77. [docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_CANDIDATE_PACKET.md](docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_CANDIDATE_PACKET.md)
 78. [docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_IMPLEMENTATION_REVIEW.md](docs/BACKTEST_FIRST_TREND_PULLBACK_CONTINUATION_IMPLEMENTATION_REVIEW.md)
 79. [docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_LANE_SELECTION.md](docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_LANE_SELECTION.md)
-80. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
+80. [docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_CANDIDATE_PACKET.md](docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_CANDIDATE_PACKET.md)
+81. [memory/NEXT_CODEX_BRIEF.md](memory/NEXT_CODEX_BRIEF.md)
 
 ## Quick Start
 

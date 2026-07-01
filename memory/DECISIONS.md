@@ -94,11 +94,21 @@
   `docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_LANE_SELECTION.md`
   selects session-based opening-range expansion as the next materially different
   research lane.
-- The next bounded gate is only a docs-only candidate packet at
+- The docs-only candidate packet in
   `docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_CANDIDATE_PACKET.md`
-  after explicit operator approval. No implementation, backtest, optimizer,
-  source expansion, derivatives-veto interaction, paper/testnet/live flow, or
-  promotion is authorized by the lane selection.
+  selects exactly one fixed baseline:
+  `btc_15m_session_opening_range_expansion_v1`.
+- The fixed baseline uses the accepted BTCUSDT Binance USDT-M futures `5m`
+  source resampled to closed UTC `15m`, a fixed `13:30 UTC` session anchor, a
+  `60` minute opening range, a `[14:30, 17:30) UTC` expansion window,
+  closed-candle acceptance outside the opening range by `0.10 * ATR(14)`,
+  next-bar-open entry, an opposite-side opening-range stop with `0.10 * ATR(14)`
+  buffer, a `1.5R` target, a `24` closed `15m` bar time stop, `1%` risk at stop
+  capped at `1x`, `0.0004` fee per side, and `0.000116` slippage per side.
+- The next bounded gate is explicit operator approval to implement and run this
+  one fixed offline baseline. No implementation, backtest, optimizer, source
+  expansion, derivatives-veto interaction, paper/testnet/live flow, or promotion
+  is authorized by the candidate packet alone.
 - Session-based opening-range expansion must stay separated from closed
   range-reversion and trend-pullback work: it may use a predeclared UTC session
   time box and closed-candle expansion away from that box, but must not fade

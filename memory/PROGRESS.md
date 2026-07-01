@@ -21,32 +21,48 @@ git history.
 - Research is not stopped, but failed fixed baselines and closed premises must
   not be silently retuned, rescued, renamed, or promoted.
 - `memory/NEXT_CODEX_BRIEF.md` is the canonical next-session prompt.
-- No next implementation is selected. The current next bounded gate is a
-  docs-only candidate packet for session-based opening-range expansion after
-  explicit operator approval.
+- No implementation or backtest is currently authorized. The current next
+  bounded gate is explicit operator approval to implement and run the fixed
+  session opening-range expansion baseline defined in
+  `docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_CANDIDATE_PACKET.md`.
 
 ## Latest Milestone
 
-Session opening-range expansion docs-only lane selection:
+Session opening-range expansion docs-only candidate packet:
 
-- Selection doc:
-  `docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_LANE_SELECTION.md`.
-- Stop state:
-  `session_opening_range_expansion_lane_selected_for_candidate_packet`.
-- Selected lane:
-  `session-based opening-range expansion`.
-- Next bounded approval gate:
+- Candidate packet:
   `docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_CANDIDATE_PACKET.md`.
-- Why materially different: the lane uses a predeclared UTC session time box and
-  closed-candle expansion away from it. It must not fade range edges or target
-  midpoints, and it must not use EMA trend stacks, EMA pullback bands, or the
-  failed trend-pullback trigger/exits.
-- Boundaries: docs-only selection; no Go code, CLI flags, generated results,
+- Stop state:
+  `session_opening_range_expansion_candidate_packet_ready_for_implementation_approval`.
+- Selected fixed baseline:
+  `btc_15m_session_opening_range_expansion_v1`.
+- Next bounded approval gate:
+  explicit operator approval to implement and run this one fixed offline
+  baseline.
+- Locked baseline: accepted BTCUSDT Binance USDT-M futures `5m` source resampled
+  to closed UTC `15m`; fixed `13:30 UTC` session anchor; `60` minute opening
+  range; `[14:30, 17:30) UTC` expansion window; `0.10 * ATR(14)` closed-candle
+  acceptance outside the opening range; next-bar-open entry; opposite-side
+  opening-range stop with `0.10 * ATR(14)` buffer; `1.5R` target; `24` closed
+  `15m` bar time stop; `1%` risk at stop capped at `1x`; `0.0004` fee per side;
+  `0.000116` slippage per side.
+- Boundaries: docs-only packet; no Go code, CLI flags, generated results,
   backtests, optimizers, source expansion, derivatives-veto interaction,
   paper/testnet/live flow, exchange API, credentials, deployment, martingale,
-  averaging down, two-exchange logic, or promotion.
+  averaging down, two-exchange logic, or promotion was authorized.
 
 ## 2026-07-01 Milestone Index
+
+Session opening-range expansion docs-only candidate packet:
+
+- Added candidate packet:
+  `docs/BACKTEST_FIRST_SESSION_OPENING_RANGE_EXPANSION_CANDIDATE_PACKET.md`.
+- Defined exactly one fixed baseline:
+  `btc_15m_session_opening_range_expansion_v1`.
+- Stop state:
+  `session_opening_range_expansion_candidate_packet_ready_for_implementation_approval`.
+- Updated `memory/NEXT_CODEX_BRIEF.md` to stop at the explicit implementation
+  and backtest approval gate for this fixed baseline.
 
 Session opening-range expansion docs-only lane selection:
 
